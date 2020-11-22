@@ -1,11 +1,14 @@
 #! usr/bin/env python3
 
 # TO DO :
-#       - Inclure les lignes specifiees en bas du script dans le main.py
 #       - Gestion des erreurs --> pas utiliser print mais generer une erreur en console
 #       _ Files.read_file --> gestion du retour de la methode
 
 import os
+import pickle
+
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+os.chdir(ROOT_DIR)
 
 
 class Users:
@@ -113,6 +116,7 @@ class Admins(Users):
         pwd             Le mot de passe associe a l'utilisateur administrateur
         user_id         L'identifiant unique associe a l'utilisateur administrateur
     """
+
     def __init__(self, username, fullname, pwd):
         """Methode permettant l'initialisation de chaque instance de la classe
 
@@ -203,6 +207,7 @@ class Students(Users):
         courses         La liste des cours auxquels l'utilisateur etudiant est inscrit
         files           La liste des fichiers appartenants a l'utilisateur etudiant
     """
+
     def __init__(self, username, fullname, pwd):
         """Methode permettant l'initialisation de chaque instance de la classe
 
@@ -305,6 +310,7 @@ class Files:
         tag             L'etiquette associee au fichier
         pathname        Le chemin d'acces vers le fichier sur la memoire locale ou distante
     """
+
     def __init__(self, name, user_id, pathname, course_name, script=False, tag=None):
         """Methode permettant d'initialiser chaque instance de la classe
         Si le fichier n'existe pas deja, il est cree a l'emplacement specifie
@@ -493,6 +499,7 @@ class Courses:
         course_id       Identifiant unique associe au cours
         description     Description du cours
     """
+
     def __init__(self, name, teachers):
         """Methode permettant d'initialiser chaque instance de la classe
 
@@ -600,6 +607,7 @@ class IdGenerator:
     Attributs:
         id              Compteur d'identifiants uniques
     """
+
     def __init__(self):
         """Methode permettant d'initialiser chaque instance de la classe"""
         self.__id = 0
@@ -621,9 +629,14 @@ class Container:
     Attributs:
         object_container    Dictionnaire repertoriant toutes les instances d'une meme classe
     """
+
     def __init__(self):
         """Methode permettant d'initialiser chaque instance de la classe"""
         self.__object_container = {}
+
+    @property
+    def object_container(self):
+        return self.__object_container
 
     def add_object(self, name, obj):
         """Methode permettant d'ajouter un element dans le dictionnaire object_container
@@ -659,37 +672,20 @@ class Container:
         del self.__object_container[name]
 
 
-if __name__ == '__main__':
-    # A METTRE DANS LE MAIN.PY PAR LA SUITE
+if __name__ == "__main__":
     """Creation des instances de la classe Container
     necessaires pour enregistrer les instances des classes associees"""
-    All_files = Container()
-    All_users = Container()
-    All_admins = Container()
-    All_courses = Container()
-    All_students = Container()
+    with open("pickle_saves/students.pkl", 'rb') as all_students_file:
+        All_students = pickle.load(all_students_file)
+    with open("pickle_saves/admins.pkl", 'rb') as all_admins_file:
+        All_admins = pickle.load(all_admins_file)
+    with open("pickle_saves/files.pkl", 'rb') as all_files_file:
+        All_files = pickle.load(all_files_file)
+    with open("pickle_saves/courses.pkl", 'rb') as all_courses_file:
+        All_courses = pickle.load(all_courses_file)
 
     """Creation des instances de la classe IdGenerator
     necessaires pour creer les identifiants uniques des classes associees"""
     UsersIdGenerator = IdGenerator()
     FilesIdGenerator = IdGenerator()
     CoursesIdGenerator = IdGenerator()
-
-    # TESTS
-
-    Dax = Students("dax", "Nicolas Daxhelet", "user123")
-    Daxxra = Admins("daxxra", "Nicolas Daxhelet", "user124")
-
-    """ATTENTION : les pathnames suivants sont valables uniquement sur la machine de Nicolas Daxhelet"""
-    print('# README.md : \n')
-
-    Dax.create_file("//wsl$/Ubuntu-20.04/home/daxxramass/EPHEC/BLOC2/T2012/projet_2TL1/README.md", "README.md", False)
-    All_files.get_object("README.md").read_file()
-
-    print('\n# hello_world.txt : \n')
-
-    Dax.create_file("//wsl$/Ubuntu-20.04/home/daxxramass/EPHEC/BLOC2/T2012/hello_world.txt", "hello_world.txt", False)
-    All_files.get_object("hello_world.txt").write_file("Hello World !\nNew line here...")
-    All_files.get_object("hello_world.txt").append_file("\nAnd another here...")
-    All_files.get_object("hello_world.txt").read_file()
-    Dax.delete_file("hello_world.txt")
