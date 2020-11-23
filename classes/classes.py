@@ -7,9 +7,6 @@
 import os
 import pickle
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-os.chdir(ROOT_DIR)
-
 
 class Users:
     """Un utilisateur generique servant de modele pour les Admins et les Students
@@ -630,12 +627,23 @@ class Container:
         object_container    Dictionnaire repertoriant toutes les instances d'une meme classe
     """
 
-    def __init__(self):
-        """Methode permettant d'initialiser chaque instance de la classe"""
-        self.__object_container = {}
+    def __init__(self, object_container=None):
+        """Methode permettant d'initialiser chaque instance de la classe
+
+        :param object_container: dict
+            Dictionnaire repertoriant toutes les instances d'une meme classe
+        """
+        if object_container is None:
+            object_container = {}
+        self.__object_container = object_container
 
     @property
     def object_container(self):
+        """Methode permettant d'acceder a la variable privee object_container
+
+        :return self.__object_container : dict
+            Dictionnaire repertoriant toutes les instances d'une meme classe
+        """
         return self.__object_container
 
     def add_object(self, name, obj):
@@ -672,20 +680,22 @@ class Container:
         del self.__object_container[name]
 
 
-if __name__ == "__main__":
-    """Creation des instances de la classe Container
-    necessaires pour enregistrer les instances des classes associees"""
-    with open("pickle_saves/students.pkl", 'rb') as all_students_file:
-        All_students = pickle.load(all_students_file)
-    with open("pickle_saves/admins.pkl", 'rb') as all_admins_file:
-        All_admins = pickle.load(all_admins_file)
-    with open("pickle_saves/files.pkl", 'rb') as all_files_file:
-        All_files = pickle.load(all_files_file)
-    with open("pickle_saves/courses.pkl", 'rb') as all_courses_file:
-        All_courses = pickle.load(all_courses_file)
+"""Creation des instances de la classe Container
+necessaires pour enregistrer les instances des classes associees"""
+with open("pickle_saves/students.pkl", 'rb') as all_students_file:
+    All_students = pickle.load(all_students_file)
+with open("pickle_saves/admins.pkl", 'rb') as all_admins_file:
+    All_admins = pickle.load(all_admins_file)
+with open("pickle_saves/files.pkl", 'rb') as all_files_file:
+    All_files = pickle.load(all_files_file)
+with open("pickle_saves/courses.pkl", 'rb') as all_courses_file:
+    All_courses = pickle.load(all_courses_file)
 
-    """Creation des instances de la classe IdGenerator
-    necessaires pour creer les identifiants uniques des classes associees"""
-    UsersIdGenerator = IdGenerator()
-    FilesIdGenerator = IdGenerator()
-    CoursesIdGenerator = IdGenerator()
+"""Creation des instances de la classe IdGenerator
+necessaires pour creer les identifiants uniques des classes associees"""
+UsersIdGenerator = IdGenerator()
+FilesIdGenerator = IdGenerator()
+CoursesIdGenerator = IdGenerator()
+
+if __name__ == "__main__":
+    pass
