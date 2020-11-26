@@ -1,0 +1,74 @@
+#!/usr/bin/env python3
+
+import cmd
+from classes.classes import *
+
+
+class Cli(cmd.Cmd):
+    """Cette classe permet de creer une interface en ligne de commande personalisee a l'aide du module cmd"""
+
+    def do_del(self, pathname):
+        """Methode permettant de supprimer un fichier a la fois des donnes de fonctionnement du programme et
+            de la memoire locale ou distante
+
+        PRE : pathname est de type str et correspond au pathname du fichier a supprimer
+        POST : le fichier est suprimme du programme et de la memoire locale ou distante ssi pathname correspond
+            au pathname d'un fichier existant et connu du programme
+
+        :param pathname: str
+            Correspond au pathname du fichier a supprimer sur la memoire locale ou distante
+        """
+
+        username = input("Veuillez entrer votre nom d'utilisateur :")
+        user_id = All_students.get_object_id(username)
+        student_instance = All_students.get_object(user_id)
+        student_instance.delete_file(pathname)
+        print(f"Le fichier {pathname} a ete supprime")
+
+        self.pickle_save()
+
+    def do_mv(self, line):
+        """Methode permettant de deplacer et/ou de renommer un fichier sur la memoire locale ou distante
+            et de mettre a jour les donnees de fonctionnoment du programme en consequence
+
+        PRE : line est de type str et correspond a deux sequences de caracteres separees par un espace
+                    - la premiere sequence (current_pathname) correspond au pathname
+                        actuel du fichier a deplacer/renommer
+                    - la deuxieme sequence (new_pathname) correspond au pathname
+                        desire pour le fichier a deplacer/renommer
+        POST : le fichier est deplace/renomme sur la memoire locale ou distante ssi :
+                    - current_pathname correspond au pathname d'un fichier existant et connu du programme
+                    - le chemin d'acces specifie par pathname correspond a un chemin existant sur la memoire
+                        locale ou distante
+
+        :param line: str
+            La ligne d'arguments introduite a la suite de l'appel de la fonction do_mv dans l'interface
+                en ligne de commande cree par le module cmd
+        """
+
+        current_pathname, new_pathname = [s for s in line.split()]
+        file_id = All_files.get_object_id(current_pathname)
+
+        All_files.get_object(file_id).move_file(new_pathname)
+        print(f"Le fichier {current_pathname} a ete déplacé vers {new_pathname}")
+
+        self.pickle_save()
+
+    @staticmethod
+    def pickle_save():
+        """Methode statique permettant d'enregistrer les modifications sur les classes persistantes du programme
+            apres chaque execution de commande via l'interface en ligne de commande cree par le module cmd
+        """
+
+        with open("pickle_saves/students.pkl", 'wb') as all_students_file:
+            pickle.dump(All_students, all_students_file)
+        with open("pickle_saves/admins.pkl", 'wb') as all_admins_file:
+            pickle.dump(All_admins, all_admins_file)
+        with open("pickle_saves/files.pkl", 'wb') as all_files_file:
+            pickle.dump(All_files, all_files_file)
+        with open("pickle_saves/courses.pkl", 'wb') as all_courses_file:
+            pickle.dump(All_courses, all_courses_file)
+
+
+if __name__ == "__main__":
+    Cli().cmdloop()
