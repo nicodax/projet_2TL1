@@ -6,9 +6,15 @@ from classes.classes import *
 
 class Cli(cmd.Cmd):
     """Cette classe permet de creer une interface en ligne de commande personalisee a l'aide du module cmd"""
+    intro = "Bienvenue dans le shell CLI du projet python 2TL1_09 :\n\nIntroduire help ou ? pour lister les " \
+            "commandes disponibles\n\n"
+    prompt = "(CLI) >>"
 
     def do_del(self, pathname):
-        """Methode permettant de supprimer un fichier a la fois des donnes de fonctionnement du programme et
+        """
+        del [PATHNAME]
+
+        Methode permettant de supprimer un fichier a la fois des donnes de fonctionnement du programme et
             de la memoire locale ou distante
 
         PRE : pathname est de type str et correspond au pathname du fichier a supprimer
@@ -23,12 +29,15 @@ class Cli(cmd.Cmd):
         user_id = All_students.get_object_id(username)
         student_instance = All_students.get_object(user_id)
         student_instance.delete_file(pathname)
-        print(f"Le fichier {pathname} a ete supprime")
+        print(f"Le fichier {pathname} a ete supprime\n")
 
         self.pickle_save()
 
     def do_mv(self, line):
-        """Methode permettant de deplacer et/ou de renommer un fichier sur la memoire locale ou distante
+        """
+        mv [CURRENT_PATHNAME] [NEW_PATHNAME]
+
+        Methode permettant de deplacer et/ou de renommer un fichier sur la memoire locale ou distante
             et de mettre a jour les donnees de fonctionnoment du programme en consequence
 
         PRE : line est de type str et correspond a deux sequences de caracteres separees par un espace
@@ -50,7 +59,7 @@ class Cli(cmd.Cmd):
         file_id = All_files.get_object_id(current_pathname)
 
         All_files.get_object(file_id).move_file(new_pathname)
-        print(f"Le fichier {current_pathname} a ete déplacé vers {new_pathname}")
+        print(f"Le fichier {current_pathname} a ete déplacé vers {new_pathname}\n")
 
         self.pickle_save()
 
