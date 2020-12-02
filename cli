@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-
 import cmd
-from classes.classes import *
+import os
+import pickle
+
+from classes.exceptions import FileNotFoundException, FileNotOwnedException, UnknownPasswordException
 
 
 class Cli(cmd.Cmd):
@@ -10,7 +12,8 @@ class Cli(cmd.Cmd):
             "commandes disponibles\n\n"
     prompt = "(CLI) >>"
 
-    def do_del(self, pathname):
+    @staticmethod
+    def do_del(pathname):
         """
         del [PATHNAME]
 
@@ -18,22 +21,48 @@ class Cli(cmd.Cmd):
             de la memoire locale ou distante
 
         PRE : pathname est de type str et correspond au pathname du fichier a supprimer
-        POST : le fichier est suprimme du programme et de la memoire locale ou distante ssi pathname correspond
-            au pathname d'un fichier existant et connu du programme
+        POST :  - le fichier est suprimme du programme et de la memoire locale ou distante ssi pathname correspond
+                    au pathname d'un fichier existant et connu du programme et ssi l'utilisateur connecte possede
+                    ce fichier
+                - le file_id du fichier est retiré des listes files des instances des classes Student et Course
+                    appropriees ssi elles existent
 
         :param pathname: str
             Correspond au pathname du fichier a supprimer sur la memoire locale ou distante
         """
 
-        username = input("Veuillez entrer votre nom d'utilisateur :")
-        user_id = All_students.get_object_id(username)
-        student_instance = All_students.get_object(user_id)
-        student_instance.delete_file(pathname)
-        print(f"Le fichier {pathname} a ete supprime\n")
+        try:
+            file_instance = if_proprietor_get_file(pathname)
+            files = pickle_get_files()
+            del files["name_id_dict"][pathname]
+            del files["objects_dict"][file_instance.file_id]
 
-        self.pickle_save()
+            courses = pickle_get_courses()
+            if file_instance.course_id is not None:
+                course_instance = courses["objects_dict"][file_instance.course_id]
+                course_instance.remove_file(file_instance.file_id)
+                courses["objects_dict"][course_instance.course_id] = course_instance
 
-    def do_mv(self, line):
+            students = pickle_get_students()
+            user_instance.remove_file(file_instance.file_id)
+            students["objects_dict"][user_instance.user_id] = user_instance
+        except FileNotFoundException:
+            print(f"Le fichier {pathname} n'existe pas")
+        except FileNotOwnedException:
+            print(f"Le fichier {pathname} ne vous appartient pas")
+        except Exception as e:
+            print(f"Une erreur est survenue : {e}\nVeuillez reessayer")
+        else:
+            if os.path.isfile(pathname):
+                os.remove(pathname)
+                print("Le fichier n'existe plus sur le disque dur")
+            else:
+                print("Le fichier n'existe pas sur le disque dur")
+            print("Le fichier a correctement ete supprime du programme")
+            pickle_save(students, files=files, courses=courses)
+
+    @staticmethod
+    def do_mv(line):
         """
         mv [CURRENT_PATHNAME] [NEW_PATHNAME]
 
@@ -56,28 +85,142 @@ class Cli(cmd.Cmd):
         """
 
         current_pathname, new_pathname = [s for s in line.split()]
-        file_id = All_files.get_object_id(current_pathname)
+        try:
+            file_instance = if_proprietor_get_file(current_pathname)
+            file_instance.pathname = new_pathname
+            if os.path.isfile(current_pathname):
+                os.rename(current_pathname, new_pathname)
+            else:
+                raise FileNotFoundException
+            files = pickle_get_files()
+            files["objects_dict"][file_instance.file_id] = file_instance
+            files["name_id_dict"][file_instance.pathname] = file_instance.file_id
+            del files["name_id_dict"][current_pathname]
+        except FileNotFoundException:
+            print(f"Le fichier {current_pathname} n'existe pas")
+        except FileNotOwnedException:
+            print(f"Le fichier {current_pathname} ne vous appartient pas")
+        # except Exception as e:
+            # print(f"Une erreur est survenue : {e}\nVeuillez reessayer")
+        else:
+            print(f"Le fichier {current_pathname} a ete déplacé vers {new_pathname}")
+            pickle_save(files=files)
 
-        All_files.get_object(file_id).move_file(new_pathname)
-        print(f"Le fichier {current_pathname} a ete déplacé vers {new_pathname}\n")
 
-        self.pickle_save()
+def if_proprietor_get_file(pathname):
+    """Methode renvoyant l'instance de la classe File associee a un fichier
 
-    @staticmethod
-    def pickle_save():
-        """Methode statique permettant d'enregistrer les modifications sur les classes persistantes du programme
-            apres chaque execution de commande via l'interface en ligne de commande cree par le module cmd
-        """
+    PRE : pathname est de type str
+    POST : retourne l'instance de la classe File associee au fichier ssi le fichier
+        existe et qu'il appartient a l'utilisateur connecte
+    RAISES :    - FileNotFoundException si le fichier n'existe pas sur la memoire locale ou distante
+                - FileNotOwnedException si le fichier existe mais n'apartient pas a l'utilisateur connecte
 
-        with open("pickle_saves/students.pkl", 'wb') as all_students_file:
-            pickle.dump(All_students, all_students_file)
-        with open("pickle_saves/admins.pkl", 'wb') as all_admins_file:
-            pickle.dump(All_admins, all_admins_file)
-        with open("pickle_saves/files.pkl", 'wb') as all_files_file:
-            pickle.dump(All_files, all_files_file)
-        with open("pickle_saves/courses.pkl", 'wb') as all_courses_file:
-            pickle.dump(All_courses, all_courses_file)
+    :param pathname: str
+        Le chemin d'acces vers le fichier sur la memoire locale ou distante
+    :return: object
+        L'instance de la classe File associee au fichier
+    """
+
+    files = pickle_get_files()
+    if pathname in files["name_id_dict"]:
+        file_id = files["name_id_dict"][pathname]
+        file_instance = files["objects_dict"][file_id]
+        if file_id in user_instance.files:
+            return file_instance
+        else:
+            raise FileNotOwnedException
+    else:
+        raise FileNotFoundException
+
+
+def pickle_save(students=None, admins=None, files=None, courses=None):
+    """Methode statique permettant d'enregistrer les modifications sur les classes persistantes du programme
+            Seules les classes specfiees dans les parametres sont sauvegardees
+    """
+
+    if students is not None:
+        with open("pickle_saves/students.pkl", 'wb') as students_file:
+            pickle.dump(students, students_file)
+    if admins is not None:
+        with open("pickle_saves/admins.pkl", 'wb') as admins_file:
+            pickle.dump(admins, admins_file)
+    if files is not None:
+        with open("pickle_saves/files.pkl", 'wb') as files_file:
+            pickle.dump(files, files_file)
+    if courses is not None:
+        with open("pickle_saves/courses.pkl", 'wb') as courses_file:
+            pickle.dump(courses, courses_file)
+
+
+def pickle_get_students():
+    """Methode statique permettant de recuperer les instances persistantes de la classe Student
+
+    :return students : dict
+        dictionnaire contenant les instances persistantes de la classe Student
+    """
+
+    with open("pickle_saves/students.pkl", 'rb') as students_file:
+        students = pickle.load(students_file)
+
+    return students
+
+
+def pickle_get_admins():
+    """Methode statique permettant de recuperer les instances persistantes de la classe Admin
+
+    :return admins : dict
+        dictionnaire contenant les instances persistantes de la classe Admin
+    """
+
+    with open("pickle_saves/admins.pkl", 'rb') as admins_file:
+        admins = pickle.load(admins_file)
+
+    return admins
+
+
+def pickle_get_files():
+    """Methode statique permettant de recuperer les instances persistantes de la classe File
+
+    :return files : dict
+        dictionnaire contenant les instances persistantes de la classe File
+    """
+
+    with open("pickle_saves/files.pkl", 'rb') as files_file:
+        files = pickle.load(files_file)
+
+    return files
+
+
+def pickle_get_courses():
+    """Methode statique permettant de recuperer les instances persistantes de la classe Course
+
+    :return courses : dict
+        dictionnaire contenant les instances persistantes de la classe Course
+    """
+
+    with open("pickle_saves/courses.pkl", 'rb') as courses_file:
+        courses = pickle.load(courses_file)
+
+    return courses
 
 
 if __name__ == "__main__":
-    Cli().cmdloop()
+    username = input("Veuillez entrer votre nom d'utilisateur :")
+
+    all_students = pickle_get_students()
+    all_admins = pickle_get_admins()
+    if username in all_students["name_id_dict"]:
+        try:
+            pwd = input("Veuillez entrer votre mot de passe :")
+            user_id = all_students["name_id_dict"][username]
+            user_instance = all_students["objects_dict"][user_id]
+            user_instance.verify_pwd(pwd)
+        except UnknownPasswordException:
+            print("Le mot de passe est errone")
+        else:
+            Cli().cmdloop()
+    elif username in all_admins["name_id_dict"]:
+        pass
+    else:
+        print("Le nom d'utilisateur n'existe pas")
