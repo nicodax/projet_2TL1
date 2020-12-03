@@ -19,7 +19,7 @@ class Course:
         course_id_counter     Compteur necessaire a la creation d'identifiants uniques
     """
 
-    def __init__(self, name, teachers, course_id):
+    def __init__(self, name, teachers, course_id, description=""):
         """Methode permettant d'initialiser chaque instance de la classe
 
         PRE :   - name est de type str
@@ -35,7 +35,7 @@ class Course:
         self.__teachers = teachers
         self.__files = []
         self.__course_id = course_id
-        self.__description = ""
+        self.__description = description
         self.__students = []
 
     @property
@@ -97,6 +97,28 @@ class Course:
         """
 
         return self.__description
+
+    @property
+    def description(self):
+        """Methode permettant d'acceder a la variable privee description
+
+        :return self.__description : str
+            Description du cours
+        """
+
+        return self.__description
+
+    @description.setter
+    def description(self, string):
+        """Methode permettant de definir la valeur de l'attribut prive description
+
+        PRE : string est de type str et correspond a la description du cours
+
+        :param string: str
+            La description du cours
+        """
+
+        self.__description = string
 
     def is_in_teachers(self, name):
         """Methode permettant de definir si un professeur est titulaire du cours

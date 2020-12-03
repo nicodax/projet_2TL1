@@ -47,7 +47,7 @@ class File:
         self.__file_id = file_id
         self.__user_id = user_id
         self.__course_id = course_id
-        self.__tag = tags
+        self.__tags = tags
         self.__pathname = pathname
         try:
             with open(self.__pathname, 'x'):
@@ -76,14 +76,14 @@ class File:
         return self.__script
 
     @property
-    def tag(self):
+    def tags(self):
         """Methode permettant d'acceder a la variable privee tag
 
-        :return self.__tag : list
+        :return self.__tags : list
             Liste d'etiquettes associees au fichier
         """
 
-        return self.__tag
+        return self.__tags
 
     @property
     def pathname(self):
@@ -151,7 +151,7 @@ class File:
             Indique si l'etiquette est deja attribuee au fichier
         """
 
-        return tag in self.__tag
+        return tag in self.__tags
 
     def add_tag(self, new_tag):
         """Methode permettant d'ajouter un etiquette a la liste de la variable privee tag
@@ -165,7 +165,7 @@ class File:
         """
 
         if not self.is_in_tag(new_tag):
-            self.__tag.append(new_tag)
+            self.__tags.append(new_tag)
         else:
             raise AlreadyInListException
 
@@ -181,7 +181,7 @@ class File:
         """
 
         if self.is_in_tag(tag):
-            self.__tag.remove(tag)
+            self.__tags.remove(tag)
         else:
             raise NotInListException
 

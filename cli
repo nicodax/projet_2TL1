@@ -38,7 +38,7 @@ class AdminCli(cmd.Cmd):
         """
 
         course_name = line.split()[0]
-        teacher = line.split()[1:]
+        teacher = line.split(f"{course_name}", 1)[1]
         all_courses = pickle_get_courses()
         try:
             course_instance_id = all_courses["name_id_dict"][course_name]
@@ -51,7 +51,6 @@ class AdminCli(cmd.Cmd):
         else:
             pickle_save(courses=all_courses)
             print(f"Le proffesseur {teacher} est maintenant titulaire du cours {course_name}")
-
 
     @staticmethod
     def do_remove_teacher(line):
@@ -98,59 +97,103 @@ class AdminCli(cmd.Cmd):
         :param line: str
             chaine vide car la fonction reset ne demande pas de parametres
         """
+
         try:
             if line != "":
                 raise CommandHasNoArgumentsException
         except CommandHasNoArgumentsException:
             print("La fonction n'accepte aucun argument\nVeuillez reesayer :\n")
-        else:
-            with open("pickle_saves/id_dict.pkl", 'wb') as id_dict_file:
-                id_dict = {"user": 0, "file": 0, "course": 0}
-                pickle.dump(id_dict, id_dict_file)
+        try:
+            id_dict = {"user": 0, "file": 0, "course": 0}
 
-            id_dict = pickle_get_ids()
-            user_id_counter = id_dict["user"]
+            all_students = {"name_id_dict": {}, "objects_dict": {}}
+            all_admins = {"name_id_dict": {}, "objects_dict": {}}
+            all_files = {"name_id_dict": {}, "objects_dict": {}}
+            all_courses = {"name_id_dict": {}, "objects_dict": {}}
 
-            dax = Student("dax", "Nicolas Daxhelet", "user123", user_id_counter)
-            user_id_counter += 1
-            daxxra = Admin("daxxra", "Nicolas Daxhelet", "user111", user_id_counter)
-            user_id_counter += 1
+            root = Admin("root", "", "root", id_dict["user"])
+            id_dict["user"] += 1
+            all_admins["objects_dict"][root.user_id] = root
+            all_admins["name_id_dict"][root.username] = root.user_id
 
-            greg = Student("greg", "Gregoire Delannoit", "user123", user_id_counter)
-            user_id_counter += 1
-            the_gregouze = Admin("TheGregouze", "Gregoire Delannoit", "user111", user_id_counter)
-            user_id_counter += 1
+            dax = Student("dax", "Nicolas Daxhelet", "user123", id_dict["user"])
+            id_dict["user"] += 1
+            all_students["objects_dict"][dax.user_id] = dax
+            all_students["name_id_dict"][dax.username] = dax.user_id
 
-            id_dict["user"] = user_id_counter
+            daxxra = Admin("daxxra", "Nicolas Daxhelet", "user111", id_dict["user"])
+            id_dict["user"] += 1
+            all_admins["objects_dict"][daxxra.user_id] = daxxra
+            all_admins["name_id_dict"][daxxra.username] = daxxra.user_id
+
+            greg = Student("greg", "Gregoire Delannoit", "user123", id_dict["user"])
+            id_dict["user"] += 1
+            all_students["objects_dict"][greg.user_id] = greg
+            all_students["name_id_dict"][greg.username] = greg.user_id
+
+            the_gregouze = Admin("TheGregouze", "Gregoire Delannoit", "user111", id_dict["user"])
+            id_dict["user"] += 1
+            all_admins["objects_dict"][the_gregouze.user_id] = the_gregouze
+            all_admins["name_id_dict"][the_gregouze.username] = the_gregouze.user_id
+
+            t2011 = Course("T2011", ["Jonathan Noel", "Virginie Van Den Schrieck"], id_dict["course"],
+                           "Developpement Informatique II (Theorie)")
+            id_dict["course"] += 1
+            all_courses["objects_dict"][t2011.course_id] = t2011
+            all_courses["name_id_dict"][t2011.name] = t2011.course_id
+
+            t2012 = Course("T2012", ["Xavier Dubruille", "Jonathan Noel", "Virginie Van Den Schrieck"],
+                           id_dict["course"],
+                           "Developpement Informatique II (Pratique)")
+            id_dict["course"] += 1
+            all_courses["objects_dict"][t2012.course_id] = t2012
+            all_courses["name_id_dict"][t2012.name] = t2012.course_id
+
+            t203 = Course("T203", ["Laurent Schalkwijk", "Marie-Noel Vroman"], id_dict["course"], "Reseaux II")
+            id_dict["course"] += 1
+            all_courses["objects_dict"][t203.course_id] = t203
+            all_courses["name_id_dict"][t203.name] = t203.course_id
+
+            t2051 = Course("T2051", ["Claude Masson"], id_dict["course"], "Systemes d'exploitation (Theorie)")
+            id_dict["course"] += 1
+            all_courses["objects_dict"][t2051.course_id] = t2051
+            all_courses["name_id_dict"][t2051.name] = t2051.course_id
+
+            t2052 = Course("T2052", ["Claude Masson"], id_dict["course"], "Systemes d'exploitation (Pratique)")
+            id_dict["course"] += 1
+            all_courses["objects_dict"][t2052.course_id] = t2052
+            all_courses["name_id_dict"][t2052.name] = t2052.course_id
+
+            t2053 = Course("T2053", ["Virginie Van Den Schrieck"], id_dict["course"],
+                           "Administration systemes et reseaux I (Theorie)")
+            id_dict["course"] += 1
+            all_courses["objects_dict"][t2053.course_id] = t2053
+            all_courses["name_id_dict"][t2053.name] = t2053.course_id
+
+            t2054 = Course("T2054", ["Jonathan Noel", "Virginie Van Den Schrieck"], id_dict["course"],
+                           "Administration systemes et reseaux I (Pratique)")
+            id_dict["course"] += 1
+            all_courses["objects_dict"][t2054.course_id] = t2054
+            all_courses["name_id_dict"][t2054.name] = t2054.course_id
+
+            t2071 = Course("T2071", ["Youcef Bouterfa", "Arnaud Dewulf"], id_dict["course"],
+                           "Electronique digitale (Theorie)")
+            id_dict["course"] += 1
+            all_courses["objects_dict"][t2071.course_id] = t2071
+            all_courses["name_id_dict"][t2071.name] = t2071.course_id
+
+            t2072 = Course("T2072", ["Youcef Bouterfa", "Arnaud Dewulf"], id_dict["course"],
+                           "Electronique digitale (Pratique)")
+            id_dict["course"] += 1
+            all_courses["objects_dict"][t2072.course_id] = t2072
+            all_courses["name_id_dict"][t2072.name] = t2072.course_id
+
             pickle_save_ids(id_dict)
-
-            with open("pickle_saves/students.pkl", 'wb') as students_file:
-                all_students = {"name_id_dict": {}, "objects_dict": {}}
-
-                all_students["objects_dict"][dax.user_id] = dax
-                all_students["name_id_dict"][dax.username] = dax.user_id
-
-                all_students["objects_dict"][greg.user_id] = greg
-                all_students["name_id_dict"][greg.username] = greg.user_id
-
-                pickle.dump(all_students, students_file)
-
-            with open("pickle_saves/admins.pkl", 'wb') as admins_file:
-                all_admins = {"name_id_dict": {}, "objects_dict": {}}
-
-                all_admins["objects_dict"][daxxra.user_id] = daxxra
-                all_admins["name_id_dict"][daxxra.username] = daxxra.user_id
-
-                all_admins["objects_dict"][the_gregouze.user_id] = the_gregouze
-                all_admins["name_id_dict"][the_gregouze.username] = the_gregouze.user_id
-                pickle.dump(admins, admins_file)
-
-            with open("pickle_saves/files.pkl", 'wb') as files_file:
-                files = {"name_id_dict": {}, "objects_dict": {}}
-                pickle.dump(files, files_file)
-            with open("pickle_saves/courses.pkl", 'wb') as courses_file:
-                courses = {"name_id_dict": {}, "objects_dict": {}}
-                pickle.dump(courses, courses_file)
+        except Exception as e:
+            print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
+        else:
+            pickle_save(all_students, all_admins, all_files, all_courses)
+            print("La memoire du programme a ete correctement reinitialisee")
 
     @staticmethod
     def do_new(line):
@@ -191,7 +234,7 @@ class AdminCli(cmd.Cmd):
                 fullname = fullname[:-1]
                 if "student" in line:
                     pwd1 = getpass.getpass("Veuillez creer un mot de passe :")
-                    pwd2 = getpass.getpass("Veuillez confirmer le mot de passe entre:")
+                    pwd2 = getpass.getpass("Veuillez confirmer le mot de passe :")
                     if pwd1 == pwd2:
                         id_dict = pickle_get_ids()
                         student_instance = Student(user_name, fullname, pwd1, id_dict["user"])
@@ -205,7 +248,7 @@ class AdminCli(cmd.Cmd):
                         raise PasswordNotEqualException
                 if "admin" in line:
                     pwd1 = getpass.getpass("Veuillez creer un mot de passe :")
-                    pwd2 = getpass.getpass("Veuillez confirmer le mot de passe entre:")
+                    pwd2 = getpass.getpass("Veuillez confirmer le mot de passe :")
                     if pwd1 == pwd2:
                         id_dict = pickle_get_ids()
                         admin_instance = Admin(user_name, fullname, pwd1, id_dict["user"])
@@ -228,27 +271,25 @@ class AdminCli(cmd.Cmd):
             else:
                 pickle_save(all_students=all_students, all_admins=all_admins)
                 print("L'utilisateur a ete correctement cree\n")
-        elif "course" in line and not [("student" in line) or ("admin" in line)]:
+        elif "course" in line and not (("student" in line) or ("admin" in line)):
             try:
-                if len(line.split()) == 3:
-                    name, teachers = [s for s in line.split()[1:]]
-                    teachers = teachers.split("_")
-                    id_dict = pickle_get_ids()
-                    course_instance = Course(name, teachers, id_dict["course"])
-                    id_dict += 1
-                    pickle_save_ids(id_dict)
-                    if name in all_courses["name_id_dict"]:
-                        raise ObjectAlreadyExistantException
-                    all_courses["objects_dict"][course_instance.course_id] = course_instance
-                    all_courses["name_id_dict"][name] = course_instance.course_id
-                else:
-                    raise NumberOfArgumentsException
+                name = line.split()[1]
+                teachers = line.split(name + " ", 1)[1]
+                teachers = teachers.split("_")
+                id_dict = pickle_get_ids()
+                course_instance = Course(name, teachers, id_dict["course"])
+                id_dict["course"] += 1
+                pickle_save_ids(id_dict)
+                if name in all_courses["name_id_dict"]:
+                    raise ObjectAlreadyExistantException
+                all_courses["objects_dict"][course_instance.course_id] = course_instance
+                all_courses["name_id_dict"][name] = course_instance.course_id
             except ObjectAlreadyExistantException:
                 print("Un cours avec le meme intitule existe deja\nVeuillez reessayer avec un autre nom :\n")
             except NumberOfArgumentsException:
                 print("La commande mv demande deux arguments : [CURRENT_PATHNAME] [NEW_PATHNAME]\n")
-            except Exception as e:
-                print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
+            # except Exception as e:
+            # print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
             else:
                 pickle_save(courses=all_courses)
                 print("Le cours a ete correctement cree\n")
@@ -330,7 +371,7 @@ class AdminCli(cmd.Cmd):
             else:
                 pickle_save(all_students=all_students, all_admins=all_admins, files=all_files, courses=all_courses)
                 print("L'utilisateur a ete correctement suprimme\n")
-        elif "course" in line and not [("student" in line) or ("admin" in line)]:
+        elif "course" in line and not ("student" in line) or ("admin" in line):
             try:
                 name = line.split()[1]
                 if name not in all_courses["name_id_dict"]:
@@ -383,23 +424,63 @@ class AdminCli(cmd.Cmd):
         if usertype == "all" or usertype == "students":
             print("Utilisateurs etudiants :")
             key_list = all_students["objects_dict"].keys()
+            print(" id     username                         fullname")
+            print("------------------------------------------------------------------------")
+            print("------------------------------------------------------------------------")
             for i in key_list:
-                user_string1 = f"id={all_students['objects_dict'][i].user_id}  "
-                user_string2 = f"{all_students['objects_dict'][i].username} "
-                user_string3 = f"({all_students['objects_dict'][i].fullname})"
-                print(user_string1, user_string2, user_string3)
+                user_name = all_students['objects_dict'][i].username
+                instance_user = all_students['objects_dict'][i]
+                add_to_user_name = ""
+                add_to_i = ""
+                if len(str(i)) < 3:
+                    max_value = 3 - len(str(i))
+                    for j in range(max_value):
+                        add_to_i += " "
+                if len(user_name) < 25:
+                    max_value = 25 - len(user_name)
+                    for j in range(max_value):
+                        add_to_user_name += " "
+                print(f"id={i}{add_to_i}  {user_name}{add_to_user_name}        {instance_user.fullname}")
             print("\n")
         if usertype == "all" or usertype == "admins":
             print("Utilisateurs administrateurs :")
             key_list = all_admins["objects_dict"].keys()
+            print(" id     username                         fullname")
+            print("------------------------------------------------------------------------")
+            print("------------------------------------------------------------------------")
             for i in key_list:
-                user_string1 = f"id={all_admins['objects_dict'][i].user_id}  "
-                user_string2 = f"{all_admins['objects_dict'][i].username} "
-                user_string3 = f"({all_admins['objects_dict'][i].fullname})"
-                print(user_string1, user_string2, user_string3)
+                user_name = all_admins['objects_dict'][i].username
+                instance_user = all_admins['objects_dict'][i]
+                add_to_user_name = ""
+                add_to_i = ""
+                if len(str(i)) < 3:
+                    max_value = 3 - len(str(i))
+                    for j in range(max_value):
+                        add_to_i += " "
+                if len(user_name) < 25:
+                    max_value = 25 - len(user_name)
+                    for j in range(max_value):
+                        add_to_user_name += " "
+                print(f"id={i}{add_to_i}  {user_name}{add_to_user_name}        {instance_user.fullname}")
             print("\n")
         if usertype != "all" and usertype != "students" and usertype != "admins":
             print("L'argument [USERTYPE] a trois valeurs autorisees :\nall\nstudents\nadmins\n")
+
+    @staticmethod
+    def do_list_courses(line):
+        """
+        courses
+
+        PRE : line est une chaine de caractere vide
+        RAISES : CommandHasNoArgumentsException si line n'est pas une chaine de caractere vide
+
+        Methode permettant de lister les cours connus du programme
+
+        :param line: str
+            chaine vide car la fonction reset ne demande pas de parametres
+        """
+
+        Cli.do_list_courses(line)
 
 
 class Cli(cmd.Cmd):
@@ -526,7 +607,7 @@ class Cli(cmd.Cmd):
                     permet d'assigner le fichier a un cours
                 --tag [TAG]...
                     permet d'assigner un ou plusieurs tags au fichier
-                --script
+                --script [BOOL]
                     permet de signifier que le contenu du fichier est un script
 
 
@@ -535,6 +616,7 @@ class Cli(cmd.Cmd):
         PRE :   - pathname est de type str et correspond au pathname du fichier a creer
                 - (--course) coursename est de type str et correspond au nom du cours auquel on veut associer le fichier
                 - (--tag) chaque tag est de type str
+                - (--script) bool est de type bool
         POST : le fichier est cree dans le programme et sur la memoire locale ou distante ssi pathname ne correspond
             au pathname d'aucun fichier existant sur la memoire locale ou distante ou a un fichier connu du programme
             si une option est specifiee :
@@ -543,7 +625,7 @@ class Cli(cmd.Cmd):
                         Si cette option n'est pas specifie, la valeur None est enregistree a la place
                 --tag : chaque tag specifie est inscrit comme un element de la liste tags du fichier
                         Si cette option n'est pas specifiee, la valeur None est enregistree a la place
-                --script : la valeur de l'attribut prive script du fichier est passe a False
+                --script : la valeur de l'attribut prive script du fichier est passe a bool
                         Si cette option n'est pas specifiee, la valeur False est enregistree a la place
 
         :param line: str
@@ -551,10 +633,12 @@ class Cli(cmd.Cmd):
                 en ligne de commande cree par le module cmd
         """
 
+        print(line)
         tag_index = ["--tag " in line, "--tag "]
         course_index = ["--course " in line, "--course "]
-        script_index = ["--script " in line, "--script "]
+        script_index = [("--script " in line) or line.endswith("--script"), "--script "]
         options = [tag_index, course_index, script_index]
+        print(options)
         specified_options_dict = specified_options(line, options)
 
         try:
@@ -564,29 +648,36 @@ class Cli(cmd.Cmd):
         except Exception as e:
             print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
             return
-
         tags = None
         script = False
         course_id = None
+        course_name = ""
 
-        if "--tag " in specified_options_dict:
-            tags = list(specified_options_dict["--tag "].split())
-        if "--script " in specified_options_dict:
-            script = specified_options_dict["--script "]
-        if "--course " in specified_options_dict:
-            course_name = specified_options_dict["--course "]
-            courses = pickle_get_courses()
-            course_id = courses["name_id_dict "][course_name]
-
-        all_students = pickle_get_students()
-        all_courses = pickle_get_courses()
-        all_files = pickle_get_files()
         try:
+            all_students = pickle_get_students()
+            all_courses = pickle_get_courses()
+            all_files = pickle_get_files()
+
+            if "--tag " in specified_options_dict:
+                tags = list(specified_options_dict["--tag "].split())
+            if "--script " in specified_options_dict:
+                print(specified_options_dict["--script"])
+                if not specified_options_dict["--script"]:
+                        raise CommandHasNoArgumentsException
+                script = True
+                print(script)
+            if "--course " in specified_options_dict:
+                course_name = specified_options_dict["--course "]
+                if course_name in all_courses["name_id_dict"]:
+                    course_id = all_courses["name_id_dict"][course_name]
+                else:
+                    raise UnknownObjectNameException
+
             id_dict = pickle_get_ids()
+            print(script)
             file_instance = File(user_id, pathname, course_id, id_dict["file"], script, tags)
-            id_dict["file"] += 1
-            pickle_save_ids(id_dict)
-            if file_instance.file_id not in all_files["objects_dict"]:
+            if file_instance.pathname not in all_files["name_id_dict"]:
+                print(file_instance.script)
                 all_files["objects_dict"][file_instance.file_id] = file_instance
                 all_files["name_id_dict"][file_instance.pathname] = file_instance.file_id
             else:
@@ -598,15 +689,21 @@ class Cli(cmd.Cmd):
                 course_instance = all_courses["objects_dict"][course_id]
                 course_instance.add_file(file_instance.file_id)
                 all_courses["objects_dict"][course_id] = course_instance
+        except CommandHasNoArgumentsException:
+            print("L'option --script ne prend pas d'argument\nVeuillez reessayer :\n")
+        except UnknownObjectNameException:
+            print(f"Le cours {course_name} n'existe pas\n")
         except ObjectAlreadyExistantException:
             print(f"Le fichier {pathname} est deja connu du programme:\n")
         except AlreadyInListException:
             print(f"Le fichier {pathname} existe deja:\n")
-        except Exception as e:
-            print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
+        # except Exception as e:
+            # print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
         else:
             pickle_save(all_students=all_students, files=all_files, courses=all_courses)
             print(f"Le fichier {file_instance.pathname} est maintenant connu du programme\n")
+            id_dict["file"] += 1
+            pickle_save_ids(id_dict)
 
     @staticmethod
     def do_cat(pathname):
@@ -618,6 +715,7 @@ class Cli(cmd.Cmd):
         PRE : pathname est de type str et correspond au pathname d'un fichier existant et connu du programme
         POST : le contenu du fichier est affiche en console ssi pathname correspond au pathname d'un fichier
             existant sur la memoire locale ou distante et connu du programme
+        RAISES :
 
         :param pathname: str
             Correspond au pathname sur la memoire locale ou distante du fichier dont on desire afficher
@@ -625,16 +723,19 @@ class Cli(cmd.Cmd):
         """
 
         try:
-            file_instance = if_proprietor_get_file(pathname)
-            file_instance.read_file()
+            all_files = pickle_get_files()
+            if pathname in all_files["name_id_dict"]:
+                file_id = all_files["name_id_dict"][pathname]
+                file_instance = all_files["objects_dict"][file_id]
+                file_instance.read_file()
+            else:
+                raise FileNotFoundException
         except FileExistsError:
             print(f"Le fichier {pathname} n'existe pas")
         except IOError:
             print('Erreur IO.')
         except FileNotFoundException:
             print(f"Le fichier {pathname} n'existe pas\n")
-        except FileNotOwnedException:
-            print(f"Le fichier {pathname} ne vous appartient pas\n")
         except Exception as e:
             print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
 
@@ -730,8 +831,13 @@ class Cli(cmd.Cmd):
         """
 
         try:
+            if_proprietor_get_file(pathname)
             editor = os.getenv('EDITOR', 'vi')
             subprocess.call(f"{editor} {pathname}", shell=True)
+        except FileNotFoundException:
+            print(f"Le fichier {pathname} n'existe pas\n")
+        except FileNotOwnedException:
+            print(f"Le fichier {pathname} ne vous appartient pas\n")
         except FileExistsError:
             print(f"Le fichier {pathname} n'existe pas")
         except IOError:
@@ -760,14 +866,49 @@ class Cli(cmd.Cmd):
             print("La fonction n'accepte aucun argument\nVeuillez reesayer :\n")
         else:
             all_files = pickle_get_files()
+            all_courses = pickle_get_courses()
             files = user_instance.files
             if files:
+                print("")
+                print("---------------------------------------------------------------------------------------------" +
+                      "----------------------------------------------------------------")
+                print("---------------------------------------------------------------------------------------------" +
+                      "----------------------------------------------------------------")
                 for i in files:
-                    print(f"id={i}    {all_files['objects_dict'][i].pathname}")
+                    file_instance = all_files['objects_dict'][i]
+                    pathname = file_instance.pathname
+                    script = file_instance.script
+                    tags = file_instance.tags
+                    course_id = file_instance.course_id
+                    course_name = ""
+                    if course_id is not None:
+                        course_name = all_courses["objects_dict"][course_id].name
+                    add_to_i = ""
+                    add_to_pathname = ""
+                    add_to_course_name = ""
+                    add_to_script = ""
+                    if len(str(i)) < 3:
+                        max_value = 3 - len(str(i))
+                        for j in range(max_value):
+                            add_to_i += " "
+                    if len(pathname) < 85:
+                        max_value = 85 - len(pathname)
+                        for j in range(max_value):
+                            add_to_pathname += " "
+                    if len(course_name) < 5:
+                        max_value = 5 - len(course_name)
+                        for j in range(max_value):
+                            add_to_course_name += " "
+                    if len(str(script)) < 5:
+                        max_value = 5 - len(str(script))
+                        for j in range(max_value):
+                            add_to_script += " "
+                    print(f"id={i}{add_to_i}  {course_name}{add_to_course_name}  {script}{add_to_script}" +
+                          f"  {pathname}{add_to_pathname}  {tags}")
             print("\n")
 
     @staticmethod
-    def do_courses(line):
+    def do_list_courses(line):
         """
         courses
 
@@ -789,8 +930,36 @@ class Cli(cmd.Cmd):
             all_courses = pickle_get_courses()
             course_keys = all_courses["name_id_dict"].keys()
             if course_keys:
+                print(" id     code        proffesseurs                                                             " +
+                      "              intitule")
+                print("---------------------------------------------------------------------------------------------" +
+                      "----------------------------------------------------------------")
+                print("---------------------------------------------------------------------------------------------" +
+                      "----------------------------------------------------------------")
                 for i in course_keys:
-                    print(f"id={all_courses['name_id_dict'][i]}    {i}")
+                    course_id = all_courses['name_id_dict'][i]
+                    course_instance = all_courses['objects_dict'][course_id]
+                    add_to_course_id = ""
+                    add_to_teachers = ""
+                    add_to_i = ""
+                    num_teachers = len(course_instance.teachers)
+                    tot_len = (num_teachers * 2) + 2 + ((num_teachers - 1) * 2)
+                    if len(str(course_id)) < 3:
+                        max_value = 3 - len(str(course_id))
+                        for j in range(max_value):
+                            add_to_course_id += " "
+                    if len(i) < 10:
+                        max_value = 10 - len(i)
+                        for j in range(max_value):
+                            add_to_i += " "
+                    for j in course_instance.teachers:
+                        tot_len += len(j)
+                    if tot_len < 85:
+                        max_value = 85 - tot_len
+                        for j in range(max_value):
+                            add_to_teachers += " "
+                    print(f"id={course_id}{add_to_course_id}  {i}{add_to_i}  " +
+                          f"{course_instance.teachers}{add_to_teachers}  {course_instance.description}")
             print("\n")
 
     @staticmethod
@@ -815,11 +984,39 @@ class Cli(cmd.Cmd):
         else:
             all_courses = pickle_get_courses()
             courses = user_instance.courses
+
             if courses:
+                print(" id     code        proffesseurs                                                             " +
+                      "              intitule")
+                print("---------------------------------------------------------------------------------------------" +
+                      "----------------------------------------------------------------")
+                print("---------------------------------------------------------------------------------------------" +
+                      "----------------------------------------------------------------")
                 for i in courses:
-                    print(
-                        f"id={i}    {all_courses['objects_dict'][i].name}    {all_courses['objects_dict'][i].teachers}")
-            print("\n")
+                    course_instance = all_courses['objects_dict'][i]
+                    name = course_instance.name
+                    add_to_name = ""
+                    add_to_teachers = ""
+                    add_to_i = ""
+                    num_teachers = len(course_instance.teachers)
+                    tot_len = (num_teachers * 2) + 2 + ((num_teachers - 1) * 2)
+                    if len(str(i)) < 3:
+                        max_value = 3 - len(str(i))
+                        for j in range(max_value):
+                            add_to_i += " "
+                    if len(name) < 10:
+                        max_value = 10 - len(name)
+                        for j in range(max_value):
+                            add_to_name += " "
+                    for j in course_instance.teachers:
+                        tot_len += len(j)
+                    if tot_len < 85:
+                        max_value = 85 - tot_len
+                        for j in range(max_value):
+                            add_to_teachers += " "
+                    print(f"id={i}{add_to_i}  {name}{add_to_name}  {course_instance.teachers}{add_to_teachers}" +
+                          f"  {course_instance.description}")
+                print("\n")
 
     @staticmethod
     def do_sub(course_name):
@@ -841,6 +1038,8 @@ class Cli(cmd.Cmd):
         try:
             course_instance.add_student(user_id)
             user_instance.add_course(course_instance_id)
+            all_students["objects_dict"][user_id] = user_instance
+            all_courses["objects_dict"][course_instance_id] = course_instance
         except AlreadyInListException:
             print("Vous etes deja inscrits a ce cours\n")
         except Exception as e:
@@ -982,6 +1181,7 @@ def specified_options(line, options):
             except AttributeError:
                 found = line.split(i[1])[1]
                 specified_options_dict[i[1]] = found
+    print(specified_options_dict)
     return specified_options_dict
 
 
