@@ -34,8 +34,8 @@ class Courses:
         self.__name = name
         self.__teachers = teachers
         self.__files = []
-        self.__course_id = self.course_id_counter
-        self.course_id_counter += 1
+        self.__course_id = Courses.course_id_counter
+        Courses.course_id_counter += 1
         self.__description = ""
 
     @property

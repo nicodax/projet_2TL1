@@ -11,8 +11,8 @@ class File:
         script          Indique si le fichier est un script
         file_id         Identifiant unique associe au fichier
         user_id         Identifiant unique associe a l'utilisateur etudiant proprietaire du fichier
-        course_name     Le nom du cours auquel le fichier fait reference
-        tag             Liste d'etiquettes associees au fichier
+        course_id       L'identifiant unique du cours auquel le fichier fait reference
+        tags             Liste d'etiquettes associees au fichier
         pathname        Le chemin d'acces vers le fichier sur la memoire locale ou distante
 
     Variables de classe:
@@ -20,7 +20,7 @@ class File:
     """
     file_id_counter = 0
 
-    def __init__(self, user_id, pathname, course_id=None, script=False, tag=None):
+    def __init__(self, user_id, pathname, course_id, script, tags):
         """Methode permettant d'initialiser chaque instance de la classe
         Si le fichier n'existe pas deja, il est cree a l'emplacement specifie
 
@@ -38,18 +38,18 @@ class File:
             ou None dans le cas ou le fichier n'est pas associe a un cours
         :param script: bool
             Indique si le fichier est un script
-        :param tag: list
+        :param tags: list
             Liste d'etiquettes associees au fichier
         """
 
-        if tag is None:
-            tag = []
+        if tags is None:
+            tags = []
         self.__script = script
-        self.__file_id = self.file_id_counter
-        self.file_id_counter += 1
+        self.__file_id = File.file_id_counter
+        File.file_id_counter += 1
         self.__user_id = user_id
         self.__course_id = course_id
-        self.__tag = tag
+        self.__tag = tags
         self.__pathname = pathname
         try:
             with open(self.__pathname, 'x'):

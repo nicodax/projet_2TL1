@@ -16,7 +16,7 @@ if __name__ == "__main__":
         user_id = students["name_id_dict"]["dax"]
         user_instance = students["objects_dict"][user_id]
 
-        file_instance = File(user_id, "files/helloworld.txt")
+        file_instance = File(user_id, "files/helloworld.txt", None, False, None)
         files["objects_dict"][file_instance.file_id] = file_instance
         files["name_id_dict"][file_instance.pathname] = file_instance.file_id
 

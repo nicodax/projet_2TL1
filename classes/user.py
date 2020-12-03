@@ -34,7 +34,7 @@ class User:
         self.__fullname = fullname
         self.__pwd = pwd
         self.__user_id = self.user_id_counter
-        self.user_id_counter += 1
+        User.user_id_counter += 1
         self.__is_admin = False
 
     @property

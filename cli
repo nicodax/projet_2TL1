@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 import cmd
+import getpass
 import os
 import pickle
+import re
 
-from classes.exceptions import FileNotFoundException, FileNotOwnedException, UnknownPasswordException
+from classes.exceptions import FileNotFoundException, FileNotOwnedException, UnknownPasswordException, \
+    AlreadyInListException
+from classes.file import File
 
 
 class Cli(cmd.Cmd):
@@ -45,20 +49,20 @@ class Cli(cmd.Cmd):
 
             students = pickle_get_students()
             user_instance.remove_file(file_instance.file_id)
-            students["objects_dict"][user_instance.user_id] = user_instance
+            students["objects_dict"][user_id] = user_instance
         except FileNotFoundException:
-            print(f"Le fichier {pathname} n'existe pas")
+            print(f"Le fichier {pathname} n'existe pas\n")
         except FileNotOwnedException:
-            print(f"Le fichier {pathname} ne vous appartient pas")
+            print(f"Le fichier {pathname} ne vous appartient pas\n")
         except Exception as e:
-            print(f"Une erreur est survenue : {e}\nVeuillez reessayer")
+            print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
         else:
             if os.path.isfile(pathname):
                 os.remove(pathname)
                 print("Le fichier n'existe plus sur le disque dur")
             else:
                 print("Le fichier n'existe pas sur le disque dur")
-            print("Le fichier a correctement ete supprime du programme")
+            print("Le fichier a correctement ete supprime du programme\n")
             pickle_save(students, files=files, courses=courses)
 
     @staticmethod
@@ -97,14 +101,204 @@ class Cli(cmd.Cmd):
             files["name_id_dict"][file_instance.pathname] = file_instance.file_id
             del files["name_id_dict"][current_pathname]
         except FileNotFoundException:
-            print(f"Le fichier {current_pathname} n'existe pas")
+            print(f"Le fichier {current_pathname} n'existe pas\n")
         except FileNotOwnedException:
-            print(f"Le fichier {current_pathname} ne vous appartient pas")
-        # except Exception as e:
-            # print(f"Une erreur est survenue : {e}\nVeuillez reessayer")
+            print(f"Le fichier {current_pathname} ne vous appartient pas\n")
+        except Exception as e:
+            print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
         else:
-            print(f"Le fichier {current_pathname} a ete déplacé vers {new_pathname}")
+            print(f"Le fichier {current_pathname} a ete déplacé vers {new_pathname}\n")
             pickle_save(files=files)
+
+    @staticmethod
+    def do_sort():
+        pass
+
+    @staticmethod
+    def do_open(pathname):
+        pass
+
+    @staticmethod
+    def do_touch(line):
+        """
+        touch [PATHNAME] [OPTION]...
+
+        OPTIONS :
+                --course [COURSENAME]
+                    permet d'assigner le fichier a un cours
+                --tag [TAG]...
+                    permet d'assigner un ou plusieurs tags au fichier
+                --script
+                    permet de signifier que le contenu du fichier est un script
+
+
+        Methode permettant de creer un fichier vide a la fois pour le programme et sur la memoire locale ou distante
+
+        PRE :   - pathname est de type str et correspond au pathname du fichier a creer
+                - (--course) coursename est de type str et correspond au nom du cours auquel on veut associer le fichier
+                - (--tag) chaque tag est de type str
+        POST : le fichier est cree dans le programme et sur la memoire locale ou distante ssi pathname ne correspond
+            au pathname d'aucun fichier existant sur la memoire locale ou distante ou a un fichier connu du programme
+            si une option est specifiee :
+                --course : l'identifiant unique du cours precise est inscrit dans l'attribut prive course du fichier et
+                        l'identifiant unique du fichier est inscrit dans la liste files du cours specifie
+                        Si cette option n'est pas specifie, la valeur None est enregistree a la place
+                --tag : chaque tag specifie est inscrit comme un element de la liste tags du fichier
+                        Si cette option n'est pas specifiee, la valeur None est enregistree a la place
+                --script : la valeur de l'attribut prive script du fichier est passe a False
+                        Si cette option n'est pas specifiee, la valeur False est enregistree a la place
+
+        :param line: str
+            La ligne d'arguments introduite a la suite de l'appel de la fonction do_touch dans l'interface
+                en ligne de commande cree par le module cmd
+        """
+
+        tag_index = ["--tag " in line, "--tag "]
+        course_index = ["--course " in line, "--course "]
+        script_index = ["--script " in line, "--script "]
+        options = [tag_index, course_index, script_index]
+        specified_options_dict = specified_options(line, options)
+
+        try:
+            pathname = line.split(" --")[0]
+        except AttributeError:
+            pathname = line
+        except Exception as e:
+            print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
+            return
+
+        tags = None
+        script = False
+        course_id = None
+
+        if "--tag " in specified_options_dict:
+            tags = list(specified_options_dict["--tag "].split())
+        if "--script " in specified_options_dict:
+            script = specified_options_dict["--script "]
+        if "--course " in specified_options_dict:
+            course_name = specified_options_dict["--course "]
+            courses = pickle_get_courses()
+            course_id = courses["name_id_dict "][course_name]
+
+        try:
+            files = pickle_get_files()
+            file_instance = File(user_id, pathname, course_id, script, tags)
+            files["objects_dict"][file_instance.file_id] = file_instance
+            files["name_id_dict"][file_instance.pathname] = file_instance.file_id
+
+            students = pickle_get_students()
+            user_instance.add_file(file_instance.file_id)
+            students["objects_dict"][user_id] = user_instance
+
+            courses = pickle_get_courses()
+
+            if course_id is not None:
+                course_instance = courses["objects_dict"][course_id]
+                course_instance.add_file(file_instance.file_id)
+                courses["object_dict"][course_id] = course_instance
+        except AlreadyInListException:
+            print(f"Le fichier {file_instance.pathname} existe deja::\n")
+        except Exception as e:
+            print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
+        else:
+            with open("pickle_saves/students.pkl", 'wb') as students_file:
+                pickle.dump(students, students_file)
+            with open("pickle_saves/files.pkl", 'wb') as files_file:
+                pickle.dump(files, files_file)
+            with open("pickle_saves/courses.pkl", 'wb') as courses_file:
+                pickle.dump(courses, courses_file)
+            print(f"Le fichier {file_instance.pathname} est maintenant connu du programme\n")
+
+    @staticmethod
+    def do_cat(pathname):
+        """
+        cat [PATHNAME]
+
+        Methode permettant d'afficher en console le contenu d'un fichier
+
+        PRE : pathname est de type str et correspond au pathname d'un fichier existant et connu du programme
+        POST : le contenu du fichier est affiche en console ssi pathname correspond au pathname d'un fichier
+            existant sur la memoire locale ou distante et connu du programme
+
+        :param pathname: str
+            Correspond au pathname sur la memoire locale ou distante du fichier dont on desire afficher
+                le contenu en console
+        """
+
+        pass
+
+    @staticmethod
+    def do_write(line):
+        """
+        write [PATHNAME] [CONTENT]
+
+        Methode permettant d'ecrire du contenu dans un fichier
+
+        PRE : line est de type str et correspond a deux sequences de caracteres separees par un espace
+                    - la premiere sequence (pathname) correspond au pathname
+                        d'un fichier existant et connu du programme
+                    - la deuxieme sequence (content) correspond au contenu
+                        que l'on desire ecrire sur le fichier
+        POST : content est ecrit sur le fichier ssi pathname correspond au pathname d'un fichier existant sur la
+            memoire locale ou distante et connu du programme
+
+        :param line: str
+            La ligne d'arguments introduite a la suite de l'appel de la fonction do_write dans l'interface
+                en ligne de commande cree par le module cmd
+        """
+
+        pass
+
+    @staticmethod
+    def do_append(line):
+        """
+        append [PATHNAME] [CONTENT]
+
+        Methode permettant d'ecrire du contenu a la fin d'un fichier
+
+        PRE : line est de type str et correspond a deux sequences de caracteres separees par un espace
+                    - la premiere sequence (pathname) correspond au pathname
+                        d'un fichier existant et connu du programme
+                    - la deuxieme sequence (content) correspond au contenu
+                        que l'on desire ecrire a la fin du fichier
+        POST : content est ecrit dans le fichier ssi pathname correspond au pathname d'un fichier existant sur la
+            memoire locale ou distante et connu du programme
+
+        :param line: str
+            La ligne d'arguments introduite a la suite de l'appel de la fonction do_write dans l'interface
+                en ligne de commande cree par le module cmd
+        """
+
+        pass
+
+
+def specified_options(line, options):
+    """Methode permettant d'isoler les options d'une ligne d'argument du module cmd
+
+    PRE :   - line est de type str
+            - options est une liste comportant deux elements :
+                    * le premier annonce si l'option se trouve dans line et est de type bool
+                    * le deuxieme est la sequence de caractere marquant l'option dans line
+
+    :param line: str
+        La ligne d'arguments introduite a la suite de l'appel de la fonction do_write dans l'interface
+            en ligne de commande cree par le module cmd
+    :param options: list
+        liste des options possiblement presente dans line
+    :return specified_options_dict: dict
+        dictionnaire {option : argument}
+    """
+
+    specified_options_dict = {}
+    for i in options:
+        if i[0]:
+            try:
+                found = re.search(i[1] + "(.+?)" + " --", line).group(1)
+                specified_options_dict[i[1]] = found
+            except AttributeError:
+                found = line.split(i[1])[1]
+                specified_options_dict[i[1]] = found
+    return specified_options_dict
 
 
 def if_proprietor_get_file(pathname):
@@ -208,19 +402,19 @@ def pickle_get_courses():
 if __name__ == "__main__":
     username = input("Veuillez entrer votre nom d'utilisateur :")
 
-    all_students = pickle_get_students()
-    all_admins = pickle_get_admins()
-    if username in all_students["name_id_dict"]:
+    students = pickle_get_students()
+    admins = pickle_get_admins()
+    if username in students["name_id_dict"]:
         try:
-            pwd = input("Veuillez entrer votre mot de passe :")
-            user_id = all_students["name_id_dict"][username]
-            user_instance = all_students["objects_dict"][user_id]
+            pwd = getpass.getpass("Veuillez entrer votre mot de passe :")
+            user_id = students["name_id_dict"][username]
+            user_instance = students["objects_dict"][user_id]
             user_instance.verify_pwd(pwd)
         except UnknownPasswordException:
             print("Le mot de passe est errone")
         else:
             Cli().cmdloop()
-    elif username in all_admins["name_id_dict"]:
+    elif username in admins["name_id_dict"]:
         pass
     else:
         print("Le nom d'utilisateur n'existe pas")
