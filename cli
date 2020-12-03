@@ -6,8 +6,101 @@ import pickle
 import re
 
 from classes.exceptions import FileNotFoundException, FileNotOwnedException, UnknownPasswordException, \
-    AlreadyInListException
+    AlreadyInListException, ObjectAlreadyExistantException
 from classes.file import File
+from classes.user import Student, Admin
+
+
+class AdminCli(cmd.Cmd):
+    """Cette classe permet de creer une interface en ligne de commande admin personalisee a l'aide du module cmd"""
+    intro = "Bienvenue dans le shell CLI admin du projet python 2TL1_09 :\n\nIntroduire help ou ? pour lister les " \
+            "commandes disponibles\n\n"
+    prompt = "(CLI) ##"
+
+    @staticmethod
+    def do_reset(line):
+        dax = Student("dax", "Nicolas Daxhelet", "user123")
+        daxxra = Admin("daxxra", "Nicolas Daxhelet", "user111")
+
+        greg = Student("greg", "Gregoire Delannoit", "user123")
+        the_gregouze = Admin("TheGregouze", "Gregoire Delannoit", "user111")
+
+        with open("pickle_saves/students.pkl", 'wb') as students_file:
+            all_students = {"name_id_dict": {}, "objects_dict": {}}
+
+            all_students["objects_dict"][dax.user_id] = dax
+            all_students["name_id_dict"][dax.username] = dax.user_id
+
+            all_students["objects_dict"][greg.user_id] = greg
+            all_students["name_id_dict"][greg.username] = greg.user_id
+
+            pickle.dump(all_students, students_file)
+
+        with open("pickle_saves/admins.pkl", 'wb') as admins_file:
+            all_admins = {"name_id_dict": {}, "objects_dict": {}}
+
+            all_admins["objects_dict"][daxxra.user_id] = daxxra
+            all_admins["name_id_dict"][daxxra.username] = daxxra.user_id
+
+            all_admins["objects_dict"][the_gregouze.user_id] = the_gregouze
+            all_admins["name_id_dict"][the_gregouze.username] = the_gregouze.user_id
+            pickle.dump(admins, admins_file)
+
+        with open("pickle_saves/files.pkl", 'wb') as files_file:
+            files = {"name_id_dict": {}, "objects_dict": {}}
+            pickle.dump(files, files_file)
+        with open("pickle_saves/courses.pkl", 'wb') as courses_file:
+            courses = {"name_id_dict": {}, "objects_dict": {}}
+            pickle.dump(courses, courses_file)
+
+    @staticmethod
+    def do_new(line):
+        """
+        new [OPTION=student, admin] [USERNAME] [FULLNAME]
+        new [OPTION=course] [NAME] [TEACHER]...
+
+        Methode permettant de creer une nouvelle instance d'une classe. La classe en question est specifiee par l'option
+
+        PRE :   - option est de type str et vaut "student" ou "admin" :
+                        * username est de type str et correspond au nom d'utilisateur du futur utilisateur
+                        * fullname est de type str et correspond au nom complet du futur utilisateur
+                - option est de type str et vaut "course" :
+                        * teacher est de type str et correspond a la liste des noms des professeurs separes par des
+                            underscores
+        POST : cree l'instance de la classe specifie ssi elle n'existe pas deja
+
+        :param line: str
+            La ligne d'arguments introduite a la suite de l'appel de la fonction do_mv dans l'interface
+                en ligne de commande cree par le module cmd
+        """
+
+        pass
+
+    @staticmethod
+    def do_del(line):
+        """
+        del [OPTION=student, admin] [USERNAME]
+        del [OPTION=course] [NAME]
+
+        Methode permettant de creer une nouvelle instance d'une classe. La classe en question est specifiee par l'option
+
+        PRE :   - option est de type str et vaut "student" ou "admin" :
+                        * username est de type str et correspond au nom d'utilisateur du futur utilisateur
+                        * fullname est de type str et correspond au nom complet du futur utilisateur
+                - option est de type str et vaut "course" :
+                        * teacher est de type str et correspond a la liste des noms des professeurs separes par des
+                            underscores
+        POST : cree l'instance de la classe specifie ssi elle n'existe pas deja
+                - si l'instance est un utilisateur, toutes les instances des fichiers qu'il possede sont supprimees
+                    et il est desinscrit de tous ses cours
+                - si l'instance est un cours, toutes les instances des fichiers qui lui sont associes voient leur
+                    attribut prive course_id devenir None et tous les etudiants inscrits a ce cours en sont desinscrits
+
+        :param line: str
+            La ligne d'arguments introduite a la suite de l'appel de la fonction do_mv dans l'interface
+                en ligne de commande cree par le module cmd
+        """
+        pass
 
 
 class Cli(cmd.Cmd):
@@ -47,9 +140,9 @@ class Cli(cmd.Cmd):
                 course_instance.remove_file(file_instance.file_id)
                 courses["objects_dict"][course_instance.course_id] = course_instance
 
-            students = pickle_get_students()
+            all_students = pickle_get_students()
             user_instance.remove_file(file_instance.file_id)
-            students["objects_dict"][user_id] = user_instance
+            all_students["objects_dict"][user_id] = user_instance
         except FileNotFoundException:
             print(f"Le fichier {pathname} n'existe pas\n")
         except FileNotOwnedException:
@@ -63,7 +156,7 @@ class Cli(cmd.Cmd):
             else:
                 print("Le fichier n'existe pas sur le disque dur")
             print("Le fichier a correctement ete supprime du programme\n")
-            pickle_save(students, files=files, courses=courses)
+            pickle_save(all_students, files=files, courses=courses)
 
     @staticmethod
     def do_mv(line):
@@ -183,26 +276,31 @@ class Cli(cmd.Cmd):
         try:
             files = pickle_get_files()
             file_instance = File(user_id, pathname, course_id, script, tags)
-            files["objects_dict"][file_instance.file_id] = file_instance
-            files["name_id_dict"][file_instance.pathname] = file_instance.file_id
+            if file_instance.file_id not in files["objects_dict"]:
+                files["objects_dict"][file_instance.file_id] = file_instance
+                files["name_id_dict"][file_instance.pathname] = file_instance.file_id
+            else:
+                raise ObjectAlreadyExistantException
 
-            students = pickle_get_students()
+            all_students = pickle_get_students()
             user_instance.add_file(file_instance.file_id)
-            students["objects_dict"][user_id] = user_instance
+            all_students["objects_dict"][user_id] = user_instance
 
             courses = pickle_get_courses()
 
             if course_id is not None:
                 course_instance = courses["objects_dict"][course_id]
                 course_instance.add_file(file_instance.file_id)
-                courses["object_dict"][course_id] = course_instance
+                courses["objects_dict"][course_id] = course_instance
+        except ObjectAlreadyExistantException:
+            print(f"Le fichier {pathname} est deja connu du programme:\n")
         except AlreadyInListException:
-            print(f"Le fichier {file_instance.pathname} existe deja::\n")
+            print(f"Le fichier {pathname} existe deja:\n")
         except Exception as e:
             print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
         else:
             with open("pickle_saves/students.pkl", 'wb') as students_file:
-                pickle.dump(students, students_file)
+                pickle.dump(all_students, students_file)
             with open("pickle_saves/files.pkl", 'wb') as files_file:
                 pickle.dump(files, files_file)
             with open("pickle_saves/courses.pkl", 'wb') as courses_file:
@@ -225,7 +323,19 @@ class Cli(cmd.Cmd):
                 le contenu en console
         """
 
-        pass
+        try:
+            file_instance = if_proprietor_get_file(pathname)
+            file_instance.read_file()
+        except FileExistsError:
+            print(f"Le fichier {pathname} n'existe pas")
+        except IOError:
+            print('Erreur IO.')
+        except FileNotFoundException:
+            print(f"Le fichier {pathname} n'existe pas\n")
+        except FileNotOwnedException:
+            print(f"Le fichier {pathname} ne vous appartient pas\n")
+        except Exception as e:
+            print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
 
     @staticmethod
     def do_write(line):
@@ -247,7 +357,23 @@ class Cli(cmd.Cmd):
                 en ligne de commande cree par le module cmd
         """
 
-        pass
+        pathname = line.split()[0]
+        content = line.replace(pathname + " ", "")
+        try:
+            file_instance = if_proprietor_get_file(pathname)
+            file_instance.write_file(content)
+        except FileExistsError:
+            print(f"Le fichier {pathname} n'existe pas")
+        except IOError:
+            print('Erreur IO.')
+        except FileNotFoundException:
+            print(f"Le fichier {pathname} n'existe pas\n")
+        except FileNotOwnedException:
+            print(f"Le fichier {pathname} ne vous appartient pas\n")
+        except Exception as e:
+            print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
+        else:
+            print(f"Le contenu a ete correctement ecrit sur {pathname}")
 
     @staticmethod
     def do_append(line):
@@ -269,7 +395,23 @@ class Cli(cmd.Cmd):
                 en ligne de commande cree par le module cmd
         """
 
-        pass
+        pathname = line.split()[0]
+        content = line.replace(pathname + " ", "")
+        try:
+            file_instance = if_proprietor_get_file(pathname)
+            file_instance.append_file(content)
+        except FileExistsError:
+            print(f"Le fichier {pathname} n'existe pas")
+        except IOError:
+            print('Erreur IO.')
+        except FileNotFoundException:
+            print(f"Le fichier {pathname} n'existe pas\n")
+        except FileNotOwnedException:
+            print(f"Le fichier {pathname} ne vous appartient pas\n")
+        except Exception as e:
+            print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
+        else:
+            print(f"Le contenu a ete correctement ecrit sur {pathname}")
 
 
 def specified_options(line, options):
@@ -328,15 +470,15 @@ def if_proprietor_get_file(pathname):
         raise FileNotFoundException
 
 
-def pickle_save(students=None, admins=None, files=None, courses=None):
+def pickle_save(all_students=None, all_admins=None, files=None, courses=None):
     """Methode statique permettant d'enregistrer les modifications sur les classes persistantes du programme
             Seules les classes specfiees dans les parametres sont sauvegardees
     """
 
-    if students is not None:
+    if all_students is not None:
         with open("pickle_saves/students.pkl", 'wb') as students_file:
             pickle.dump(students, students_file)
-    if admins is not None:
+    if all_admins is not None:
         with open("pickle_saves/admins.pkl", 'wb') as admins_file:
             pickle.dump(admins, admins_file)
     if files is not None:
@@ -355,9 +497,9 @@ def pickle_get_students():
     """
 
     with open("pickle_saves/students.pkl", 'rb') as students_file:
-        students = pickle.load(students_file)
+        all_students = pickle.load(students_file)
 
-    return students
+    return all_students
 
 
 def pickle_get_admins():
@@ -368,9 +510,9 @@ def pickle_get_admins():
     """
 
     with open("pickle_saves/admins.pkl", 'rb') as admins_file:
-        admins = pickle.load(admins_file)
+        all_admins = pickle.load(admins_file)
 
-    return admins
+    return all_admins
 
 
 def pickle_get_files():
@@ -415,6 +557,14 @@ if __name__ == "__main__":
         else:
             Cli().cmdloop()
     elif username in admins["name_id_dict"]:
-        pass
+        try:
+            pwd = getpass.getpass("Veuillez entrer votre mot de passe :")
+            user_id = admins["name_id_dict"][username]
+            user_instance = admins["objects_dict"][user_id]
+            user_instance.verify_pwd(pwd)
+        except UnknownPasswordException:
+            print("Le mot de passe est errone")
+        else:
+            AdminCli().cmdloop()
     else:
         print("Le nom d'utilisateur n'existe pas")

@@ -175,25 +175,24 @@ class File:
         else:
             raise NotInListException
 
+    def open_file(self):
+        """
+
+        :return:
+        """
+
+        pass
+
     def read_file(self):
         """Methode permettant de lire le contenu d'un fichier sur la memoire locale ou distante
 
         PRE : le fichier existe
         POST : ouvre le fichier ssi il existe
-
-        :return: A VENIR
-            ACTUELLEMENT, LA METHODE NE RETOURNE RIEN MAIS IMPRIME LE CONTENU EN CONSOLE
-            EN DEFINITIVE, LA METHODE RETOURNERA LE CONTENU DU FICHIER POUR QU'IL SOIT AFFICHE
-            DANS L'EDITEUR DE TEXTE
         """
-        try:
-            with open(self.__pathname, 'r') as file:
-                for line in file:
-                    print(line.rstrip())
-        except FileNotFoundError:
-            print(f'Le fichier {self.__pathname} est introuvable.')
-        except IOError:
-            print('Erreur IO.')
+
+        with open(self.__pathname, 'r') as file:
+            for line in file:
+                print(line.rstrip())
 
     def write_file(self, content_to_write):
         """Methode permettant d'ecrire du contenu dans un fichier sur la memoire locale ou distante
@@ -205,13 +204,9 @@ class File:
         :param content_to_write: str
             Le contenu a ecrire dans le fichier
         """
-        try:
-            with open(self.__pathname, 'w') as file:
-                file.write(content_to_write)
-        except FileExistsError:
-            print(f"Le fichier {self.__pathname} n'existe pas")
-        except IOError:
-            print('Erreur IO.')
+
+        with open(self.__pathname, 'w') as file:
+            file.write(content_to_write)
 
     def append_file(self, content_to_append):
         """Methode permettant d'ecrire du contenu dans un fichier sur la memoire locale ou distante,
@@ -224,10 +219,6 @@ class File:
         :param content_to_append: str
             Le contenu a ecrire dans le fichier
         """
-        try:
-            with open(self.__pathname, 'a') as file:
-                file.write(content_to_append)
-        except FileExistsError:
-            print("Le fichier n'existe pas")
-        except IOError:
-            print('Erreur IO.')
+
+        with open(self.__pathname, 'a') as file:
+            file.write(content_to_append)
