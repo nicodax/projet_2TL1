@@ -12,15 +12,14 @@ class File:
         file_id         Identifiant unique associe au fichier
         user_id         Identifiant unique associe a l'utilisateur etudiant proprietaire du fichier
         course_id       L'identifiant unique du cours auquel le fichier fait reference
-        tags             Liste d'etiquettes associees au fichier
+        tags            Liste d'etiquettes associees au fichier
         pathname        Le chemin d'acces vers le fichier sur la memoire locale ou distante
 
     Variables de classe:
         file_id_counter     Compteur necessaire a la creation d'identifiants uniques
     """
-    file_id_counter = 0
 
-    def __init__(self, user_id, pathname, course_id, script, tags):
+    def __init__(self, user_id, pathname, course_id, file_id, script, tags):
         """Methode permettant d'initialiser chaque instance de la classe
         Si le fichier n'existe pas deja, il est cree a l'emplacement specifie
 
@@ -45,8 +44,7 @@ class File:
         if tags is None:
             tags = []
         self.__script = script
-        self.__file_id = File.file_id_counter
-        File.file_id_counter += 1
+        self.__file_id = file_id
         self.__user_id = user_id
         self.__course_id = course_id
         self.__tag = tags
@@ -128,6 +126,18 @@ class File:
         """
 
         self.__pathname = new_pathname
+
+    @course_id.setter
+    def course_id(self, new_course_id):
+        """Methode permettant de modifier la valeur de la variable privee course_id
+
+        PRE : new_course_id est de type int
+
+        :param new_course_id: int
+            Nouvelle valeur de course_id
+        """
+
+        self.__course_id = new_course_id
 
     def is_in_tag(self, tag):
         """Methode permettant de definir si un etiquette est attribuee au fichier

@@ -26,3 +26,19 @@ class FileNotFoundException(Exception):
 
 class FileNotOwnedException(Exception):
     pass
+
+
+class CommandHasNoArgumentsException(Exception):
+    pass
+
+
+class NumberOfArgumentsException(Exception):
+    pass
+
+
+class PasswordNotEqualException(Exception):
+    pass
+
+
+class CannotDeleteUserException(Exception):
+    pass

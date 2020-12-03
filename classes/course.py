@@ -2,7 +2,7 @@
 from classes.exceptions import AlreadyInListException, NotInListException
 
 
-class Courses:
+class Course:
     """Un cours auquel des utilisateurs etudiants sont inscrits.
     Il existe une relation d'association bidirectionnelle entre les classes Courses et Students,
     ainsi qu'entre les classes Courses et Files
@@ -11,15 +11,15 @@ class Courses:
         name            L'intitule permettant d'identifier le cours
         teachers        Liste les noms des professeurs titulaires du cours
         files           Liste les identifiants uniques des fichiers se rapportant au cours
+        students        Liste les noms des etudiants inscrits au cours
         course_id       Identifiant unique associe au cours
         description     Description du cours
 
     Variables de classe:
         course_id_counter     Compteur necessaire a la creation d'identifiants uniques
     """
-    course_id_counter = 0
 
-    def __init__(self, name, teachers):
+    def __init__(self, name, teachers, course_id):
         """Methode permettant d'initialiser chaque instance de la classe
 
         PRE :   - name est de type str
@@ -34,9 +34,19 @@ class Courses:
         self.__name = name
         self.__teachers = teachers
         self.__files = []
-        self.__course_id = Courses.course_id_counter
-        Courses.course_id_counter += 1
+        self.__course_id = course_id
         self.__description = ""
+        self.__students = []
+
+    @property
+    def students(self):
+        """Methode permettant d'acceder a la variable privee students
+
+        :return self.__students : list
+            Liste des etudiants inscrits au cours
+        """
+
+        return self.__students
 
     @property
     def name(self):
@@ -116,6 +126,20 @@ class Courses:
 
         return file_id in self.__files
 
+    def is_in_students(self, user_id):
+        """Methode permettant de definir si un etudiant est inscrit au cours
+
+        PRE : user_id est de type int
+        POST : retourne True si l'etudiant est deja repertoriee dans la liste students
+
+        :param user_id: int
+            L'identifiant unique de l'etudiant pour lequel on cherche a determiner si il est deja inscrit au cours
+        :return: bool
+            Indique si l'identifiant est deja repertorie dans la liste
+        """
+
+        return user_id in self.__students
+
     def add_teacher(self, name):
         """Methode permettant d'ajouter le nom d'un professeur a la liste des
         professeurs titulaires du cours
@@ -153,8 +177,6 @@ class Courses:
     def add_file(self, file_id):
         """Methode permettant d'ajouter l'identifiant unique d'un fichier a la liste
         des fichiers associes au cours.
-        Cette méthode est apellee automatiquement par la classe Files lors de l'initialisation :
-        elle ne doit donc JAMAIS etre apellee directement
 
         PRE : file_id est de type int et n'est pas deja repertorie dans la liste files
         POST : ajoute file_id dans la liste ssi il n'y etait pas deja repertorie
@@ -172,8 +194,6 @@ class Courses:
     def remove_file(self, file_id):
         """Methode permettant de supprimer l'identifiant unique d'un fichier a la liste
         des fichiers associes au cours.
-        Cette méthode est apellee automatiquement par la classe Students lors de la suppression d'un fichier :
-        elle ne doit donc JAMAIS etre apellee directement
 
         PRE : file_id est de type int et est deja repertorie dans la liste files
         POST : retire file_id de la liste ssi il y etait deja repertorie
@@ -185,5 +205,39 @@ class Courses:
 
         if self.is_in_files(file_id):
             self.__files.remove(file_id)
+        else:
+            raise NotInListException
+
+    def add_student(self, user_id):
+        """Methode permettant d'ajouter l'identifiant unique d'un etudiant a la liste
+        des etudiants inscrits au cours.
+
+        PRE : user_id est de type int et n'est pas deja repertorie dans la liste students
+        POST : ajoute user_id dans la liste ssi il n'y etait pas deja repertorie
+        RAISES : AlreadyInListException si user_id est deja repertorie dans la liste
+
+        :param user_id: int
+            L'identifiant unique de l'etudiant inscrit au cours
+        """
+
+        if not self.is_in_students(user_id):
+            self.__students.append(user_id)
+        else:
+            raise AlreadyInListException
+
+    def remove_student(self, user_id):
+        """Methode permettant de supprimer l'identifiant unique d'un etudiant de la liste
+        des etudiants inscrits au cours.
+
+        PRE : user_id est de type int et est deja repertorie dans la liste files
+        POST : retire user_id de la liste ssi il y etait deja repertorie
+        RAISES : NotInListException si user_id n'est pas repertorie dans la liste
+
+        :param user_id: int
+            L'identifiant unique de l'etudiant inscrit au cours
+        """
+
+        if self.is_in_students(user_id):
+            self.__students.remove(user_id)
         else:
             raise NotInListException

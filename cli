@@ -4,9 +4,13 @@ import getpass
 import os
 import pickle
 import re
+import subprocess
 
+from classes.course import Course
 from classes.exceptions import FileNotFoundException, FileNotOwnedException, UnknownPasswordException, \
-    AlreadyInListException, ObjectAlreadyExistantException
+    AlreadyInListException, ObjectAlreadyExistantException, CommandHasNoArgumentsException, \
+    NumberOfArgumentsException, PasswordNotEqualException, CannotDeleteUserException, UnknownObjectNameException, \
+    NotInListException
 from classes.file import File
 from classes.user import Student, Admin
 
@@ -15,43 +19,138 @@ class AdminCli(cmd.Cmd):
     """Cette classe permet de creer une interface en ligne de commande admin personalisee a l'aide du module cmd"""
     intro = "Bienvenue dans le shell CLI admin du projet python 2TL1_09 :\n\nIntroduire help ou ? pour lister les " \
             "commandes disponibles\n\n"
-    prompt = "(CLI) ##"
+
+    @staticmethod
+    def do_add_teacher(line):
+        """
+        add_teacher [COURSE_NAME] [TEACHER]
+
+        PRE : line est de type str et correspond a deux sequences de caracteres separees par un espace
+                    - la premiere sequence (course_name) correspond a l'intitule du cours concerne
+                    - la deuxieme sequence (teacher) correspond au nom complet du professeur que l'on
+                        desire ajouter comme titulaire au cours
+        POST : le nom du professeur est indique comme titulaire du cours ssi course_name correspond au nom d'un cours
+            connu du programme
+
+        :param line: str
+            La ligne d'arguments introduite a la suite de l'appel de la fonction do_mv dans l'interface
+                en ligne de commande cree par le module cmd
+        """
+
+        course_name = line.split()[0]
+        teacher = line.split()[1:]
+        all_courses = pickle_get_courses()
+        try:
+            course_instance_id = all_courses["name_id_dict"][course_name]
+            course_instance = all_courses["objects_dict"][course_instance_id]
+            course_instance.add_teacher(teacher)
+        except AlreadyInListException:
+            print(f"Le professeur {teacher} est deja titulaire du cours {course_name}")
+        except Exception as e:
+            print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
+        else:
+            pickle_save(courses=all_courses)
+            print(f"Le proffesseur {teacher} est maintenant titulaire du cours {course_name}")
+
+
+    @staticmethod
+    def do_remove_teacher(line):
+        """
+        remove_teacher [COURSE_NAME] [TEACHER]
+
+        PRE : line est de type str et correspond a deux sequences de caracteres separees par un espace
+                    - la premiere sequence (course_name) correspond a l'intitule du cours concerne
+                    - la deuxieme sequence (teacher) correspond au nom complet du professeur que l'on
+                        desire retirer de la liste des titulaires
+        POST : le nom du professeur est retire de la liste des titulaires du cours ssi course_name correspond
+            au nom d'un cours connu du programme
+
+        :param line: str
+            La ligne d'arguments introduite a la suite de l'appel de la fonction do_mv dans l'interface
+                en ligne de commande cree par le module cmd
+        """
+
+        course_name = line.split()[0]
+        teacher = line.split()[1:]
+        all_courses = pickle_get_courses()
+        try:
+            course_instance_id = all_courses["name_id_dict"][course_name]
+            course_instance = all_courses["objects_dict"][course_instance_id]
+            course_instance.remove_teacher(teacher)
+        except NotInListException:
+            print(f"Le professeur {teacher} n'est pas titulaire du cours {course_name}")
+        except Exception as e:
+            print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
+        else:
+            pickle_save(courses=all_courses)
+            print(f"Le proffesseur {teacher} n'est maintenant plus titulaire du cours {course_name}")
 
     @staticmethod
     def do_reset(line):
-        dax = Student("dax", "Nicolas Daxhelet", "user123")
-        daxxra = Admin("daxxra", "Nicolas Daxhelet", "user111")
+        """
+        reset
 
-        greg = Student("greg", "Gregoire Delannoit", "user123")
-        the_gregouze = Admin("TheGregouze", "Gregoire Delannoit", "user111")
+        PRE : line est une chaine de caractere vide
+        RAISES : CommandHasNoArgumentsException si line n'est pas une chaine de caractere vide
 
-        with open("pickle_saves/students.pkl", 'wb') as students_file:
-            all_students = {"name_id_dict": {}, "objects_dict": {}}
+        Methode permettant de reinitialiser la memoire du programme (elle ne contient plus que les root_users)
 
-            all_students["objects_dict"][dax.user_id] = dax
-            all_students["name_id_dict"][dax.username] = dax.user_id
+        :param line: str
+            chaine vide car la fonction reset ne demande pas de parametres
+        """
+        try:
+            if line != "":
+                raise CommandHasNoArgumentsException
+        except CommandHasNoArgumentsException:
+            print("La fonction n'accepte aucun argument\nVeuillez reesayer :\n")
+        else:
+            with open("pickle_saves/id_dict.pkl", 'wb') as id_dict_file:
+                id_dict = {"user": 0, "file": 0, "course": 0}
+                pickle.dump(id_dict, id_dict_file)
 
-            all_students["objects_dict"][greg.user_id] = greg
-            all_students["name_id_dict"][greg.username] = greg.user_id
+            id_dict = pickle_get_ids()
+            user_id_counter = id_dict["user"]
 
-            pickle.dump(all_students, students_file)
+            dax = Student("dax", "Nicolas Daxhelet", "user123", user_id_counter)
+            user_id_counter += 1
+            daxxra = Admin("daxxra", "Nicolas Daxhelet", "user111", user_id_counter)
+            user_id_counter += 1
 
-        with open("pickle_saves/admins.pkl", 'wb') as admins_file:
-            all_admins = {"name_id_dict": {}, "objects_dict": {}}
+            greg = Student("greg", "Gregoire Delannoit", "user123", user_id_counter)
+            user_id_counter += 1
+            the_gregouze = Admin("TheGregouze", "Gregoire Delannoit", "user111", user_id_counter)
+            user_id_counter += 1
 
-            all_admins["objects_dict"][daxxra.user_id] = daxxra
-            all_admins["name_id_dict"][daxxra.username] = daxxra.user_id
+            id_dict["user"] = user_id_counter
+            pickle_save_ids(id_dict)
 
-            all_admins["objects_dict"][the_gregouze.user_id] = the_gregouze
-            all_admins["name_id_dict"][the_gregouze.username] = the_gregouze.user_id
-            pickle.dump(admins, admins_file)
+            with open("pickle_saves/students.pkl", 'wb') as students_file:
+                all_students = {"name_id_dict": {}, "objects_dict": {}}
 
-        with open("pickle_saves/files.pkl", 'wb') as files_file:
-            files = {"name_id_dict": {}, "objects_dict": {}}
-            pickle.dump(files, files_file)
-        with open("pickle_saves/courses.pkl", 'wb') as courses_file:
-            courses = {"name_id_dict": {}, "objects_dict": {}}
-            pickle.dump(courses, courses_file)
+                all_students["objects_dict"][dax.user_id] = dax
+                all_students["name_id_dict"][dax.username] = dax.user_id
+
+                all_students["objects_dict"][greg.user_id] = greg
+                all_students["name_id_dict"][greg.username] = greg.user_id
+
+                pickle.dump(all_students, students_file)
+
+            with open("pickle_saves/admins.pkl", 'wb') as admins_file:
+                all_admins = {"name_id_dict": {}, "objects_dict": {}}
+
+                all_admins["objects_dict"][daxxra.user_id] = daxxra
+                all_admins["name_id_dict"][daxxra.username] = daxxra.user_id
+
+                all_admins["objects_dict"][the_gregouze.user_id] = the_gregouze
+                all_admins["name_id_dict"][the_gregouze.username] = the_gregouze.user_id
+                pickle.dump(admins, admins_file)
+
+            with open("pickle_saves/files.pkl", 'wb') as files_file:
+                files = {"name_id_dict": {}, "objects_dict": {}}
+                pickle.dump(files, files_file)
+            with open("pickle_saves/courses.pkl", 'wb') as courses_file:
+                courses = {"name_id_dict": {}, "objects_dict": {}}
+                pickle.dump(courses, courses_file)
 
     @staticmethod
     def do_new(line):
@@ -64,17 +163,99 @@ class AdminCli(cmd.Cmd):
         PRE :   - option est de type str et vaut "student" ou "admin" :
                         * username est de type str et correspond au nom d'utilisateur du futur utilisateur
                         * fullname est de type str et correspond au nom complet du futur utilisateur
+                        * il sera demande a l'utilisateur d'entrer deux fois un meme mot de passe de type str
+                            avant creation de l'instance
                 - option est de type str et vaut "course" :
                         * teacher est de type str et correspond a la liste des noms des professeurs separes par des
                             underscores
         POST : cree l'instance de la classe specifie ssi elle n'existe pas deja
+            si option correspond a un utilisateur, le mot de passe doit etre identique les deux fois
+        RAISES :    - PasswordNotEqualException si les deux mots de passe entre ne correspondent pas
+                    - ObjectAlreadyExistantException si le nom de l'objet existe deja
 
         :param line: str
             La ligne d'arguments introduite a la suite de l'appel de la fonction do_mv dans l'interface
                 en ligne de commande cree par le module cmd
         """
 
-        pass
+        all_students = pickle_get_students()
+        all_admins = pickle_get_admins()
+        all_courses = pickle_get_courses()
+        if (("student" in line) ^ ("admin" in line)) and not ("course" in line):
+            try:
+                user_name = line.split()[1]
+                fullname_list = line.split()[2:]
+                fullname = ""
+                for i in fullname_list:
+                    fullname += i + " "
+                fullname = fullname[:-1]
+                if "student" in line:
+                    pwd1 = getpass.getpass("Veuillez creer un mot de passe :")
+                    pwd2 = getpass.getpass("Veuillez confirmer le mot de passe entre:")
+                    if pwd1 == pwd2:
+                        id_dict = pickle_get_ids()
+                        student_instance = Student(user_name, fullname, pwd1, id_dict["user"])
+                        id_dict["user"] += 1
+                        pickle_save_ids(id_dict)
+                        if user_name in all_students["name_id_dict"]:
+                            raise ObjectAlreadyExistantException
+                        all_students["objects_dict"][student_instance.user_id] = student_instance
+                        all_students["name_id_dict"][user_name] = student_instance.user_id
+                    else:
+                        raise PasswordNotEqualException
+                if "admin" in line:
+                    pwd1 = getpass.getpass("Veuillez creer un mot de passe :")
+                    pwd2 = getpass.getpass("Veuillez confirmer le mot de passe entre:")
+                    if pwd1 == pwd2:
+                        id_dict = pickle_get_ids()
+                        admin_instance = Admin(user_name, fullname, pwd1, id_dict["user"])
+                        id_dict["user"] += 1
+                        pickle_save_ids(id_dict)
+                        if user_name in all_admins["name_id_dict"]:
+                            raise ObjectAlreadyExistantException
+                        all_admins["objects_dict"][admin_instance.user_id] = admin_instance
+                        all_admins["name_id_dict"][user_name] = admin_instance.user_id
+                    else:
+                        raise PasswordNotEqualException
+            except ObjectAlreadyExistantException:
+                print("Un utilisateur du meme nom existe deja\nVeuillez reessayer avec un autre username :\n")
+            except PasswordNotEqualException:
+                print("Les mots de passe entres ne correspondent pas\nVeuillez reessayer :\n")
+            except NumberOfArgumentsException:
+                print("La commande mv demande deux arguments : [CURRENT_PATHNAME] [NEW_PATHNAME]\n")
+            except Exception as e:
+                print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
+            else:
+                pickle_save(all_students=all_students, all_admins=all_admins)
+                print("L'utilisateur a ete correctement cree\n")
+        elif "course" in line and not [("student" in line) or ("admin" in line)]:
+            try:
+                if len(line.split()) == 3:
+                    name, teachers = [s for s in line.split()[1:]]
+                    teachers = teachers.split("_")
+                    id_dict = pickle_get_ids()
+                    course_instance = Course(name, teachers, id_dict["course"])
+                    id_dict += 1
+                    pickle_save_ids(id_dict)
+                    if name in all_courses["name_id_dict"]:
+                        raise ObjectAlreadyExistantException
+                    all_courses["objects_dict"][course_instance.course_id] = course_instance
+                    all_courses["name_id_dict"][name] = course_instance.course_id
+                else:
+                    raise NumberOfArgumentsException
+            except ObjectAlreadyExistantException:
+                print("Un cours avec le meme intitule existe deja\nVeuillez reessayer avec un autre nom :\n")
+            except NumberOfArgumentsException:
+                print("La commande mv demande deux arguments : [CURRENT_PATHNAME] [NEW_PATHNAME]\n")
+            except Exception as e:
+                print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
+            else:
+                pickle_save(courses=all_courses)
+                print("Le cours a ete correctement cree\n")
+        else:
+            str1 = "Les arguments entres sont incorrects : [OPTION] a trois valeurs possibles :"
+            str2 = "\nstudent\nadmin\ncourse\nVeuillez reessayer :\n"
+            print(str1, str2)
 
     @staticmethod
     def do_del(line):
@@ -100,14 +281,131 @@ class AdminCli(cmd.Cmd):
             La ligne d'arguments introduite a la suite de l'appel de la fonction do_mv dans l'interface
                 en ligne de commande cree par le module cmd
         """
-        pass
+        all_students = pickle_get_students()
+        all_courses = pickle_get_courses()
+        all_files = pickle_get_files()
+        all_admins = pickle_get_admins()
+        if (("student" in line) ^ ("admin" in line)) and not ("course" in line):
+            try:
+                user_name = line.split()[1]
+                if user_name in ["dax", "greg", "daxxra", "TheGregouze", username]:
+                    raise CannotDeleteUserException
+                if "student" in line:
+                    if user_name not in all_students["name_id_dict"]:
+                        raise UnknownObjectNameException
+                    student_instance_id = all_students["name_id_dict"][user_name]
+                    student_instance = all_students["objects_dict"][student_instance_id]
+                    file_ids = student_instance.files
+                    course_ids = student_instance.courses
+                    if file_ids:
+                        for i in file_ids:
+                            course_id = all_files["objects_dict"][i].course_id
+                            if course_id:
+                                course_instance = all_courses["objects_dict"][course_id]
+                                course_instance.remove_file(i)
+                                all_courses["name_id_dict"][course_id] = course_instance
+                            file_pathname = all_files["objects_dict"][i].pathname
+                            del all_files["objects_dict"][i]
+                            del all_files["name_id_dict"][file_pathname]
+                    if course_ids:
+                        for i in course_ids:
+                            course_instance = all_courses["objects_dict"][i]
+                            course_instance.remove_student(student_instance_id)
+                            all_courses["name_id_dict"][i] = course_instance
+                    del all_students["objects_dict"][student_instance_id]
+                    del all_students["name_id_dict"][user_name]
+                if "admin" in line:
+                    if user_name not in all_admins["name_id_dict"]:
+                        raise UnknownObjectNameException
+                    admin_instance_id = all_admins["name_id_dict"][user_name]
+                    del all_admins["objects_dict"][admin_instance_id]
+                    del all_admins["name_id_dict"][user_name]
+            except UnknownObjectNameException:
+                print("Impossible de supprimmer l'utilisateur : le username est inconnu\n")
+            except CannotDeleteUserException:
+                print("Impossible de supprimmer l'utilisateur : il s'agit soit d'un root_user, soit de l'utilisateur "
+                      "connecte\n")
+            except Exception as e:
+                print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
+            else:
+                pickle_save(all_students=all_students, all_admins=all_admins, files=all_files, courses=all_courses)
+                print("L'utilisateur a ete correctement suprimme\n")
+        elif "course" in line and not [("student" in line) or ("admin" in line)]:
+            try:
+                name = line.split()[1]
+                if name not in all_courses["name_id_dict"]:
+                    raise UnknownObjectNameException
+                course_instance_id = all_courses["name_id_dict"][name]
+                course_instance = all_courses["objects_dict"][course_instance_id]
+                file_ids = course_instance.files
+                student_ids = course_instance.students
+                if file_ids:
+                    for i in file_ids:
+                        file_instance = all_files["objects_dict"][i]
+                        file_instance.course_id = None
+                        all_files["name_id_dict"][i] = file_instance
+                if student_ids:
+                    for i in student_ids:
+                        student_instance = all_students["objects_dict"][i]
+                        student_instance.remove_course(course_instance_id)
+                        all_students["name_id_dict"][i] = student_instance
+                del all_courses["objects_dict"][course_instance_id]
+                del all_courses["name_id_dict"][name]
+            except UnknownObjectNameException:
+                print("Impossible de supprimmer le cours : l'intitule est inconnu\n")
+            except Exception as e:
+                print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
+            else:
+                pickle_save(all_students=all_students, files=all_files, courses=all_courses)
+                print("Le cours a ete correctement supprimme\n")
+        else:
+            str1 = "Les arguments entres sont incorrects : [OPTION] a trois valeurs possibles :"
+            str2 = "\nstudent\nadmin\ncourse\nVeuillez reessayer :\n"
+            print(str1, str2)
+
+    @staticmethod
+    def do_list_users(usertype):
+        """
+        list_users [USERTYPE=all, students, admins]
+
+        Methode permettant de lister les utilisateurs connus du programme
+
+        PRE : usertype est de type str et peut correspondre a trois valeurs differentes (all, students, admins)
+        POST : liste en console la liste des utilisateurs demandes
+            ssi usertype correspond a une des trois valeurs admises
+
+        :param usertype: str
+            correspond au type d'utilisateur a lister : all, students, admins
+        """
+
+        all_students = pickle_get_students()
+        all_admins = pickle_get_admins()
+        if usertype == "all" or usertype == "students":
+            print("Utilisateurs etudiants :")
+            key_list = all_students["objects_dict"].keys()
+            for i in key_list:
+                user_string1 = f"id={all_students['objects_dict'][i].user_id}  "
+                user_string2 = f"{all_students['objects_dict'][i].username} "
+                user_string3 = f"({all_students['objects_dict'][i].fullname})"
+                print(user_string1, user_string2, user_string3)
+            print("\n")
+        if usertype == "all" or usertype == "admins":
+            print("Utilisateurs administrateurs :")
+            key_list = all_admins["objects_dict"].keys()
+            for i in key_list:
+                user_string1 = f"id={all_admins['objects_dict'][i].user_id}  "
+                user_string2 = f"{all_admins['objects_dict'][i].username} "
+                user_string3 = f"({all_admins['objects_dict'][i].fullname})"
+                print(user_string1, user_string2, user_string3)
+            print("\n")
+        if usertype != "all" and usertype != "students" and usertype != "admins":
+            print("L'argument [USERTYPE] a trois valeurs autorisees :\nall\nstudents\nadmins\n")
 
 
 class Cli(cmd.Cmd):
     """Cette classe permet de creer une interface en ligne de commande personalisee a l'aide du module cmd"""
     intro = "Bienvenue dans le shell CLI du projet python 2TL1_09 :\n\nIntroduire help ou ? pour lister les " \
             "commandes disponibles\n\n"
-    prompt = "(CLI) >>"
 
     @staticmethod
     def do_del(pathname):
@@ -127,20 +425,19 @@ class Cli(cmd.Cmd):
         :param pathname: str
             Correspond au pathname du fichier a supprimer sur la memoire locale ou distante
         """
-
+        all_students = pickle_get_students()
+        all_files = pickle_get_files()
+        all_courses = pickle_get_courses()
         try:
             file_instance = if_proprietor_get_file(pathname)
-            files = pickle_get_files()
-            del files["name_id_dict"][pathname]
-            del files["objects_dict"][file_instance.file_id]
+            del all_files["name_id_dict"][pathname]
+            del all_files["objects_dict"][file_instance.file_id]
 
-            courses = pickle_get_courses()
             if file_instance.course_id is not None:
-                course_instance = courses["objects_dict"][file_instance.course_id]
+                course_instance = all_courses["objects_dict"][file_instance.course_id]
                 course_instance.remove_file(file_instance.file_id)
-                courses["objects_dict"][course_instance.course_id] = course_instance
+                all_courses["objects_dict"][course_instance.course_id] = course_instance
 
-            all_students = pickle_get_students()
             user_instance.remove_file(file_instance.file_id)
             all_students["objects_dict"][user_id] = user_instance
         except FileNotFoundException:
@@ -156,7 +453,7 @@ class Cli(cmd.Cmd):
             else:
                 print("Le fichier n'existe pas sur le disque dur")
             print("Le fichier a correctement ete supprime du programme\n")
-            pickle_save(all_students, files=files, courses=courses)
+            pickle_save(all_students, files=all_files, courses=all_courses)
 
     @staticmethod
     def do_mv(line):
@@ -175,24 +472,32 @@ class Cli(cmd.Cmd):
                     - current_pathname correspond au pathname d'un fichier existant et connu du programme
                     - le chemin d'acces specifie par pathname correspond a un chemin existant sur la memoire
                         locale ou distante
+        RAISES : NumberOfArgumentsException si l'utilisateur n'entre pas exactement deux arguments apres l'appel
+            de la commande
 
         :param line: str
             La ligne d'arguments introduite a la suite de l'appel de la fonction do_mv dans l'interface
                 en ligne de commande cree par le module cmd
         """
 
-        current_pathname, new_pathname = [s for s in line.split()]
+        all_files = pickle_get_files()
+        current_pathname = ""
         try:
+            if len(line.split()) == 2:
+                current_pathname, new_pathname = [s for s in line.split()]
+            else:
+                raise NumberOfArgumentsException
             file_instance = if_proprietor_get_file(current_pathname)
             file_instance.pathname = new_pathname
             if os.path.isfile(current_pathname):
                 os.rename(current_pathname, new_pathname)
             else:
                 raise FileNotFoundException
-            files = pickle_get_files()
-            files["objects_dict"][file_instance.file_id] = file_instance
-            files["name_id_dict"][file_instance.pathname] = file_instance.file_id
-            del files["name_id_dict"][current_pathname]
+            all_files["objects_dict"][file_instance.file_id] = file_instance
+            all_files["name_id_dict"][file_instance.pathname] = file_instance.file_id
+            del all_files["name_id_dict"][current_pathname]
+        except NumberOfArgumentsException:
+            print("La commande mv demande deux arguments : [CURRENT_PATHNAME] [NEW_PATHNAME]\n")
         except FileNotFoundException:
             print(f"Le fichier {current_pathname} n'existe pas\n")
         except FileNotOwnedException:
@@ -201,7 +506,7 @@ class Cli(cmd.Cmd):
             print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
         else:
             print(f"Le fichier {current_pathname} a ete déplacé vers {new_pathname}\n")
-            pickle_save(files=files)
+            pickle_save(files=all_files)
 
     @staticmethod
     def do_sort():
@@ -273,25 +578,26 @@ class Cli(cmd.Cmd):
             courses = pickle_get_courses()
             course_id = courses["name_id_dict "][course_name]
 
+        all_students = pickle_get_students()
+        all_courses = pickle_get_courses()
+        all_files = pickle_get_files()
         try:
-            files = pickle_get_files()
-            file_instance = File(user_id, pathname, course_id, script, tags)
-            if file_instance.file_id not in files["objects_dict"]:
-                files["objects_dict"][file_instance.file_id] = file_instance
-                files["name_id_dict"][file_instance.pathname] = file_instance.file_id
+            id_dict = pickle_get_ids()
+            file_instance = File(user_id, pathname, course_id, id_dict["file"], script, tags)
+            id_dict["file"] += 1
+            pickle_save_ids(id_dict)
+            if file_instance.file_id not in all_files["objects_dict"]:
+                all_files["objects_dict"][file_instance.file_id] = file_instance
+                all_files["name_id_dict"][file_instance.pathname] = file_instance.file_id
             else:
                 raise ObjectAlreadyExistantException
 
-            all_students = pickle_get_students()
             user_instance.add_file(file_instance.file_id)
             all_students["objects_dict"][user_id] = user_instance
-
-            courses = pickle_get_courses()
-
             if course_id is not None:
-                course_instance = courses["objects_dict"][course_id]
+                course_instance = all_courses["objects_dict"][course_id]
                 course_instance.add_file(file_instance.file_id)
-                courses["objects_dict"][course_id] = course_instance
+                all_courses["objects_dict"][course_id] = course_instance
         except ObjectAlreadyExistantException:
             print(f"Le fichier {pathname} est deja connu du programme:\n")
         except AlreadyInListException:
@@ -299,12 +605,7 @@ class Cli(cmd.Cmd):
         except Exception as e:
             print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
         else:
-            with open("pickle_saves/students.pkl", 'wb') as students_file:
-                pickle.dump(all_students, students_file)
-            with open("pickle_saves/files.pkl", 'wb') as files_file:
-                pickle.dump(files, files_file)
-            with open("pickle_saves/courses.pkl", 'wb') as courses_file:
-                pickle.dump(courses, courses_file)
+            pickle_save(all_students=all_students, files=all_files, courses=all_courses)
             print(f"Le fichier {file_instance.pathname} est maintenant connu du programme\n")
 
     @staticmethod
@@ -373,7 +674,7 @@ class Cli(cmd.Cmd):
         except Exception as e:
             print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
         else:
-            print(f"Le contenu a ete correctement ecrit sur {pathname}")
+            print(f"Le contenu a ete correctement ecrit sur {pathname}\n")
 
     @staticmethod
     def do_append(line):
@@ -411,7 +712,248 @@ class Cli(cmd.Cmd):
         except Exception as e:
             print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
         else:
-            print(f"Le contenu a ete correctement ecrit sur {pathname}")
+            print(f"Le contenu a ete correctement ecrit sur {pathname}\n")
+
+    @staticmethod
+    def do_vi(pathname):
+        """
+        vi [PATHNAME]
+
+        Methode permettant d'ouvrir un fichier dans l'editeur de texte vi
+
+        PRE : pathname est de type str et correspond au pathname d'un fichier existant et connu du programme
+        POST : le fichier est ouvert dans vi en console ssi pathname correspond au pathname d'un fichier
+            existant sur la memoire locale ou distante et connu du programme
+
+        :param pathname: str
+            Correspond au pathname sur la memoire locale ou distante du fichier que l'on desire editer avec vi
+        """
+
+        try:
+            editor = os.getenv('EDITOR', 'vi')
+            subprocess.call(f"{editor} {pathname}", shell=True)
+        except FileExistsError:
+            print(f"Le fichier {pathname} n'existe pas")
+        except IOError:
+            print('Erreur IO.')
+        except Exception as e:
+            print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
+
+    @staticmethod
+    def do_my_files(line):
+        """
+        my_files
+
+        PRE : line est une chaine de caractere vide
+        RAISES : CommandHasNoArgumentsException si line n'est pas une chaine de caractere vide
+
+        Methode permettant de lister les fichiers appartenant a l'utilisateur connecte
+
+        :param line: str
+            chaine vide car la fonction reset ne demande pas de parametres
+        """
+
+        try:
+            if line != "":
+                raise CommandHasNoArgumentsException
+        except CommandHasNoArgumentsException:
+            print("La fonction n'accepte aucun argument\nVeuillez reesayer :\n")
+        else:
+            all_files = pickle_get_files()
+            files = user_instance.files
+            if files:
+                for i in files:
+                    print(f"id={i}    {all_files['objects_dict'][i].pathname}")
+            print("\n")
+
+    @staticmethod
+    def do_courses(line):
+        """
+        courses
+
+        PRE : line est une chaine de caractere vide
+        RAISES : CommandHasNoArgumentsException si line n'est pas une chaine de caractere vide
+
+        Methode permettant de lister les cours connus du programme
+
+        :param line: str
+            chaine vide car la fonction reset ne demande pas de parametres
+        """
+
+        try:
+            if line != "":
+                raise CommandHasNoArgumentsException
+        except CommandHasNoArgumentsException:
+            print("La fonction n'accepte aucun argument\nVeuillez reesayer :\n")
+        else:
+            all_courses = pickle_get_courses()
+            course_keys = all_courses["name_id_dict"].keys()
+            if course_keys:
+                for i in course_keys:
+                    print(f"id={all_courses['name_id_dict'][i]}    {i}")
+            print("\n")
+
+    @staticmethod
+    def do_my_courses(line):
+        """
+        my_courses
+
+        PRE : line est une chaine de caractere vide
+        RAISES : CommandHasNoArgumentsException si line n'est pas une chaine de caractere vide
+
+        Methode permettant de lister les cours auxquels l'utilisateur connecte est inscrit
+
+        :param line: str
+            chaine vide car la fonction reset ne demande pas de parametres
+        """
+
+        try:
+            if line != "":
+                raise CommandHasNoArgumentsException
+        except CommandHasNoArgumentsException:
+            print("La fonction n'accepte aucun argument\nVeuillez reesayer :\n")
+        else:
+            all_courses = pickle_get_courses()
+            courses = user_instance.courses
+            if courses:
+                for i in courses:
+                    print(
+                        f"id={i}    {all_courses['objects_dict'][i].name}    {all_courses['objects_dict'][i].teachers}")
+            print("\n")
+
+    @staticmethod
+    def do_sub(course_name):
+        """
+        sub [COURSE_NAME]
+
+        PRE : course_name est de type str et correspond au nom d'un cours connu du programme
+        POST : inscrit l'utilisateur connecte au cours ssi le cours est connu du programme
+        RAISES : UnknownObjectNameException si le cours n'existe pas
+
+        :param course_name: str
+            Le nom du cours auquel l'utilisateur connecte desire s'inscrire
+        """
+
+        all_courses = pickle_get_courses()
+        all_students = pickle_get_students()
+        course_instance_id = all_courses["name_id_dict"][course_name]
+        course_instance = all_courses["objects_dict"][course_instance_id]
+        try:
+            course_instance.add_student(user_id)
+            user_instance.add_course(course_instance_id)
+        except AlreadyInListException:
+            print("Vous etes deja inscrits a ce cours\n")
+        except Exception as e:
+            print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
+        else:
+            pickle_save(all_students=all_students, courses=all_courses)
+            print(f"Vous etes maintenant inscrit au cours {course_name}")
+
+    @staticmethod
+    def do_unsub(course_name):
+        """
+        unsub [COURSE_NAME]
+
+        PRE : course_name est de type str et correspond au nom d'un cours connu du programme
+        POST : desinscrit l'utilisateur connecte du cours ssi le cours est connu du programme
+        RAISES : UnknownObjectNameException si le cours n'existe pas
+
+        :param course_name: str
+            Le nom du cours auquel l'utilisateur connecte desire s'inscrire
+        """
+
+        all_courses = pickle_get_courses()
+        all_students = pickle_get_students()
+        course_instance_id = all_courses["name_id_dict"][course_name]
+        course_instance = all_courses["objects_dict"][course_instance_id]
+        try:
+            course_instance.remove_student(user_id)
+            user_instance.remove_course(course_instance_id)
+        except NotInListException:
+            print("Vous n'etes pas inscrits a ce cours\n")
+        except Exception as e:
+            print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
+        else:
+            pickle_save(all_students=all_students, courses=all_courses)
+            print(f"Vous etes maintenant desinscrit du cours {course_name}")
+
+    @staticmethod
+    def do_specify_course(line):
+        """
+        specify_course [PATHNAME] [COURSE_NAME]
+
+        PRE : line est de type str et correspond a deux sequences de caracteres separees par un espace
+                    - la premiere sequence (pathname) correspond au pathname
+                        d'un fichier existant et connu du programme
+                    - la deuxieme sequence (course_name) correspond au nom d'un cours existant
+        POST : specifie que le fichier traite du cours precise ssi le fichier et le cours existent
+        RAISES : UnknownObjectNameException si le cours et/ou le fichier n'existe pas
+
+        :param line: str
+            La ligne d'arguments introduite a la suite de l'appel de la fonction do_write dans l'interface
+                en ligne de commande cree par le module cmd
+        """
+
+        all_files = pickle_get_files()
+        all_courses = pickle_get_courses()
+        pathname = line.split()[0]
+        course_name = line.split()[1]
+        try:
+            if not (pathname in all_files["name_id_dict"] and course_name in all_courses["name_id_dict"]):
+                raise UnknownObjectNameException
+            file_instance_id = all_files["name_id_dict"][pathname]
+            file_instance = all_files["objects_dict"][file_instance_id]
+            course_instance_id = all_files["name_id_dict"][course_name]
+            course_instance = all_files["objects_dict"][course_instance_id]
+
+            file_instance.course_id = course_instance_id
+            course_instance.add_file(file_instance_id)
+        except UnknownObjectNameException:
+            print("Le fichier et/ou le cours precise n'existe pas\nVeuillez reessayer :\n")
+        except AlreadyInListException:
+            print(f"Le fichier {pathname} est deja associe au cours {course_name}\n")
+        except Exception as e:
+            print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
+        else:
+            pickle_save(files=all_files, courses=all_courses)
+            print(f"Le fichier {pathname} est maintenant associe au cours {course_name}")
+
+    @staticmethod
+    def do_unspecify_course(pathname):
+        """
+        unspecify_course [PATHNAME]
+
+        PRE : pathname est de type str et correspond a un fichier existant et connu du programme
+        POST : supprimme les liens entre le fichier et le cours auquel il est associe
+        RAISES : UnknownObjectNameException si le fichier n'existe pas
+
+        :param pathname: str
+            Le chemin d'acces vers le fichier sur la memoire locale ou distante
+        """
+
+        all_files = pickle_get_files()
+        all_courses = pickle_get_courses()
+        try:
+            if pathname not in all_files["name_id_dict"]:
+                raise UnknownObjectNameException
+            file_instance_id = all_files["name_id_dict"][pathname]
+            file_instance = all_files["objects_dict"][file_instance_id]
+            course_instance_id = file_instance.course_id
+            if course_instance_id not in all_courses["objects_dict"]:
+                raise UnknownObjectNameException
+            course_instance = all_files["objects_dict"][course_instance_id]
+
+            file_instance.course_id = None
+            course_instance.remove_file(file_instance_id)
+        except UnknownObjectNameException:
+            print("Le fichier et/ou le cours precise n'existe pas\nVeuillez reessayer :\n")
+        except NotInListException:
+            print(f"Le fichier {pathname} n'est associe associe a aucun cours\n")
+        except Exception as e:
+            print(f"Une erreur est survenue : {e}\nVeuillez reessayer\n")
+        else:
+            pickle_save(files=all_files, courses=all_courses)
+            print(f"Le fichier {pathname} n'est plus associe a aucun cours")
 
 
 def specified_options(line, options):
@@ -477,10 +1019,10 @@ def pickle_save(all_students=None, all_admins=None, files=None, courses=None):
 
     if all_students is not None:
         with open("pickle_saves/students.pkl", 'wb') as students_file:
-            pickle.dump(students, students_file)
+            pickle.dump(all_students, students_file)
     if all_admins is not None:
         with open("pickle_saves/admins.pkl", 'wb') as admins_file:
-            pickle.dump(admins, admins_file)
+            pickle.dump(all_admins, admins_file)
     if files is not None:
         with open("pickle_saves/files.pkl", 'wb') as files_file:
             pickle.dump(files, files_file)
@@ -541,9 +1083,32 @@ def pickle_get_courses():
     return courses
 
 
+def pickle_get_ids():
+    """Methode statique permettant de recuperer les valeurs persistantes des identifiants uniques pour
+        les classes utilisateurs, File et Course
+
+        :return id_dict : dict
+            dictionnaire contenant les valeurs persistantes des identifiants uniques pour
+                les classes utilisateurs, File et Course
+        """
+
+    with open("pickle_saves/id_dict.pkl", 'rb') as ids_file:
+        id_dict = pickle.load(ids_file)
+
+    return id_dict
+
+
+def pickle_save_ids(id_dict):
+    """Methode statique permettant d'enregistrer les modifications sur les identifiants uniques des classes utilisateur
+        File et Course
+    """
+
+    with open("pickle_saves/id_dict.pkl", 'wb') as ids_file:
+        pickle.dump(id_dict, ids_file)
+
+
 if __name__ == "__main__":
     username = input("Veuillez entrer votre nom d'utilisateur :")
-
     students = pickle_get_students()
     admins = pickle_get_admins()
     if username in students["name_id_dict"]:
@@ -555,6 +1120,7 @@ if __name__ == "__main__":
         except UnknownPasswordException:
             print("Le mot de passe est errone")
         else:
+            Cli.prompt = f"({username}) >>"
             Cli().cmdloop()
     elif username in admins["name_id_dict"]:
         try:
@@ -565,6 +1131,7 @@ if __name__ == "__main__":
         except UnknownPasswordException:
             print("Le mot de passe est errone")
         else:
+            AdminCli.prompt = f"({username}) ##"
             AdminCli().cmdloop()
     else:
         print("Le nom d'utilisateur n'existe pas")

@@ -15,9 +15,8 @@ class User:
     Variables de classe:
         user_id_counter     Compteur necessaire a la creation d'identifiants uniques
     """
-    user_id_counter = 0
 
-    def __init__(self, username, fullname, pwd):
+    def __init__(self, username, fullname, pwd, user_id):
         """Methode permettant l'initialisation de chaque instance de la classe
 
         PRE : username, fullname et pwd sont de type str
@@ -33,8 +32,7 @@ class User:
         self.__username = username
         self.__fullname = fullname
         self.__pwd = pwd
-        self.__user_id = self.user_id_counter
-        User.user_id_counter += 1
+        self.__user_id = user_id
         self.__is_admin = False
 
     @property
@@ -154,7 +152,7 @@ class Student(User):
         files           La liste des fichiers appartenants a l'utilisateur etudiant
     """
 
-    def __init__(self, username, fullname, pwd):
+    def __init__(self, username, fullname, pwd, user_id):
         """Methode permettant l'initialisation de chaque instance de la classe
 
         PRE : username, fullname et pwd sont de type str
@@ -166,7 +164,7 @@ class Student(User):
         :param pwd: str
             Le mot de passe associe a l'utilisateur etudiant
         """
-        super().__init__(username, fullname, pwd)
+        super().__init__(username, fullname, pwd, user_id)
         self.__courses = []
         self.__files = []
 
@@ -293,7 +291,7 @@ class Admin(User):
         user_id         L'identifiant unique associe a l'utilisateur administrateur
     """
 
-    def __init__(self, username, fullname, pwd):
+    def __init__(self, username, fullname, pwd, user_id):
         """Methode permettant l'initialisation de chaque instance de la classe
 
         PRE : username, fullname et pwd sont de type str
@@ -306,5 +304,5 @@ class Admin(User):
             Le mot de passe associe a l'utilisateur administrateur
         """
 
-        super().__init__(username, fullname, pwd)
+        super().__init__(username, fullname, pwd, user_id)
         self._is_admin = True
