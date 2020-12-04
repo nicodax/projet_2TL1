@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 from classes.exceptions import UnknownPasswordException, AlreadyInListException, NotInListException
 
-
-class User:
-    """Un utilisateur generique servant de modele pour les Admins et les Students
+class Admin:
+    """Un super utilisateur autorise a effectuer des modifications d'ordre administratif
+    sert de modele pour la creation de la classe Student
 
     Attributs:
         username        Le nom permettant d'identifier l'utilisateur
@@ -33,7 +33,7 @@ class User:
         self.__fullname = fullname
         self.__pwd = pwd
         self.__user_id = user_id
-        self.__is_admin = False
+        self.__is_admin = True
 
     @property
     def username(self):
@@ -137,8 +137,9 @@ class User:
             raise UnknownPasswordException
 
 
-class Student(User):
+class Student(Admin):
     """Un utilisateur etudiant correspondant a l'utilisateur cible du programme.
+    Herite de la classe Admin.
     Il existe une relation d'association bidirectionnelle entre les classes Students et Courses,
     ainsi qu'entre les classes Students et Files
 
@@ -200,20 +201,6 @@ class Student(User):
 
         return course_id in self.__courses
 
-    def is_in_files(self, file_id):
-        """Methode permettant de verifier si un identifiant de fichier est present dans la liste files
-
-        PRE : file_id est de type int
-        POST : retourne True ssi le fichier est deja enregistre dans la liste
-
-        :param file_id: int
-            L'identifiant unique du fichier
-        :return: bool
-            Indique si file_id existe dans la liste
-        """
-
-        return file_id in self.__files
-
     def add_course(self, course_id):
         """Methode permettant d'inscrire l'utilisateur etudiant a un cours
 
@@ -247,6 +234,20 @@ class Student(User):
         else:
             raise NotInListException
 
+    def is_in_files(self, file_id):
+        """Methode permettant de verifier si un identifiant de fichier est present dans la liste files
+
+        PRE : file_id est de type int
+        POST : retourne True ssi le fichier est deja enregistre dans la liste
+
+        :param file_id: int
+            L'identifiant unique du fichier
+        :return: bool
+            Indique si file_id existe dans la liste
+        """
+
+        return file_id in self.__files
+
     def add_file(self, file_id):
         """Methode permettant d'ajouter un fichier a la liste de fichiers appartenant a l'utilisateur etudiant
 
@@ -279,30 +280,3 @@ class Student(User):
             self.__files.remove(file_id)
         else:
             raise NotInListException
-
-
-class Admin(User):
-    """Un super utilisateur autorise a effectuer des modifications d'ordre administratif
-
-    Attributs:
-        username        Le nom permettant d'identifier l'utilisateur administrateur
-        fullname        Le nom complet de l'utilisateur administrateur
-        pwd             Le mot de passe associe a l'utilisateur administrateur
-        user_id         L'identifiant unique associe a l'utilisateur administrateur
-    """
-
-    def __init__(self, username, fullname, pwd, user_id):
-        """Methode permettant l'initialisation de chaque instance de la classe
-
-        PRE : username, fullname et pwd sont de type str
-
-        :param username: str
-            Le nom permettant d'identifier l'utilisateur administrateur
-        :param fullname: str
-            Le nom complet de l'utilisateur administrateur
-        :param pwd: str
-            Le mot de passe associe a l'utilisateur administrateur
-        """
-
-        super().__init__(username, fullname, pwd, user_id)
-        self._is_admin = True

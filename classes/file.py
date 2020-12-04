@@ -139,7 +139,7 @@ class File:
 
         self.__course_id = new_course_id
 
-    def is_in_tag(self, tag):
+    def is_in_tags(self, tag):
         """Methode permettant de definir si un etiquette est attribuee au fichier
 
         PRE : tag est de type str
@@ -164,7 +164,7 @@ class File:
             Nouvelle etiquette a ajouter a la liste
         """
 
-        if not self.is_in_tag(new_tag):
+        if not self.is_in_tags(new_tag):
             self.__tags.append(new_tag)
         else:
             raise AlreadyInListException
@@ -180,7 +180,7 @@ class File:
             Etiquette a retirer de la liste
         """
 
-        if self.is_in_tag(tag):
+        if self.is_in_tags(tag):
             self.__tags.remove(tag)
         else:
             raise NotInListException

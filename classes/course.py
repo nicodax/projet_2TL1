@@ -134,34 +134,6 @@ class Course:
 
         return name in self.__teachers
 
-    def is_in_files(self, file_id):
-        """Methode permettant de definir si un fichier est attribué au cours
-
-        PRE : file_id est de type int
-        POST : retourne True si le fichier est deja repertoriee dans la liste files
-
-        :param file_id: int
-            L'identifiant unique du fichier dont on cherche a determiner si il est deja attribue au cours
-        :return: bool
-            Indique si l'identifiant est deja repertorie dans la liste
-        """
-
-        return file_id in self.__files
-
-    def is_in_students(self, user_id):
-        """Methode permettant de definir si un etudiant est inscrit au cours
-
-        PRE : user_id est de type int
-        POST : retourne True si l'etudiant est deja repertoriee dans la liste students
-
-        :param user_id: int
-            L'identifiant unique de l'etudiant pour lequel on cherche a determiner si il est deja inscrit au cours
-        :return: bool
-            Indique si l'identifiant est deja repertorie dans la liste
-        """
-
-        return user_id in self.__students
-
     def add_teacher(self, name):
         """Methode permettant d'ajouter le nom d'un professeur a la liste des
         professeurs titulaires du cours
@@ -196,6 +168,20 @@ class Course:
         else:
             raise NotInListException
 
+    def is_in_files(self, file_id):
+        """Methode permettant de definir si un fichier est attribué au cours
+
+        PRE : file_id est de type int
+        POST : retourne True si le fichier est deja repertoriee dans la liste files
+
+        :param file_id: int
+            L'identifiant unique du fichier dont on cherche a determiner si il est deja attribue au cours
+        :return: bool
+            Indique si l'identifiant est deja repertorie dans la liste
+        """
+
+        return file_id in self.__files
+
     def add_file(self, file_id):
         """Methode permettant d'ajouter l'identifiant unique d'un fichier a la liste
         des fichiers associes au cours.
@@ -229,6 +215,20 @@ class Course:
             self.__files.remove(file_id)
         else:
             raise NotInListException
+
+    def is_in_students(self, user_id):
+        """Methode permettant de definir si un etudiant est inscrit au cours
+
+        PRE : user_id est de type int
+        POST : retourne True si l'etudiant est deja repertoriee dans la liste students
+
+        :param user_id: int
+            L'identifiant unique de l'etudiant pour lequel on cherche a determiner si il est deja inscrit au cours
+        :return: bool
+            Indique si l'identifiant est deja repertorie dans la liste
+        """
+
+        return user_id in self.__students
 
     def add_student(self, user_id):
         """Methode permettant d'ajouter l'identifiant unique d'un etudiant a la liste
