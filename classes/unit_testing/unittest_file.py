@@ -2,8 +2,8 @@
 import unittest
 
 from classes.exceptions import AlreadyInListException, NotInListException
-from unit_testing.unittest_test_file_instance import tag1, file_test1, tag2, tag3, tag4, tag5, tag6, file_test2, \
-    file_test3
+from classes.unit_testing.unittest_test_file_instances import tag1, file_test1, tag2, tag3, tag4, tag5, tag6, \
+    file_test2, file_test3
 
 
 class TestTagsFile(unittest.TestCase):

@@ -2,9 +2,9 @@
 import unittest
 
 from classes.exceptions import AlreadyInListException, NotInListException
-from unit_testing.unittest_test_course_instances import course_test1, course_test2, course_test3, teacher1, teacher2, \
-    teacher3, teacher4, teacher5, teacher6, teacher7, file_id1, file_id2, file_id3, file_id4, file_id5, file_id6, \
-    user_id1, user_id2, user_id3, user_id4, user_id5, user_id6
+from classes.unit_testing.unittest_test_course_instances import course_test1, course_test2, course_test3, teacher1, \
+    teacher2, teacher3, teacher4, teacher5, teacher6, teacher7, file_id1, file_id2, file_id3, file_id4, file_id5, \
+    file_id6, user_id1, user_id2, user_id3, user_id4, user_id5, user_id6
 
 
 class TestTeachersCourse(unittest.TestCase):

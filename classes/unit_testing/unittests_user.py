@@ -2,7 +2,7 @@
 import unittest
 
 from classes.exceptions import UnknownPasswordException, AlreadyInListException, NotInListException
-from unit_testing.unittest_test_user_instances import admin_test1, old_pwd1, new_pwd1, admin_test2, old_pwd2, \
+from classes.unit_testing.unittest_test_user_instances import admin_test1, old_pwd1, new_pwd1, admin_test2, old_pwd2, \
     new_pwd2, admin_test3, old_pwd3, new_pwd3, course_id1, student_test1, course_id2, course_id3, student_test2, \
     course_id4, course_id5, student_test3, course_id6, file_id1, file_id2, file_id3, file_id4, file_id5, file_id6
 
