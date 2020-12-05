@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-def new_student():
+def new_student(username, fullname):
     pass
 
 
-def new_admin():
+def new_admin(username, fullname):
     pass
 
 
-def new_course():
+def new_course(course_name, teachers, description):
     pass
 
 

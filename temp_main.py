@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import cmd
+import cli.reset
 import cli.cli_admin
 import cli.cli_student
 import cli.cli_common
@@ -15,12 +16,107 @@ class AdminCli(cmd.Cmd):
             "commandes disponibles"
 
     @staticmethod
-    def do_reset():
-        pass
+    def do_reset(line):
+        """
+        # NAME
+            reset  -  reinitialise la memoire du programme
+
+        # SYNOPSIS
+            reset
+
+        # DESCRIPTION
+            Reinitialise la memoire du programme.
+                Elle ne contiendra plus que les utilisateurs et les cours d'origine
+
+        # AUTHOR
+            Ecrit par Nicolas Daxhelet
+
+        # RAISES
+            ArgumentException
+                L'utilisateur n'a pas respecte les conventions relatives aux options et arguments
+        """
+
+        try:
+            if line:
+                raise ArgumentException
+            all_students, all_admins, all_files, all_courses, id_dict = cli.reset.reset()
+        except ArgumentException:
+            print("Erreur : les conventions relatives au options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help sort pour plus d'informations sur l'utilisation de reset")
+        except Exception as e:
+            print(f"Une erreur est survenue : {e}\n")
+        else:
+            cli.cli_misc.pickle_save(all_students, all_admins, all_files, all_courses, id_dict)
+            print("La memoire du programme a ete correctement reinitialisee")
 
     @staticmethod
-    def do_new():
-        pass
+    def do_new(line):
+        """
+        # NAME
+            new  -  creation de nouvelles instances de classes
+
+        # SYNOPSIS
+            new {student | admin} <USERNAME> <FULLNAME>
+            new {course} <COURSE_NAME> [OPTION]...
+
+        # DESCRIPTION
+            Reinitialise la memoire du programme.
+                Elle ne contiendra plus que les utilisateurs et les cours d'origine
+
+        # OPTIONS
+            --description
+                Ajout d'une description au cours
+
+            --teachers
+                Ajout d'un ou plusieurs professeurs titulaires au cours
+
+        # AUTHOR
+            Ecrit par Nicolas Daxhelet
+
+        # RAISES
+            ArgumentException
+                L'utilisateur n'a pas respecte les conventions relatives aux options et arguments
+        """
+
+        try:
+            class_to_create = line.split()[0]
+            if (("student" in class_to_create) ^ ("admin" in class_to_create)) and not ("course" in class_to_create):
+                if len(line.split()) == 3:
+                    username = line.split()[1]
+                    fullname = line.split()[2]
+                    if "student" in class_to_create:
+                        cli.cli_admin.new_student(username, fullname)
+                    else:
+                        cli.cli_admin.new_admin(username, fullname)
+                else:
+                    raise ArgumentException
+            elif "course" in class_to_create and not (("student" in class_to_create) or ("admin" in class_to_create)):
+                course_name = line.split()[1]
+                number_of_arguments = 2
+                description = ""
+                teachers = []
+                if "--description" in line:
+                    number_of_arguments += 1
+                if "--teachers" in line:
+                    number_of_arguments += 1
+                if len(line.split()) == number_of_arguments:
+                    if "--description" in line:
+                        description = input(f"Veuillez entrer une description pour le cours {course_name} :")
+                    if "--teachers" in line:
+                        teachers_number = int(input("Veuillez entrer le nombre de professeurs titulaires du cours :"))
+                        for i in range(teachers_number):
+                            teacher_temp = input(f"Veuillez entre le nom du titulaire numero {i} :")
+                            teachers.append(teacher_temp)
+                    cli.cli_admin.new_course(course_name, teachers, description)
+                else:
+                    raise ArgumentException
+            else:
+                raise ArgumentException
+        except ArgumentException:
+            print("Erreur : les conventions relatives au options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help sort pour plus d'informations sur l'utilisation de new")
+        except Exception as e:
+            print(f"Une erreur est survenue : {e}\n")
 
     @staticmethod
     def do_del():
