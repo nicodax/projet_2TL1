@@ -5,39 +5,7 @@ from classes.course import Course
 from classes.user import Student, Admin
 
 
-def pickle_save(students=None, admins=None, files=None, courses=None):
-    """Methode statique permettant d'enregistrer les modifications sur les classes persistantes du programme
-            Seules les classes specfiees dans les parametres sont sauvegardees
-    """
-
-    if all_students is not None:
-        with open("pickle_saves/students.pkl", 'wb') as students_file:
-            pickle.dump(students, students_file)
-    if all_admins is not None:
-        with open("pickle_saves/admins.pkl", 'wb') as admins_file:
-            pickle.dump(admins, admins_file)
-    if files is not None:
-        with open("pickle_saves/files.pkl", 'wb') as files_file:
-            pickle.dump(files, files_file)
-    if courses is not None:
-        with open("pickle_saves/courses.pkl", 'wb') as courses_file:
-            pickle.dump(courses, courses_file)
-
-
-def pickle_save_ids(dict_id):
-    """Methode statique permettant d'enregistrer les modifications sur les identifiants uniques des classes utilisateur
-        File et Course
-    """
-
-    with open("pickle_saves/id_dict.pkl", 'wb') as ids_file:
-        pickle.dump(dict_id, ids_file)
-
-
-class TestException(Exception):
-    pass
-
-
-if __name__ == "__main__":
+def reset():
     id_dict = {"user": 0, "file": 0, "course": 0}
 
     all_students = {"name_id_dict": {}, "objects_dict": {}}
@@ -119,6 +87,39 @@ if __name__ == "__main__":
     all_courses["objects_dict"][t2072.course_id] = t2072
     all_courses["name_id_dict"][t2072.name] = t2072.course_id
 
-    pickle_save_ids(id_dict)
-    pickle_save(all_students, all_admins, all_files, all_courses)
+    return all_students, all_admins, all_files, all_courses, id_dict
+
+
+def pickle_save_ids(id_dict):
+    """Methode statique permettant d'enregistrer les modifications sur les identifiants uniques des classes utilisateur
+        File et Course
+    """
+
+    with open("../pickle_saves/id_dict.pkl", 'wb') as ids_file:
+        pickle.dump(id_dict, ids_file)
+
+
+def pickle_save(all_students=None, all_admins=None, all_files=None, all_courses=None):
+    """Methode statique permettant d'enregistrer les modifications sur les classes persistantes du programme
+            Seules les classes specfiees dans les parametres sont sauvegardees
+    """
+
+    if all_students is not None:
+        with open("../pickle_saves/students.pkl", 'wb') as students_file:
+            pickle.dump(all_students, students_file)
+    if all_admins is not None:
+        with open("../pickle_saves/admins.pkl", 'wb') as admins_file:
+            pickle.dump(all_admins, admins_file)
+    if files is not None:
+        with open("../pickle_saves/files.pkl", 'wb') as files_file:
+            pickle.dump(all_files, files_file)
+    if courses is not None:
+        with open("../pickle_saves/courses.pkl", 'wb') as courses_file:
+            pickle.dump(all_courses, courses_file)
+
+
+if __name__ == "__main__":
+    students, admins, files, courses, id_dic = reset()
+    pickle_save_ids(id_dic)
+    pickle_save(students, admins, files, courses)
     print("La memoire du programme a ete correctement reinitialisee")

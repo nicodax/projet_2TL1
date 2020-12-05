@@ -3,9 +3,9 @@ import cmd
 import getpass
 
 from classes.exceptions import UnknownPasswordException
-from cli.cli_admin import do_add_teacher, do_remove_teacher, do_reset, do_new, do_del_admin
-from cli.cli_misc import pickle_get_students, pickle_get_admins
-from cli.cli_student import do_del_student, do_mv, do_touch, do_cat, do_write, do_append, do_vi, \
+from cli.temp_cli_admin import do_add_teacher, do_remove_teacher, do_reset, do_new, do_del_admin
+from cli.temp_cli_misc import pickle_get_students, pickle_get_admins
+from cli.temp_cli_student import do_del_student, do_mv, do_touch, do_cat, do_write, do_append, do_vi, \
     do_my_files, do_list_courses, do_my_courses, do_sub, do_unsub, do_specify_course, do_unspecify_course, do_list_users
 
 

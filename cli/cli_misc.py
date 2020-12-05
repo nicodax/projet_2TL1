@@ -1,60 +1,31 @@
+#!/usr/bin/env python3
+import getpass
 import pickle
-import re
 
-from classes.exceptions import FileNotOwnedException, FileNotFoundException
-
-
-def specified_options(line, options):
-    """Methode permettant d'isoler les options d'une ligne d'argument du module cmd
-
-    PRE :   - line est de type str
-            - options est une liste comportant deux elements :
-                    * le premier annonce si l'option se trouve dans line et est de type bool
-                    * le deuxieme est la sequence de caractere marquant l'option dans line
-
-    :param line: str
-        La ligne d'arguments introduite a la suite de l'appel de la fonction do_write dans l'interface
-            en ligne de commande cree par le module cmd
-    :param options: list
-        liste des options possiblement presente dans line
-    :return specified_options_dict: dict
-        dictionnaire {option : argument}
-    """
-
-    specified_options_dict = {}
-    for i in options:
-        if i[0]:
-            try:
-                found = re.search(i[1] + "(.+?)" + " --", line).group(1)
-                specified_options_dict[i[1]] = found
-            except AttributeError:
-                found = line.split(i[1])[1]
-                specified_options_dict[i[1]] = found
-    print(specified_options_dict)
-    return specified_options_dict
+from cli.temp_exceptions import UnknownUsernameException, FileNotOwnedException, FileNotFoundException
 
 
-def if_proprietor_get_file(pathname, user_instance):
-    """Methode renvoyant l'instance de la classe File associee a un fichier
+def users_terminal_display(content_to_display):
+    pass
 
-    PRE : pathname est de type str
-    POST : retourne l'instance de la classe File associee au fichier ssi le fichier
-        existe et qu'il appartient a l'utilisateur connecte
-    RAISES :    - FileNotFoundException si le fichier n'existe pas sur la memoire locale ou distante
-                - FileNotOwnedException si le fichier existe mais n'apartient pas a l'utilisateur connecte
 
-    :param user_instance: object
-        utilisateur connecte
-    :param pathname: str
-        Le chemin d'acces vers le fichier sur la memoire locale ou distante
-    :return: object
-        L'instance de la classe File associee au fichier
-    """
+def files_terminal_display(content_to_display):
+    pass
 
-    files = pickle_get_files()
-    if pathname in files["name_id_dict"]:
-        file_id = files["name_id_dict"][pathname]
-        file_instance = files["objects_dict"][file_id]
+
+def courses_terminal_display(content_to_display):
+    pass
+
+
+def pickle_get_file_if_owned(user_instance, pathname):
+    """Methode renvoyant l'instance de la classe File associee a un fichier si l'utilisateur connecte le possede"""
+
+    persistent_data = pickle_get(files=True)
+    all_files = persistent_data[2]
+
+    if pathname in all_files["name_id_dict"]:
+        file_id = all_files["name_id_dict"][pathname]
+        file_instance = all_files["objects_dict"][file_id]
         if file_id in user_instance.files:
             return file_instance
         else:
@@ -63,8 +34,38 @@ def if_proprietor_get_file(pathname, user_instance):
         raise FileNotFoundException
 
 
-def pickle_save(all_students=None, all_admins=None, files=None, courses=None):
-    """Methode statique permettant d'enregistrer les modifications sur les classes persistantes du programme
+def pickle_get(students=False, admins=False, files=False, courses=False, id_dict=None):
+    """Fonction permettant de recuperer les classes persistantes du programme
+            Seules les classes specifies dans les parametres sont recuperees
+    """
+
+    all_students = {}
+    all_admins = {}
+    all_files = {}
+    all_courses = {}
+    id_dict = {}
+
+    if students:
+        with open("pickle_saves/students.pkl", 'rb') as students_file:
+            all_students = pickle.load(students_file)
+    if admins:
+        with open("pickle_saves/admins.pkl", 'rb') as admins_file:
+            all_admins = pickle.load(admins_file)
+    if files:
+        with open("pickle_saves/files.pkl", 'rb') as files_file:
+            all_files = pickle.load(files_file)
+    if courses:
+        with open("pickle_saves/courses.pkl", 'rb') as courses_file:
+            all_courses = pickle.load(courses_file)
+    if id_dict:
+        with open("pickle_saves/id_dict.pkl", 'rb') as id_dict_file:
+            id_dict = pickle.load(id_dict_file)
+
+    return [all_students, all_admins, all_files, all_courses, id_dict]
+
+
+def pickle_save(all_students=None, all_admins=None, all_files=None, all_courses=None, id_dict=None):
+    """Fonction permettant d'enregistrer les modifications sur les classes persistantes du programme
             Seules les classes specfiees dans les parametres sont sauvegardees
     """
 
@@ -74,85 +75,36 @@ def pickle_save(all_students=None, all_admins=None, files=None, courses=None):
     if all_admins is not None:
         with open("pickle_saves/admins.pkl", 'wb') as admins_file:
             pickle.dump(all_admins, admins_file)
-    if files is not None:
+    if all_files is not None:
         with open("pickle_saves/files.pkl", 'wb') as files_file:
-            pickle.dump(files, files_file)
-    if courses is not None:
+            pickle.dump(all_files, files_file)
+    if all_courses is not None:
         with open("pickle_saves/courses.pkl", 'wb') as courses_file:
-            pickle.dump(courses, courses_file)
+            pickle.dump(all_courses, courses_file)
+    if id_dict is not None:
+        with open("pickle_saves/id_dict.pkl", 'wb') as id_dict_file:
+            pickle.dump(id_dict, id_dict_file)
 
 
-def pickle_get_students():
-    """Methode statique permettant de recuperer les instances persistantes de la classe Student
+def login():
+    """Fonction permettant de se connecter a un compte utilisateur"""
 
-    :return students : dict
-        dictionnaire contenant les instances persistantes de la classe Student
-    """
+    username = input("Veuillez entrer votre nom d'utilisateur :")
+    persistent_data = pickle_get(students=True, admins=True)
+    all_students = persistent_data[0]
+    all_admins = persistent_data[1]
 
-    with open("pickle_saves/students.pkl", 'rb') as students_file:
-        all_students = pickle.load(students_file)
-
-    return all_students
-
-
-def pickle_get_admins():
-    """Methode statique permettant de recuperer les instances persistantes de la classe Admin
-
-    :return admins : dict
-        dictionnaire contenant les instances persistantes de la classe Admin
-    """
-
-    with open("pickle_saves/admins.pkl", 'rb') as admins_file:
-        all_admins = pickle.load(admins_file)
-
-    return all_admins
-
-
-def pickle_get_files():
-    """Methode statique permettant de recuperer les instances persistantes de la classe File
-
-    :return files : dict
-        dictionnaire contenant les instances persistantes de la classe File
-    """
-
-    with open("pickle_saves/files.pkl", 'rb') as files_file:
-        files = pickle.load(files_file)
-
-    return files
-
-
-def pickle_get_courses():
-    """Methode statique permettant de recuperer les instances persistantes de la classe Course
-
-    :return courses : dict
-        dictionnaire contenant les instances persistantes de la classe Course
-    """
-
-    with open("pickle_saves/courses.pkl", 'rb') as courses_file:
-        courses = pickle.load(courses_file)
-
-    return courses
-
-
-def pickle_get_ids():
-    """Methode statique permettant de recuperer les valeurs persistantes des identifiants uniques pour
-        les classes utilisateurs, File et Course
-
-        :return id_dict : dict
-            dictionnaire contenant les valeurs persistantes des identifiants uniques pour
-                les classes utilisateurs, File et Course
-        """
-
-    with open("pickle_saves/id_dict.pkl", 'rb') as ids_file:
-        id_dict = pickle.load(ids_file)
-
-    return id_dict
-
-
-def pickle_save_ids(id_dict):
-    """Methode statique permettant d'enregistrer les modifications sur les identifiants uniques des classes utilisateur
-        File et Course
-    """
-
-    with open("pickle_saves/id_dict.pkl", 'wb') as ids_file:
-        pickle.dump(id_dict, ids_file)
+    if username in all_students["name_id_dict"]:
+        pwd = getpass.getpass("Veuillez entrer votre mot de passe :")
+        user_id = all_students["name_id_dict"][username]
+        user_instance = all_students["objects_dict"][user_id]
+        user_instance.verify_pwd(pwd)
+        return user_instance, False
+    elif username in all_admins["name_id_dict"]:
+        pwd = getpass.getpass("Veuillez entrer votre mot de passe :")
+        user_id = all_admins["name_id_dict"][username]
+        user_instance = all_admins["objects_dict"][user_id]
+        user_instance.verify_pwd(pwd)
+        return user_instance, True
+    else:
+        raise UnknownUsernameException
