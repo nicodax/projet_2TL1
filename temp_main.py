@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import cmd
+import sys
+
 import cli.reset
 import cli.cli_admin
 import cli.cli_student
@@ -7,7 +9,8 @@ import cli.cli_common
 import cli.cli_misc
 from classes.exceptions import UnknownPasswordException
 from cli.temp_exceptions import ArgumentException, FileNotOwnedException, FileNotFoundException, \
-    UnknownUsernameException
+    UnknownUsernameException, ObjectAlreadyExistantException, PasswordNotEqualException, UnknownObjectException, \
+    ImpossibleToDeleteUserException
 
 
 class AdminCli(cmd.Cmd):
@@ -41,13 +44,13 @@ class AdminCli(cmd.Cmd):
                 raise ArgumentException
             all_students, all_admins, all_files, all_courses, id_dict = cli.reset.reset()
         except ArgumentException:
-            print("Erreur : les conventions relatives au options et leurs arguments n'ont pas ete respectees\n",
-                  "Entrer la commande help sort pour plus d'informations sur l'utilisation de reset")
+            print("Erreur : les conventions relatives aux options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help reset pour plus d'informations sur l'utilisation de reset\n")
         except Exception as e:
             print(f"Une erreur est survenue : {e}\n")
         else:
             cli.cli_misc.pickle_save(all_students, all_admins, all_files, all_courses, id_dict)
-            print("La memoire du programme a ete correctement reinitialisee")
+            print("La memoire du programme a ete correctement reinitialisee\n")
 
     @staticmethod
     def do_new(line):
@@ -60,8 +63,7 @@ class AdminCli(cmd.Cmd):
             new {course} <COURSE_NAME> [OPTION]...
 
         # DESCRIPTION
-            Reinitialise la memoire du programme.
-                Elle ne contiendra plus que les utilisateurs et les cours d'origine
+            Cree une nouvelle instance persistante de la classe specifiee
 
         # OPTIONS
             --description
@@ -78,6 +80,7 @@ class AdminCli(cmd.Cmd):
                 L'utilisateur n'a pas respecte les conventions relatives aux options et arguments
         """
 
+        class_to_create = ""
         try:
             class_to_create = line.split()[0]
             if (("student" in class_to_create) ^ ("admin" in class_to_create)) and not ("course" in class_to_create):
@@ -113,26 +116,245 @@ class AdminCli(cmd.Cmd):
             else:
                 raise ArgumentException
         except ArgumentException:
-            print("Erreur : les conventions relatives au options et leurs arguments n'ont pas ete respectees\n",
-                  "Entrer la commande help sort pour plus d'informations sur l'utilisation de new")
+            print("Erreur : les conventions relatives aux options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help new pour plus d'informations sur l'utilisation de new\n")
+        except ObjectAlreadyExistantException:
+            print(f"L'instance {class_to_create} existe deja\n")
+        except PasswordNotEqualException:
+            print("Les mots de passes entres ne correspondent pas\n")
+        except Exception as e:
+            print(f"Une erreur est survenue : {e}\n")
+        else:
+            print(f"L'instance {class_to_create} a correctement ete cree\n")
+
+    @staticmethod
+    def do_del(line):
+        """
+        # NAME
+            del  -  suppression d'instances de classes
+
+        # SYNOPSIS
+            del {student | admin} <USERNAME>
+            del {course} <COURSE_NAME>
+
+        # DESCRIPTION
+            Supprime l'instance de classe persistante specifiee
+
+        # AUTHOR
+            Ecrit par Nicolas Daxhelet
+
+        # RAISES
+            ArgumentException
+                L'utilisateur n'a pas respecte les conventions relatives aux options et arguments
+
+            ImpossibleToDeleteUserException
+                L'utilisateur fait partie des utilisateurs initialises par le programme ou
+                l'utilisateur correspond a l'utilisateur connecte
+        """
+
+        class_to_delete = ""
+        try:
+            class_to_delete = line.split()[0]
+            if (("student" in class_to_delete) ^ ("admin" in class_to_delete)) and not ("course" in class_to_delete):
+                if len(line.split()) == 2:
+                    username = line.split()[1]
+                    if (username in cli.reset.initial_users) or (username == current_user_instance.username):
+                        raise ImpossibleToDeleteUserException
+                    if "student" in class_to_delete:
+                        cli.cli_admin.delete_student(username)
+                    else:
+                        cli.cli_admin.delete_admin(username)
+                else:
+                    raise ArgumentException
+            elif "course" in class_to_delete and not (("student" in class_to_delete) or ("admin" in class_to_delete)):
+                course_name = line.split()[1]
+                if len(line.split()) == 2:
+                    cli.cli_admin.delete_course(course_name)
+                else:
+                    raise ArgumentException
+            else:
+                raise ArgumentException
+        except ArgumentException:
+            print("Erreur : les conventions relatives aux options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help del pour plus d'informations sur l'utilisation de del\n")
+        except UnknownObjectException:
+            print(f"L'instance {class_to_delete} n'existe pas\n")
+        except ImpossibleToDeleteUserException:
+            print(f"Impossible de suprimmer cet utilisateur\n")
+        except Exception as e:
+            print(f"Une erreur est survenue : {e}\n")
+        else:
+            print(f"L'instance {class_to_delete} a correctement ete cree\n")
+
+    @staticmethod
+    def do_list(line):
+        """
+        # NAME
+            list  -  liste des instances de classes persistantes
+
+        # SYNOPSIS
+            list {users} [OPTION]...
+            list {courses}
+
+        # DESCRIPTION
+            Liste les instances persistantes de la classe specifiee
+
+            list users
+                Sans preciser d'option, list affiche les utilisateurs etudiants
+
+        # OPTIONS
+            --all
+                Liste l'entierete des utilisateurs
+                --all et --admins sont mutuellement exclusifs
+
+            --admins
+                Liste les utilisateurs administrateurs
+                --admins et --all sont mutuellement exclusifs
+
+        # AUTHOR
+            Ecrit par Nicolas Daxhelet
+
+        # RAISES
+            ArgumentException
+                L'utilisateur n'a pas respecte les conventions relatives aux options et arguments
+        """
+
+        try:
+            class_to_list = line.split()[0]
+            if "users" in class_to_list and not ("courses" in class_to_list):
+                if "--all" in line and not ("--admins" in line):
+                    if len(line.split()) == 2:
+                        cli.cli_common.list_all_students()
+                        cli.cli_admin.list_all_admins()
+                    else:
+                        raise ArgumentException
+                elif "--admins" in line and not ("--all" in line):
+                    if len(line.split()) == 2:
+                        cli.cli_admin.list_all_admins()
+                    else:
+                        raise ArgumentException
+                elif len(line.split()) == 1:
+                    cli.cli_common.list_all_students()
+                else:
+                    raise ArgumentException
+            elif "courses" in class_to_list and not ("users" in class_to_list) and (len(line.split()) == 1):
+                cli.cli_common.list_all_courses()
+            else:
+                raise ArgumentException
+        except ArgumentException:
+            print("Erreur : les conventions relatives aux options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help list pour plus d'informations sur l'utilisation de list\n")
         except Exception as e:
             print(f"Une erreur est survenue : {e}\n")
 
     @staticmethod
-    def do_del():
-        pass
+    def do_course(line):
+        """
+        # NAME
+            course  -  Ajoute ou supprime des proffesseurs titulaires ou l'intitule du cours
+
+        # SYNOPSIS
+            course <COURSE_NAME> {add} {teacher | description}
+            course <COURSE_NAME> {remove} {teacher | description} [OPTION]
+
+        # DESCRIPTION
+            Liste les instances persistantes de la classe specifiee
+
+            list users
+                Sans preciser d'option, list affiche les utilisateurs etudiants
+
+        # OPTIONS
+            --all
+                Supprime l'entierete des proffesseurs titulaires
+                --all ne peut s'emplyer qu'avec course remove teacher
+
+        # AUTHOR
+            Ecrit par Nicolas Daxhelet
+
+        # RAISES
+            ArgumentException
+                L'utilisateur n'a pas respecte les conventions relatives aux options et arguments
+        """
+
+        try:
+            course_action = line.split()[0]
+            course_name = line.split()[1]
+            if "add" in course_action:
+                course_attribute = line.split()[2]
+                if "teacher" in course_attribute:
+                    if len(line.split()) == 3:
+                        teacher_name = input("Veuillez entrer le nom du proffesseur a ajouter a la liste des titulaires du "
+                                             "cours :")
+                        cli.cli_admin.course_add_teacher(course_name, teacher_name)
+                    else:
+                        raise ArgumentException
+                elif "description" in course_attribute:
+                    if len(line.split()) == 3:
+                        description = input("Veuillez entrer l'intitule du cours :")
+                        cli.cli_admin.course_add_description(course_name, description)
+                    else:
+                        raise ArgumentException
+                else:
+                    raise ArgumentException
+            elif "remove" in course_action:
+                course_attribute = line.split()[2]
+                if "teacher" in course_attribute:
+                    all_teachers = False
+                    if (line.split()[3] == "--all") and (len(line.split()) == 4):
+                        all_teachers = True
+                    if (len(line.split()) == 3) or (line.split()[3] == "--all") and (len(line.split()) == 4):
+                        teacher_name = input("Veuillez entrer le nom du proffesseur a retirer de la liste des "
+                                             "titulaires du cours :")
+                        cli.cli_admin.course_remove_teacher(course_name, teacher_name, all_teachers)
+                    else:
+                        raise ArgumentException
+                elif "description" in course_attribute:
+                    if len(line.split()) == 3:
+                        cli.cli_admin.course_remove_description(course_name)
+                    else:
+                        raise ArgumentException
+                else:
+                    raise ArgumentException
+            else:
+                raise ArgumentException
+        except ArgumentException:
+            print("Erreur : les conventions relatives aux options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help course pour plus d'informations sur l'utilisation de course\n")
+        except Exception as e:
+            print(f"Une erreur est survenue : {e}\n")
+        else:
+            print("L'operation a ete effectuee avec succes\n")
 
     @staticmethod
-    def do_list():
-        pass
+    def do_exit(line):
+        """
+        # NAME
+            exit  -  Deconnection de l'utilisateur
 
-    @staticmethod
-    def do_course():
-        pass
+        # SYNOPSIS
+            exit
 
-    @staticmethod
-    def do_exit():
-        pass
+        # DESCRIPTION
+            Termine la session de l'utilisateur et ferme le programme
+
+        # AUTHOR
+            Ecrit par Nicolas Daxhelet
+
+        # RAISES
+            ArgumentException
+                L'utilisateur n'a pas respecte les conventions relatives aux options et arguments
+        """
+
+        try:
+            if line != "":
+                raise ArgumentException
+        except ArgumentException:
+            print("Erreur : les conventions relatives aux options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help exit pour plus d'informations sur l'utilisation de exit\n")
+        except Exception as e:
+            print(f"Une erreur est survenue : {e}\n")
+        else:
+            sys.exit("Merci d'avoir utilise la CLI admin du projet python 2TL1_09\n")
 
 
 class StudentCli(cmd.Cmd):
@@ -282,8 +504,35 @@ class StudentCli(cmd.Cmd):
             cli.cli_misc.files_terminal_display(content_to_display)
 
     @staticmethod
-    def do_exit():
-        pass
+    def do_exit(line):
+        """
+        # NAME
+            exit  -  Deconnection de l'utilisateur
+
+        # SYNOPSIS
+            exit
+
+        # DESCRIPTION
+            Termine la session de l'utilisateur et ferme le programme
+
+        # AUTHOR
+            Ecrit par Nicolas Daxhelet
+
+        # RAISES
+            ArgumentException
+                L'utilisateur n'a pas respecte les conventions relatives aux options et arguments
+        """
+
+        try:
+            if line != "":
+                raise ArgumentException
+        except ArgumentException:
+            print("Erreur : les conventions relatives aux options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help exit pour plus d'informations sur l'utilisation de exit\n")
+        except Exception as e:
+            print(f"Une erreur est survenue : {e}\n")
+        else:
+            sys.exit("Merci d'avoir utilise la CLI du projet python 2TL1_09\n")
 
 
 if __name__ == "__main__":

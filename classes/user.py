@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from classes.exceptions import UnknownPasswordException, AlreadyInListException, NotInListException
 
+
 class Admin:
     """Un super utilisateur autorise a effectuer des modifications d'ordre administratif
     sert de modele pour la creation de la classe Student
@@ -29,8 +30,8 @@ class Admin:
             Le mot de passe associe a l'utilisateur
         """
 
-        self.__username = username
-        self.__fullname = fullname
+        self.username = username
+        self.fullname = fullname
         self.__pwd = pwd
         self.__user_id = user_id
         self.__is_admin = True
@@ -84,8 +85,11 @@ class Admin:
         :param new_username: str
             Nouvelle valeur de username
         """
-
-        self.__username = new_username
+        if len(new_username) < 26:
+            self.__username = new_username
+        else:
+            new_username = new_username[:24]
+            self.__username = new_username
 
     @fullname.setter
     def fullname(self, new_fullname):
@@ -97,7 +101,11 @@ class Admin:
             Nouvelle valeur de fullname
         """
 
-        self.__fullname = new_fullname
+        if len(new_fullname) < 33:
+            self.__fullname = new_fullname
+        else:
+            new_fullname = new_fullname[:31]
+            self.__fullname = new_fullname
 
     def pwd(self, old_pwd, new_pwd):
         """Methode permettant de modifier la valeur de la variable privee pwd.

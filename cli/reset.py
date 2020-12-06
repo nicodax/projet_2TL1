@@ -4,6 +4,8 @@ import pickle
 from classes.course import Course
 from classes.user import Student, Admin
 
+initial_users = ["root", "dax", "daxxra", "greg", "TheGregouze"]
+
 
 def reset():
     id_dict = {"user": 0, "file": 0, "course": 0}

@@ -8,12 +8,12 @@ class Course:
     ainsi qu'entre les classes Courses et Files
 
     Attributs:
-        name            L'intitule permettant d'identifier le cours
+        name            Le code permettant d'identifier le cours
         teachers        Liste les noms des professeurs titulaires du cours
         files           Liste les identifiants uniques des fichiers se rapportant au cours
         students        Liste les noms des etudiants inscrits au cours
         course_id       Identifiant unique associe au cours
-        description     Description du cours
+        description     L'intitule du cours
 
     Variables de classe:
         course_id_counter     Compteur necessaire a la creation d'identifiants uniques
@@ -26,16 +26,16 @@ class Course:
                 - teachers est de type list
 
         :param name: str
-            L'intitule permettant d'identifier le cours
+            Le code permettant d'identifier le cours
         :param teachers: list
             Liste les noms (str) des professeurs titulaires du cours
         """
 
-        self.__name = name
+        self.name = name
         self.__teachers = teachers
         self.__files = []
         self.__course_id = course_id
-        self.__description = description
+        self.description = description
         self.__students = []
 
     @property
@@ -103,10 +103,26 @@ class Course:
         """Methode permettant d'acceder a la variable privee description
 
         :return self.__description : str
-            Description du cours
+            L'intitule du cours
         """
 
         return self.__description
+
+    @name.setter
+    def name(self, new_name):
+        """Methode permettant de definir la valeur de l'attribut prive name
+
+        PRE : new_name est de type str et correspond au code du cours
+
+        :param new_name: str
+            Le nouveau code du cours
+        """
+
+        if len(new_name) < 6:
+            self.__name = new_name
+        else:
+            string = new_name[:4]
+            self.__name = new_name
 
     @description.setter
     def description(self, string):
@@ -115,10 +131,26 @@ class Course:
         PRE : string est de type str et correspond a la description du cours
 
         :param string: str
-            La description du cours
+            L'intitule du cours
         """
 
-        self.__description = string
+        if len(string) < 51:
+            self.__description = string
+        else:
+            string = string[:49]
+            self.__description = string
+
+    @teachers.setter
+    def teachers(self, new_list):
+        """Methode permettant de definir la valeur de l'attribut prive teachers
+
+        PRE : new_list est de type list et correspond a la liste des proffesseurs titulaires du cours
+
+        :param new_list: list
+            Liste des proffesseurs titulaires du cours
+        """
+
+        self.__teachers = new_list
 
     def is_in_teachers(self, name):
         """Methode permettant de definir si un professeur est titulaire du cours
