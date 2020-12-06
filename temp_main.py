@@ -7,6 +7,7 @@ import cli.cli_admin
 import cli.cli_student
 import cli.cli_common
 import cli.cli_misc
+import gui.open
 from classes.exceptions import UnknownPasswordException
 from cli.temp_exceptions import ArgumentException, FileNotOwnedException, FileNotFoundException, \
     UnknownUsernameException, ObjectAlreadyExistantException, PasswordNotEqualException, UnknownObjectException, \
@@ -402,15 +403,12 @@ class StudentCli(cmd.Cmd):
                 Le programme ne connait pas le fichier specifie par PATHNAME
         """
         try:
-            # ### SI L'UTILISATEUR N'A PAS PRECISE DE PATHNAME, pathname = ""
-            if not pathname:
-                raise ArgumentException
-            # ### ICI, C'EST A TOI DE JOUER, J'AI AUCUNE IDEE DE COMMENT FONCTIONNE TA GUI
-            # TU DOIS T'ASSURER QUE LE FICHIER QUE L'UTILISATEUR ESSAYE D'OUVRIR APPARTIENT A L'UTILISATEUR !
-            #       file_instance = cli.cli_misc.pickle_get_file_if_owned(current_user_instance, pathname)
-            # Dans la classe File, il y a une methode open_file(), elle est pas completee mais si tu pense que c'est
-            # necessaire, je l'avais creee a vide en me disant que ça te serait peut etre utile pour le cas precis
-            # d'une ouverture dans la GUI
+            #if not pathname:
+            #   raise ArgumentException
+            #file_instance = cli.cli_misc.pickle_get_file_if_owned(current_user_instance, pathname)
+            gui.open.open_file(pathname)
+
+
         except ArgumentException:
             print("Erreur : les conventions relatives au options et leurs arguments n'ont pas ete respectees\n",
                   "Entrer la commande help sort pour plus d'informations sur l'utilisation de sort")
