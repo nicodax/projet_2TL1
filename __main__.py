@@ -111,7 +111,7 @@ class AdminCli(cmd.Cmd):
                         if not teachers_number.isnumeric():
                             raise ArgumentException
                         for i in range(int(teachers_number)):
-                            teacher_temp = input(f"Veuillez entre le nom du titulaire numero {i+1} :")
+                            teacher_temp = input(f"Veuillez entre le nom du titulaire numero {i + 1} :")
                             if teacher_temp == "":
                                 raise ArgumentException
                             teachers.append(teacher_temp)
@@ -120,15 +120,15 @@ class AdminCli(cmd.Cmd):
                     raise ArgumentException
             else:
                 raise ArgumentException
-        #except ArgumentException:
-         #   print("Erreur : les conventions relatives aux options et leurs arguments n'ont pas ete respectees\n",
-          #        "Entrer la commande help new pour plus d'informations sur l'utilisation de new\n")
+        except ArgumentException:
+            print("Erreur : les conventions relatives aux options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help new pour plus d'informations sur l'utilisation de new\n")
         except ObjectAlreadyExistantException:
             print("Erreur : L'instance de classe existe deja\n")
         except PasswordNotEqualException:
             print("Erreur : Les mots de passes entres ne correspondent pas\n")
-        #except Exception as e:
-         #   print(f"Erreur : {e}\n")
+        except Exception as e:
+            print(f"Erreur : {e}\n")
         else:
             print("L'instance de classe a correctement ete cree\n")
 
@@ -377,8 +377,8 @@ class StudentCli(cmd.Cmd):
             --script
                 Precise que le fichier est un script
 
-            --course
-                Precise que le fichier traite d'un cours specifique
+            --no_course
+                Precise que le fichier ne traite d'aucun cours
 
             --tags
                 Ajoute une (ou plusieurs) etiquettes au fichier
@@ -393,7 +393,7 @@ class StudentCli(cmd.Cmd):
             number_of_args = 2
             if "--script" in line:
                 number_of_args += 1
-            if "--course" in line:
+            if "--no_course" in line:
                 number_of_args += 1
             if "--tags" in line:
                 number_of_args += 1
@@ -409,8 +409,8 @@ class StudentCli(cmd.Cmd):
                 tags = None
                 directory_pathname = os.path.dirname(pathname)
                 if os.path.isdir(directory_pathname):
-                    if "--course" in line:
-                        course_name = input("Veuillez entre le code du cours a associer au fichier :")
+                    if "--no_course" not in line:
+                        course_name = input("Veuillez entre le code du cours a associer au fichier:")
                         if course_name in all_courses["name_id_dict"]:
                             course_id = all_courses["name_id_dict"][course_name]
                         else:
@@ -423,7 +423,7 @@ class StudentCli(cmd.Cmd):
                             raise ArgumentException
                         tags = []
                         for i in range(int(number_of_tags)):
-                            tag = input(f"Veuillez entre l'etiquette numero {i+1} :")
+                            tag = input(f"Veuillez entre l'etiquette numero {i + 1} :")
                             if tag == "":
                                 raise ArgumentException
                             tags.append(tag)
@@ -545,7 +545,7 @@ class StudentCli(cmd.Cmd):
                             raise ArgumentException
                         tags = []
                         for i in range(int(tag_number)):
-                            tag = input(f"Veuillez entre l'etiquette numero {i+1} :")
+                            tag = input(f"Veuillez entre l'etiquette numero {i + 1} :")
                             if tag == "":
                                 raise ArgumentException
                             tags.append(tag)
@@ -805,6 +805,7 @@ class StudentCli(cmd.Cmd):
         """
 
         try:
+            content_to_display = []
             class_to_list = line.split()[0]
             if "users" in class_to_list and not ("courses" in class_to_list) and not ("files" in class_to_list):
                 if len(line.split()) == 1:
@@ -820,7 +821,7 @@ class StudentCli(cmd.Cmd):
                         cli.cli_common.list_all_courses()
             elif "files" in class_to_list and not ("users" in class_to_list) and not ("courses" in class_to_list):
                 if len(line.split()) == 1:
-                    cli.cli_student.list_owned_files(current_user_instance)
+                    content_to_display = cli.cli_student.list_owned_files(current_user_instance)
                 else:
                     raise ArgumentException
             else:
@@ -830,6 +831,8 @@ class StudentCli(cmd.Cmd):
                   "Entrer la commande help list pour plus d'informations sur l'utilisation de list\n")
         except Exception as e:
             print(f"Erreur : {e}\n")
+        else:
+            cli.cli_misc.files_terminal_display(content_to_display)
 
     @staticmethod
     def do_sort(line):
@@ -838,49 +841,38 @@ class StudentCli(cmd.Cmd):
             sort  -  trier les fichiers
 
         # SYNOPSIS
-            sort [OPTION]...
+            sort {on_tags | on_courses}
 
         # DESCRIPTION
             Liste les fichiers de l'utilisateur connecte sur base de l'option ou des options specifiees
 
-            Si aucune option n'est specifie, liste l'entierete des fichiers de l'utilisateur
+            Si le parametre on_tags est declare, les fichiers de l'utilisateur connecte sont tries sur base
+                des etiquettes specifiees.
 
-        # OPTIONS
-            --tags [TAG]...
-                Trie les fichiers de l'utilisateur sur base du ou des tags specifies
-                --tags et --course sont mutuellement exclusifs
+            Si le parametre on_courses est declare, les fichiers de l'utilisateur connecte sont tries sur base
+                des cours specifies.
 
-            --course [COURSE_NAME]
-                Trie les fichiers de l'utilisateur sur base du cours specifie
-                --course et --tags sont mutuellement exclusifs
 
         # AUTHOR
             Ecrit par Gregoire Delannoit
         """
 
         try:
-            # ### Si --tags est dans line (mais pas --course)
-            if ("--tags" in line) and not ("--course" in line):
-                tags = []
-                # OPERATIONS SUR LINE POUR EXTRAIRE TOUS LES TAGS (si il y en a plusieurs)
-                # ENREGISTRER CHAQUE TAG COMME UN ELEMENT DE LA VARIABLE LISTE tags
-                # PAS OUBLIER QUE SI --tags EST PRECISE MAIS QU'AUCUN TAG NE LE SUIT,
-                #       CA DOIT GENERER UNE EXCEPTION ArgumentException
-                # PAR EX :
-                #       if ([pas d'argument precise a la suite de --tags]):
-                #           raise ArgumentException
-                content_to_display = cli.cli_student.list_sorted_files_on_tags(tags)
-
-            # ### Si --course est dans line (mais pas --line)
-            elif ("--course" in line) and not ("--tags" in line):
-                course_name = ""
-                # OPERATIONS SUR LINE POUR EXTRAIRE LE NOM DU COURS
-                # PAS OUBLIER QUE SI --course EST PRECISE MAIS QU'AUCUN COURSE_NAME NE LE SUIT,
-                #       CA DOIT GENERER UNE EXCEPTION ArgumentException
-                # PAR EX :
-                #       if ([pas d'argument precise a la suite de --course]):
-                #           raise ArgumentException
-                content_to_display = cli.cli_student.list_sorted_files_on_course(course_name)
+            if ("on_tags" in line) and not ("on_course" in line) and (len(line.split()) == 1):
+                number_of_tags = int(input("Veuillez entrez le nombre d'etiquettes recherchees :"))
+                tags_research = []
+                for i in range(number_of_tags):
+                    course_name = input("Veuillez entrer l'etiquette :")
+                    tags_research.append(course_name)
+                content_to_display = cli.cli_student.list_sorted_files_on_tags(tags_research, current_user_instance)
+            elif ("on_course" in line) and not ("on_tags" in line) and (len(line.split()) == 1):
+                number_of_courses = int(input("Veuillez entrez le nombre de cours recherches :"))
+                courses_research = []
+                for i in range(number_of_courses):
+                    course_name = input("Veuillez entrer le code du cours :")
+                    courses_research.append(course_name)
+                content_to_display = cli.cli_student.list_sorted_files_on_course(courses_research,
+                                                                                 current_user_instance)
             else:
                 raise ArgumentException
         except ArgumentException:
@@ -889,8 +881,6 @@ class StudentCli(cmd.Cmd):
         except Exception as e:
             print(f"Erreur : {e}\n")
         else:
-            # CETTE FONCTION EST PAS ENCORE IMPLEMENTEE AU PROPRE DONC ESSAYE DE VOIR PAR TOI MEME (avec des print).
-            # SI content_to_display EST GENERE CORRECTEMENT, ON FERA L'AFFICHAGE AU PROPRE PLUS TARD
             cli.cli_misc.files_terminal_display(content_to_display)
 
     @staticmethod
