@@ -121,7 +121,7 @@ class Course:
         if len(new_name) < 6:
             self.__name = new_name
         else:
-            string = new_name[:4]
+            new_name = new_name[:4]
             self.__name = new_name
 
     @description.setter

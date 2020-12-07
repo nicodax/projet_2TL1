@@ -2,7 +2,7 @@
 import getpass
 import pickle
 
-from cli.temp_exceptions import UnknownUsernameException, FileNotOwnedException, FileNotFoundException, \
+from cli.exceptions import UnknownUsernameException, FileNotOwnedException, FileNotFoundException, \
     IncorrectUseOfArgumentsException
 
 
@@ -26,7 +26,33 @@ def users_terminal_display(content_to_display):
 
 
 def files_terminal_display(content_to_display):
-    pass
+    id_max_len = 3
+    course_name_max_len = 5
+    script_max_len = 5
+    pathname_max_len = 50
+    print("id    cours  script  pathname                                            etiquettes")
+    print("---------------------------------------------------------------------------------------------------------"
+          "------------------")
+    for i in content_to_display:
+        add_to_id = ""
+        spaces_to_add_to_id = id_max_len - len(str(i["file_id"]))
+        for j in range(spaces_to_add_to_id):
+            add_to_id += " "
+        add_to_course_name = ""
+        spaces_to_add_to_course_name = course_name_max_len - len(str(i["course_name"]))
+        for j in range(spaces_to_add_to_course_name):
+            add_to_course_name += " "
+        add_to_script = ""
+        spaces_to_add_to_script = script_max_len - len(str(i["script"]))
+        for j in range(spaces_to_add_to_script):
+            add_to_script += " "
+        add_to_pathname = ""
+        spaces_to_add_to_pathname = pathname_max_len - len(str(i["pathname"]))
+        for j in range(spaces_to_add_to_pathname):
+            add_to_pathname += " "
+        print(f" {i['file_id']}{add_to_id}  {i['course_name']}{add_to_course_name}  {i['script']}{add_to_script}  ",
+              f"{i['pathname']}{add_to_pathname}  {i['tags']}")
+    print("\n")
 
 
 def courses_terminal_display(content_to_display):

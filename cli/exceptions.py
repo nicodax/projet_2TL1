@@ -33,3 +33,11 @@ class UnknownObjectException(Exception):
 
 class ImpossibleToDeleteUserException(Exception):
     pass
+
+
+class UnknownObjectNameException(Exception):
+    pass
+
+
+class InexistantDirectoryException(Exception):
+    pass

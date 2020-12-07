@@ -139,6 +139,30 @@ class File:
 
         self.__course_id = new_course_id
 
+    @script.setter
+    def script(self, new_value):
+        """Methode permettant de modifier la valeur de la variable privee script
+
+        PRE : new_value est de type bool
+
+        :param new_value: bool
+            Nouvelle valeur de script
+        """
+
+        self.__script = new_value
+
+    @tags.setter
+    def tags(self, new_tags):
+        """Methode permettant de modifier la valeur de la variable privee tags
+
+        PRE : new_tags est de type list
+
+        :param new_tags: list
+            Nouvelle valeur de tags
+        """
+
+        self.__tags = new_tags
+
     def is_in_tags(self, tag):
         """Methode permettant de definir si un etiquette est attribuee au fichier
 

@@ -28,19 +28,11 @@ def list_all_courses():
         for i in course_instance.teachers:
             course_instance_teachers_string += f"{i}, "
         course_instance_teachers_string = course_instance_teachers_string[:-2]
-        user_display_dict = {
+        course_display_dict = {
             "course_id": course_instance.course_id,
             "course_name": course_instance.name,
             "description": course_instance.description,
             "teachers": course_instance_teachers_string
         }
-        content_to_display.append(user_display_dict)
+        content_to_display.append(course_display_dict)
     cli.cli_misc.courses_terminal_display(content_to_display)
-
-
-def subscribe_user_to_course():
-    pass
-
-
-def unsubscribe_user_from_course():
-    pass

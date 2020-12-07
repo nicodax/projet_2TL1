@@ -1,459 +1,939 @@
 #!/usr/bin/env python3
 import cmd
-import getpass
+import os
+import sys
 
-from classes.exceptions import UnknownPasswordException
-from cli.temp_cli_admin import do_add_teacher, do_remove_teacher, do_reset, do_new, do_del_admin
-from cli.temp_cli_misc import pickle_get_students, pickle_get_admins
-from cli.temp_cli_student import do_del_student, do_mv, do_touch, do_cat, do_write, do_append, do_vi, \
-    do_my_files, do_list_courses, do_my_courses, do_sub, do_unsub, do_specify_course, do_unspecify_course, do_list_users
+import cli.cli_admin
+import cli.cli_common
+import cli.cli_misc
+import cli.cli_student
+import cli.reset
+import gui.open
+from classes.exceptions import UnknownPasswordException, AlreadyInListException, NotInListException
+from cli.exceptions import ArgumentException, FileNotOwnedException, FileNotFoundException, \
+    UnknownUsernameException, ObjectAlreadyExistantException, PasswordNotEqualException, UnknownObjectException, \
+    ImpossibleToDeleteUserException, UnknownObjectNameException, InexistantDirectoryException
 
 
 class AdminCli(cmd.Cmd):
     """Cette classe permet de creer une interface en ligne de commande admin personalisee a l'aide du module cmd"""
-    intro = "Bienvenue dans le shell CLI admin du projet python 2TL1_09 :\n\nIntroduire help ou ? pour lister les " \
-            "commandes disponibles\n\n"
-
-    @staticmethod
-    def do_add_teacher(line):
-        """
-        add_teacher [COURSE_NAME] [TEACHER]
-
-        PRE : line est de type str et correspond a deux sequences de caracteres separees par un espace
-                    - la premiere sequence (course_name) correspond a l'intitule du cours concerne
-                    - la deuxieme sequence (teacher) correspond au nom complet du professeur que l'on
-                        desire ajouter comme titulaire au cours
-        POST : le nom du professeur est indique comme titulaire du cours ssi course_name correspond au nom d'un cours
-            connu du programme
-
-        :param line: str
-            La ligne d'arguments introduite a la suite de l'appel de la fonction do_mv dans l'interface
-                en ligne de commande cree par le module cmd
-        """
-        do_add_teacher(line)
-
-    @staticmethod
-    def do_remove_teacher(line):
-        """
-        remove_teacher [COURSE_NAME] [TEACHER]
-
-        PRE : line est de type str et correspond a deux sequences de caracteres separees par un espace
-                    - la premiere sequence (course_name) correspond a l'intitule du cours concerne
-                    - la deuxieme sequence (teacher) correspond au nom complet du professeur que l'on
-                        desire retirer de la liste des titulaires
-        POST : le nom du professeur est retire de la liste des titulaires du cours ssi course_name correspond
-            au nom d'un cours connu du programme
-
-        :param line: str
-            La ligne d'arguments introduite a la suite de l'appel de la fonction do_mv dans l'interface
-                en ligne de commande cree par le module cmd
-        """
-        do_remove_teacher(line)
+    intro = "\nBienvenue dans le shell CLI admin du projet python 2TL1_09 :\n\nIntroduire help ou ? pour lister les " \
+            "commandes disponibles\n"
 
     @staticmethod
     def do_reset(line):
         """
-        reset
+        # NAME
+            reset  -  reinitialise la memoire du programme
 
-        PRE : line est une chaine de caractere vide
-        RAISES : CommandHasNoArgumentsException si line n'est pas une chaine de caractere vide
+        # SYNOPSIS
+            reset
 
-        Methode permettant de reinitialiser la memoire du programme (elle ne contient plus que les root_users)
+        # DESCRIPTION
+            Reinitialise la memoire du programme.
+                Elle ne contiendra plus que les utilisateurs et les cours d'origine
 
-        :param line: str
-            chaine vide car la fonction reset ne demande pas de parametres
+        # AUTHOR
+            Ecrit par Nicolas Daxhelet
         """
-        do_reset(line)
+
+        try:
+            if line:
+                raise ArgumentException
+            all_students, all_admins, all_files, all_courses, id_dict = cli.reset.reset()
+        except ArgumentException:
+            print("Erreur : les conventions relatives aux options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help reset pour plus d'informations sur l'utilisation de reset\n")
+        except Exception as e:
+            print(f"Erreur : {e}\n")
+        else:
+            cli.cli_misc.pickle_save(all_students, all_admins, all_files, all_courses, id_dict)
+            print("La memoire du programme a ete correctement reinitialisee\n")
 
     @staticmethod
     def do_new(line):
         """
-        new [OPTION=student, admin] [USERNAME] [FULLNAME]
-        new [OPTION=course] [NAME] [TEACHER]...
+        # NAME
+            new  -  creation de nouvelles instances de classes
 
-        Methode permettant de creer une nouvelle instance d'une classe. La classe en question est specifiee par l'option
+        # SYNOPSIS
+            new {student | admin} <USERNAME> <FULLNAME>
+            new {course} <COURSE_NAME> [OPTION]...
 
-        PRE :   - option est de type str et vaut "student" ou "admin" :
-                        * username est de type str et correspond au nom d'utilisateur du futur utilisateur
-                        * fullname est de type str et correspond au nom complet du futur utilisateur
-                        * il sera demande a l'utilisateur d'entrer deux fois un meme mot de passe de type str
-                            avant creation de l'instance
-                - option est de type str et vaut "course" :
-                        * teacher est de type str et correspond a la liste des noms des professeurs separes par des
-                            underscores
-        POST : cree l'instance de la classe specifie ssi elle n'existe pas deja
-            si option correspond a un utilisateur, le mot de passe doit etre identique les deux fois
-        RAISES :    - PasswordNotEqualException si les deux mots de passe entre ne correspondent pas
-                    - ObjectAlreadyExistantException si le nom de l'objet existe deja
+            username ne peut pas comporter d'espaces
 
-        :param line: str
-            La ligne d'arguments introduite a la suite de l'appel de la fonction do_mv dans l'interface
-                en ligne de commande cree par le module cmd
+        # DESCRIPTION
+            Cree une nouvelle instance persistante de la classe specifiee
+
+        # OPTIONS
+            --description
+                Ajout d'une description au cours
+
+            --teachers
+                Ajout d'un ou plusieurs professeurs titulaires au cours
+
+        # AUTHOR
+            Ecrit par Nicolas Daxhelet
         """
-        do_new(line)
+
+        try:
+            class_to_create = line.split()[0]
+            if (("student" in class_to_create) ^ ("admin" in class_to_create)) and not ("course" in class_to_create):
+                if len(line.split()) >= 3:
+                    username = line.split()[1]
+                    fullname_list = line.split()[2:]
+                    fullname = ""
+                    for i in fullname_list:
+                        fullname += i + " "
+                    fullname = fullname[:-1]
+                    if "student" in class_to_create:
+                        cli.cli_admin.new_student(username, fullname)
+                    else:
+                        cli.cli_admin.new_admin(username, fullname)
+                else:
+                    raise ArgumentException
+            elif "course" in class_to_create and not (("student" in class_to_create) or ("admin" in class_to_create)):
+                course_name = line.split()[1]
+                number_of_arguments = 2
+                description = ""
+                teachers = []
+                if "--description" in line:
+                    number_of_arguments += 1
+                if "--teachers" in line:
+                    number_of_arguments += 1
+                if len(line.split()) == number_of_arguments:
+                    if "--description" in line:
+                        description = input(f"Veuillez entrer une description pour le cours {course_name} :")
+                        if description == "":
+                            raise ArgumentException
+                    if "--teachers" in line:
+                        teachers_number = input("Veuillez entrer le nombre de professeurs titulaires du cours :")
+                        if not teachers_number.isnumeric():
+                            raise ArgumentException
+                        for i in range(int(teachers_number)):
+                            teacher_temp = input(f"Veuillez entre le nom du titulaire numero {i+1} :")
+                            if teacher_temp == "":
+                                raise ArgumentException
+                            teachers.append(teacher_temp)
+                    cli.cli_admin.new_course(course_name, teachers, description)
+                else:
+                    raise ArgumentException
+            else:
+                raise ArgumentException
+        #except ArgumentException:
+         #   print("Erreur : les conventions relatives aux options et leurs arguments n'ont pas ete respectees\n",
+          #        "Entrer la commande help new pour plus d'informations sur l'utilisation de new\n")
+        except ObjectAlreadyExistantException:
+            print("Erreur : L'instance de classe existe deja\n")
+        except PasswordNotEqualException:
+            print("Erreur : Les mots de passes entres ne correspondent pas\n")
+        #except Exception as e:
+         #   print(f"Erreur : {e}\n")
+        else:
+            print("L'instance de classe a correctement ete cree\n")
 
     @staticmethod
     def do_del(line):
         """
-        del [OPTION=student, admin] [USERNAME]
-        del [OPTION=course] [NAME]
+        # NAME
+            del  -  suppression d'instances de classes
 
-        Methode permettant de creer une nouvelle instance d'une classe. La classe en question est specifiee par l'option
+        # SYNOPSIS
+            del {student | admin} <USERNAME>
+            del {course} <COURSE_NAME>
 
-        PRE :   - option est de type str et vaut "student" ou "admin" :
-                        * username est de type str et correspond au nom d'utilisateur du futur utilisateur
-                        * fullname est de type str et correspond au nom complet du futur utilisateur
-                - option est de type str et vaut "course" :
-                        * teacher est de type str et correspond a la liste des noms des professeurs separes par des
-                            underscores
-        POST : cree l'instance de la classe specifie ssi elle n'existe pas deja
-                - si l'instance est un utilisateur, toutes les instances des fichiers qu'il possede sont supprimees
-                    et il est desinscrit de tous ses cours
-                - si l'instance est un cours, toutes les instances des fichiers qui lui sont associes voient leur
-                    attribut prive course_id devenir None et tous les etudiants inscrits a ce cours en sont desinscrits
+        # DESCRIPTION
+            Supprime l'instance de classe persistante specifiee
 
-        :param line: str
-            La ligne d'arguments introduite a la suite de l'appel de la fonction do_mv dans l'interface
-                en ligne de commande cree par le module cmd
+        # AUTHOR
+            Ecrit par Nicolas Daxhelet
+
+        # RAISES
+            ImpossibleToDeleteUserException
+                L'utilisateur fait partie des utilisateurs initialises par le programme ou
+                l'utilisateur correspond a l'utilisateur connecte
         """
-        do_del_admin(line, user_instance)
+
+        try:
+            class_to_delete = line.split()[0]
+            if (("student" in class_to_delete) ^ ("admin" in class_to_delete)) and not ("course" in class_to_delete):
+                if len(line.split()) == 2:
+                    username = line.split()[1]
+                    if (username in cli.reset.initial_users) or (username == current_user_instance.username):
+                        raise ImpossibleToDeleteUserException
+                    if "student" in class_to_delete:
+                        cli.cli_admin.delete_student(username)
+                    else:
+                        cli.cli_admin.delete_admin(username)
+                else:
+                    raise ArgumentException
+            elif "course" in class_to_delete and not (("student" in class_to_delete) or ("admin" in class_to_delete)):
+                course_name = line.split()[1]
+                if len(line.split()) == 2:
+                    cli.cli_admin.delete_course(course_name)
+                else:
+                    raise ArgumentException
+            else:
+                raise ArgumentException
+        except ArgumentException:
+            print("Erreur : les conventions relatives aux options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help del pour plus d'informations sur l'utilisation de del\n")
+        except UnknownObjectException:
+            print("Erreur : L'instance de classe n'existe pas\n")
+        except ImpossibleToDeleteUserException:
+            print("Erreur : Impossible de suprimmer cet utilisateur\n")
+        except Exception as e:
+            print(f"Erreur : Une erreur est survenue : {e}\n")
+        else:
+            print("L'instance de classe a correctement ete supprimee\n")
 
     @staticmethod
-    def do_list_users(usertype):
+    def do_list(line):
         """
-        list_users [USERTYPE=all, students, admins]
+        # NAME
+            list  -  liste des instances de classes persistantes
 
-        Methode permettant de lister les utilisateurs connus du programme
+        # SYNOPSIS
+            list {users} [OPTION]...
+            list {courses}
 
-        PRE : usertype est de type str et peut correspondre a trois valeurs differentes (all, students, admins)
-        POST : liste en console la liste des utilisateurs demandes
-            ssi usertype correspond a une des trois valeurs admises
+        # DESCRIPTION
+            Liste les instances persistantes de la classe specifiee
 
-        :param usertype: str
-            correspond au type d'utilisateur a lister : all, students, admins
+            list users
+                Sans preciser d'option, list affiche les utilisateurs etudiants
+
+        # OPTIONS
+            --all
+                Liste l'entierete des utilisateurs
+                --all et --admins sont mutuellement exclusifs
+
+            --admins
+                Liste les utilisateurs administrateurs
+                --admins et --all sont mutuellement exclusifs
+
+        # AUTHOR
+            Ecrit par Nicolas Daxhelet
         """
-        do_list_users(usertype)
+
+        try:
+            class_to_list = line.split()[0]
+            if "users" in class_to_list and not ("courses" in class_to_list):
+                if "--all" in line and not ("--admins" in line):
+                    if len(line.split()) == 2:
+                        cli.cli_common.list_all_students()
+                        cli.cli_admin.list_all_admins()
+                    else:
+                        raise ArgumentException
+                elif "--admins" in line and not ("--all" in line):
+                    if len(line.split()) == 2:
+                        cli.cli_admin.list_all_admins()
+                    else:
+                        raise ArgumentException
+                elif len(line.split()) == 1:
+                    cli.cli_common.list_all_students()
+                else:
+                    raise ArgumentException
+            elif "courses" in class_to_list and not ("users" in class_to_list) and (len(line.split()) == 1):
+                cli.cli_common.list_all_courses()
+            else:
+                raise ArgumentException
+        except ArgumentException:
+            print("Erreur : les conventions relatives aux options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help list pour plus d'informations sur l'utilisation de list\n")
+        except Exception as e:
+            print(f"Erreur : {e}\n")
 
     @staticmethod
-    def do_list_courses(line):
+    def do_course(line):
         """
-        courses
+        # NAME
+            course  -  Ajoute ou supprime des proffesseurs titulaires ou l'intitule du cours
 
-        PRE : line est une chaine de caractere vide
-        RAISES : CommandHasNoArgumentsException si line n'est pas une chaine de caractere vide
+        # SYNOPSIS
+            course <COURSE_NAME> {add} {teacher | description}
+            course <COURSE_NAME> {remove} {teacher | description} [OPTION]
 
-        Methode permettant de lister les cours connus du programme
+        # DESCRIPTION
+            Liste les instances persistantes de la classe specifiee
 
-        :param line: str
-            chaine vide car la fonction reset ne demande pas de parametres
+            list users
+                Sans preciser d'option, list affiche les utilisateurs etudiants
+
+        # OPTIONS
+            --all
+                Supprime l'entierete des proffesseurs titulaires
+                --all ne peut s'emplyer qu'avec course remove teacher
+
+        # AUTHOR
+            Ecrit par Nicolas Daxhelet
         """
 
-        do_list_courses(line)
+        try:
+            course_action = line.split()[1]
+            course_name = line.split()[0]
+            if "add" in course_action:
+                course_attribute = line.split()[2]
+                if "teacher" in course_attribute:
+                    if len(line.split()) == 3:
+                        teacher_name = input("Veuillez entrer le nom du proffesseur a ajouter a la liste des"
+                                             "titulaires du cours :")
+                        if teacher_name == "":
+                            raise ArgumentException
+                        cli.cli_admin.course_add_teacher(course_name, teacher_name)
+                    else:
+                        raise ArgumentException
+                elif "description" in course_attribute:
+                    if len(line.split()) == 3:
+                        description = input("Veuillez entrer l'intitule du cours :")
+                        if description == "":
+                            raise ArgumentException
+                        cli.cli_admin.course_add_description(course_name, description)
+                    else:
+                        raise ArgumentException
+                else:
+                    raise ArgumentException
+            elif "remove" in course_action:
+                course_attribute = line.split()[2]
+                if "teacher" in course_attribute:
+                    all_teachers = False
+                    if (len(line.split()) == 4) and (line.split()[3] == "--all"):
+                        all_teachers = True
+                    if (len(line.split()) == 3) or ((line.split()[3] == "--all") and (len(line.split()) == 4)):
+                        teacher_name = input("Veuillez entrer le nom du proffesseur a retirer de la liste des "
+                                             "titulaires du cours :")
+                        cli.cli_admin.course_remove_teacher(course_name, teacher_name, all_teachers)
+                    else:
+                        raise ArgumentException
+                elif "description" in course_attribute:
+                    if len(line.split()) == 3:
+                        cli.cli_admin.course_remove_description(course_name)
+                    else:
+                        raise ArgumentException
+                else:
+                    raise ArgumentException
+            else:
+                raise ArgumentException
+        except ArgumentException:
+            print("Erreur : les conventions relatives aux options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help course pour plus d'informations sur l'utilisation de course\n")
+        except AlreadyInListException:
+            print("Le cours possede deja un des attributs specifies\n")
+        except NotInListException:
+            print("Le cours ne possede pas un des attributs specifies\n")
+        except Exception as e:
+            print(f"Erreur : {e}\n")
+        else:
+            print("L'operation a ete effectuee avec succes\n")
+
+    @staticmethod
+    def do_exit(line):
+        """
+        # NAME
+            exit  -  Deconnection de l'utilisateur
+
+        # SYNOPSIS
+            exit
+
+        # DESCRIPTION
+            Termine la session de l'utilisateur et ferme le programme
+
+        # AUTHOR
+            Ecrit par Nicolas Daxhelet
+        """
+
+        try:
+            if line != "":
+                raise ArgumentException
+        except ArgumentException:
+            print("Erreur : les conventions relatives aux options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help exit pour plus d'informations sur l'utilisation de exit\n")
+        except Exception as e:
+            print(f"Erreur : {e}\n")
+        else:
+            sys.exit("Merci d'avoir utilise la CLI admin du projet python 2TL1_09\n")
 
 
-class Cli(cmd.Cmd):
+class StudentCli(cmd.Cmd):
     """Cette classe permet de creer une interface en ligne de commande personalisee a l'aide du module cmd"""
-    intro = "Bienvenue dans le shell CLI du projet python 2TL1_09 :\n\nIntroduire help ou ? pour lister les " \
-            "commandes disponibles\n\n"
+    intro = "\nBienvenue dans le shell CLI du projet python 2TL1_09 :\n\nIntroduire help ou ? pour lister les " \
+            "commandes disponibles"
 
     @staticmethod
-    def do_del(pathname):
+    def do_new(line):
         """
-        del [PATHNAME]
+        # NAME
+            new  -  cree un fichier
 
-        Methode permettant de supprimer un fichier a la fois des donnes de fonctionnement du programme et
-            de la memoire locale ou distante
+        # SYNOPSIS
+            new <file> <PATHNAME> [OPTION]...
 
-        PRE : pathname est de type str et correspond au pathname du fichier a supprimer
-        POST :  - le fichier est suprimme du programme et de la memoire locale ou distante ssi pathname correspond
-                    au pathname d'un fichier existant et connu du programme et ssi l'utilisateur connecte possede
-                    ce fichier
-                - le file_id du fichier est retiré des listes files des instances des classes Student et Course
-                    appropriees ssi elles existent
+        # DESCRIPTION
+            Cree un fichier et ajoute ce fichier a la liste des fichiers connus du programme
+                Si ce fichier existe deja sur la memoire, il est simplement ajoute a la liste des fichiers connus
+                du programme
 
-        :param pathname: str
-            Correspond au pathname du fichier a supprimer sur la memoire locale ou distante
+        #OPTIONS
+            --script
+                Precise que le fichier est un script
+
+            --course
+                Precise que le fichier traite d'un cours specifique
+
+            --tags
+                Ajoute une (ou plusieurs) etiquettes au fichier
+
+        # AUTHOR
+            Ecrit par Nicolas Daxhelet
         """
-        do_del_student(pathname, user_instance)
+
+        try:
+            if line.split()[0] != "file":
+                raise ArgumentException
+            number_of_args = 2
+            if "--script" in line:
+                number_of_args += 1
+            if "--course" in line:
+                number_of_args += 1
+            if "--tags" in line:
+                number_of_args += 1
+            if len(line.split()) == number_of_args:
+                persistent_data = cli.cli_misc.pickle_get(files_arg=True, courses_arg=True)
+                all_files = persistent_data[2]
+                all_courses = persistent_data[3]
+                pathname = line.split()[1]
+                if pathname in all_files["name_id_dict"]:
+                    raise ObjectAlreadyExistantException
+                course_id = None
+                script = False
+                tags = None
+                directory_pathname = os.path.dirname(pathname)
+                if os.path.isdir(directory_pathname):
+                    if "--course" in line:
+                        course_name = input("Veuillez entre le code du cours a associer au fichier :")
+                        if course_name in all_courses["name_id_dict"]:
+                            course_id = all_courses["name_id_dict"][course_name]
+                        else:
+                            raise UnknownObjectNameException
+                    if "--script" in line:
+                        script = True
+                    if "--tags" in line:
+                        number_of_tags = input("Veuillez entrer le nombre d'etiquettes a coller au fichier :")
+                        if not number_of_tags.isnumeric():
+                            raise ArgumentException
+                        tags = []
+                        for i in range(int(number_of_tags)):
+                            tag = input(f"Veuillez entre l'etiquette numero {i+1} :")
+                            if tag == "":
+                                raise ArgumentException
+                            tags.append(tag)
+                            print(tags)
+                    cli.cli_student.new_file(pathname, script, course_id, tags, current_user_instance)
+                else:
+                    raise InexistantDirectoryException
+            else:
+                raise ArgumentException
+        except ArgumentException:
+            print("Erreur : les conventions relatives aux options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help new pour plus d'informations sur l'utilisation de new\n")
+        except InexistantDirectoryException:
+            print("Erreur : Le chemin specifie pour le fichier a creer n'existe pas\n")
+        except UnknownObjectNameException:
+            print("Erreur : Le cours n'existe pas\n")
+        except ObjectAlreadyExistantException:
+            print("Erreur : Le fichier est deja connu du programme:\n")
+        except Exception as e:
+            print(f"Erreur : {e}\n")
+        else:
+            print("Le fichier est maintenant connu du programme\n")
 
     @staticmethod
-    def do_mv(line):
+    def do_del(line):
         """
-        mv [CURRENT_PATHNAME] [NEW_PATHNAME]
+        # NAME
+            del  -  suprimme un fichier
 
-        Methode permettant de deplacer et/ou de renommer un fichier sur la memoire locale ou distante
-            et de mettre a jour les donnees de fonctionnoment du programme en consequence
+        # SYNOPSIS
+            del <file> <PATHNAME>
 
-        PRE : line est de type str et correspond a deux sequences de caracteres separees par un espace
-                    - la premiere sequence (current_pathname) correspond au pathname
-                        actuel du fichier a deplacer/renommer
-                    - la deuxieme sequence (new_pathname) correspond au pathname
-                        desire pour le fichier a deplacer/renommer
-        POST : le fichier est deplace/renomme sur la memoire locale ou distante ssi :
-                    - current_pathname correspond au pathname d'un fichier existant et connu du programme
-                    - le chemin d'acces specifie par pathname correspond a un chemin existant sur la memoire
-                        locale ou distante
-        RAISES : NumberOfArgumentsException si l'utilisateur n'entre pas exactement deux arguments apres l'appel
-            de la commande
+        # DESCRIPTION
+            Suprimme un fichier de la liste des fichiers connus du programme et de la memoire
 
-        :param line: str
-            La ligne d'arguments introduite a la suite de l'appel de la fonction do_mv dans l'interface
-                en ligne de commande cree par le module cmd
+        # AUTHOR
+            Ecrit par Nicolas Daxhelet
+
+        # RAISES
+            FileNotOwnedException
+                L'utilisateur tente d'acceder a un fichier possede par un autre utilisateur
+            FileNotFoundException
+                Le programme ne connait pas le fichier specifie par PATHNAME
         """
-        do_mv(line, user_instance)
+
+        try:
+            if line.split()[0] != "file":
+                raise ArgumentException
+            if len(line.split()) == 2:
+                pathname = line.split()[1]
+                file_instance = cli.cli_misc.pickle_get_file_if_owned(current_user_instance, pathname)
+                cli.cli_student.delete_file(file_instance, current_user_instance)
+            else:
+                raise ArgumentException
+        except ArgumentException:
+            print("Erreur : les conventions relatives aux options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help del pour plus d'informations sur l'utilisation de del\n")
+        except FileNotOwnedException:
+            print("Erreur : Le fichier ne vous appartient pas\n")
+        except FileNotFoundException:
+            print("Erreur : Le fichier n'existe pas\n")
+        except Exception as e:
+            print(f"Erreur : {e}\n")
+        else:
+            print("Le fichier a correctement ete suprimme\n")
 
     @staticmethod
-    def do_sort():
-        pass
+    def do_file(line):
+        """
+        # NAME
+            file  -  effectue des modifications sur les proprietes d'un fichier
+
+        # SYNOPSIS
+            file <PATHNAME> {script} {True | False}
+            file <PATHNAME> {add} {course | tag}
+            file <PATHNAME> {remove} {course | tag} [OPTION]
+
+        # DESCRIPTION
+            Effectues des modifications sur les proprietes d'un fichier connu du programme
+
+        # OPTIONS
+            --all
+                Supprime l'entierete des etiquettes du fichier
+                --all ne peut s'emplyer qu'avec file remove tag
+
+        # AUTHOR
+            Ecrit par Nicolas Daxhelet
+
+        # RAISES
+            FileNotOwnedException
+                L'utilisateur tente d'acceder a un fichier possede par un autre utilisateur
+            FileNotFoundException
+                Le programme ne connait pas le fichier specifie par PATHNAME
+        """
+
+        try:
+            pathname = line.split()[0]
+            cli.cli_misc.pickle_get_file_if_owned(current_user_instance, pathname)
+            if "script" in line.split()[1]:
+                if len(line.split()) == 3:
+                    script = line.split()[2]
+                    if script == 'True':
+                        script = True
+                    elif script == 'False':
+                        script = False
+                    else:
+                        raise ArgumentException
+                    cli.cli_student.file_change_script_attribute(pathname, script)
+                else:
+                    raise ArgumentException
+            elif "add" in line.split()[1]:
+                if len(line.split()) == 3:
+                    if "course" in line.split()[2]:
+                        course_name = input("Veuillez entrer le cours a associer au fichier :")
+                        cli.cli_student.file_add_course(pathname, course_name)
+                    elif "tag" in line.split()[2]:
+                        tag_number = input("Veuillez entrer le nombre d'etiquettes a associer au fichier :")
+                        if not tag_number.isnumeric():
+                            raise ArgumentException
+                        tags = []
+                        for i in range(int(tag_number)):
+                            tag = input(f"Veuillez entre l'etiquette numero {i+1} :")
+                            if tag == "":
+                                raise ArgumentException
+                            tags.append(tag)
+                        cli.cli_student.file_add_tag(pathname, tags)
+                    else:
+                        raise ArgumentException
+                else:
+                    raise ArgumentException
+            elif "remove" in line.split()[1]:
+                if "course" in line.split()[2]:
+                    cli.cli_student.file_remove_course(pathname)
+                elif "tag" in line.split()[2]:
+                    all_tags = False
+                    if (len(line.split()) == 4) and (line.split()[3] == "--all"):
+                        all_tags = True
+                    if (len(line.split()) == 3) or ((line.split()[3] == "--all") and (len(line.split()) == 4)):
+                        tag = []
+                        if not all_tags:
+                            tag = input("Veuillez entrer l'etiquette a retirer du fichier :")
+                            if tag == "":
+                                raise ArgumentException
+                        cli.cli_student.file_remove_tag(pathname, tag)
+                    else:
+                        raise ArgumentException
+                else:
+                    raise ArgumentException
+            else:
+                raise ArgumentException
+        except ArgumentException:
+            print("Erreur : les conventions relatives au options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help file pour plus d'informations sur l'utilisation de file\n")
+        except FileNotOwnedException:
+            print("Erreur : le fichier appartient a un autre utilisateur\n")
+        except FileNotFoundException:
+            print("Erreur : le fichier est introuvable\n")
+        except AlreadyInListException:
+            print("Le fichier possede deja un des attributs specifies\n")
+        except NotInListException:
+            print("Le fichier ne possede pas un des attributs specifies\n")
+        except Exception as e:
+            print(f"Erreur : {e}\n")
+        else:
+            print("L'operation a ete effectuee avec succes\n")
+
+    @staticmethod
+    def do_move(line):
+        """
+        # NAME
+            move  -  deplace un fichier
+
+        # SYNOPSIS
+            move <CURRENT_PATHNAME> <NEW_PATHNAME>
+
+        # DESCRIPTION
+            Deplace un fichier sur la memoire
+
+        # AUTHOR
+            Ecrit par Nicolas Daxhelet
+
+        # RAISES
+            FileNotOwnedException
+                L'utilisateur tente d'acceder a un fichier possede par un autre utilisateur
+            FileNotFoundException
+                Le programme ne connait pas le fichier specifie par PATHNAME
+        """
+
+        try:
+            if len(line.split()) == 2:
+                current_pathname = line.split()[0]
+                new_pathname = line.split()[1]
+                cli.cli_misc.pickle_get_file_if_owned(current_user_instance, current_pathname)
+                cli.cli_student.move_file(current_pathname, new_pathname)
+            else:
+                raise ArgumentException
+        except ArgumentException:
+            print("Erreur : les conventions relatives au options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help sort pour plus d'informations sur l'utilisation de sort\n")
+        except FileNotOwnedException:
+            print(f"Erreur : le fichier appartient a un autre utilisateur\n")
+        except FileNotFoundException:
+            print(f"Erreur : le fichier est introuvable\n")
+        except Exception as e:
+            print(f"Erreur : {e}\n")
+        else:
+            os.rename(current_pathname, new_pathname)
+            print("Le fichier a correctement ete deplace\n")
 
     @staticmethod
     def do_open(pathname):
-        pass
-
-    @staticmethod
-    def do_touch(line):
         """
-        touch [PATHNAME] [OPTION]...
+        # NAME
+            open  -  ouvre un fichier dans l'editeur de texte de la GUI
 
-        OPTIONS :
-                --course [COURSENAME]
-                    permet d'assigner le fichier a un cours
-                --tag [TAG]...
-                    permet d'assigner un ou plusieurs tags au fichier
-                --script [BOOL]
-                    permet de signifier que le contenu du fichier est un script
+        # SYNOPSIS
+            open <PATHNAME>
 
+        # DESCRIPTION
+            Ouvre le fichier specifie par PATHNAME dans l'editeur de texte de la GUI
 
-        Methode permettant de creer un fichier vide a la fois pour le programme et sur la memoire locale ou distante
+        # AUTHOR
+            Ecrit par Gregoire Delannoit
 
-        PRE :   - pathname est de type str et correspond au pathname du fichier a creer
-                - (--course) coursename est de type str et correspond au nom du cours auquel on veut associer le fichier
-                - (--tag) chaque tag est de type str
-                - (--script) bool est de type bool
-        POST : le fichier est cree dans le programme et sur la memoire locale ou distante ssi pathname ne correspond
-            au pathname d'aucun fichier existant sur la memoire locale ou distante ou a un fichier connu du programme
-            si une option est specifiee :
-                --course : l'identifiant unique du cours precise est inscrit dans l'attribut prive course du fichier et
-                        l'identifiant unique du fichier est inscrit dans la liste files du cours specifie
-                        Si cette option n'est pas specifie, la valeur None est enregistree a la place
-                --tag : chaque tag specifie est inscrit comme un element de la liste tags du fichier
-                        Si cette option n'est pas specifiee, la valeur None est enregistree a la place
-                --script : la valeur de l'attribut prive script du fichier est passe a bool
-                        Si cette option n'est pas specifiee, la valeur False est enregistree a la place
-
-        :param line: str
-            La ligne d'arguments introduite a la suite de l'appel de la fonction do_touch dans l'interface
-                en ligne de commande cree par le module cmd
+        # RAISES
+            FileNotOwnedException
+                L'utilisateur tente d'acceder a un fichier possede par un autre utilisateur
+            FileNotFoundException
+                Le programme ne connait pas le fichier specifie par PATHNAME
         """
-        do_touch(line, user_instance)
-
-    @staticmethod
-    def do_cat(pathname):
-        """
-        cat [PATHNAME]
-
-        Methode permettant d'afficher en console le contenu d'un fichier
-
-        PRE : pathname est de type str et correspond au pathname d'un fichier existant et connu du programme
-        POST : le contenu du fichier est affiche en console ssi pathname correspond au pathname d'un fichier
-            existant sur la memoire locale ou distante et connu du programme
-        RAISES :
-
-        :param pathname: str
-            Correspond au pathname sur la memoire locale ou distante du fichier dont on desire afficher
-                le contenu en console
-        """
-        do_cat(pathname)
-
-    @staticmethod
-    def do_write(line):
-        """
-        write [PATHNAME] [CONTENT]
-
-        Methode permettant d'ecrire du contenu dans un fichier
-
-        PRE : line est de type str et correspond a deux sequences de caracteres separees par un espace
-                    - la premiere sequence (pathname) correspond au pathname
-                        d'un fichier existant et connu du programme
-                    - la deuxieme sequence (content) correspond au contenu
-                        que l'on desire ecrire sur le fichier
-        POST : content est ecrit sur le fichier ssi pathname correspond au pathname d'un fichier existant sur la
-            memoire locale ou distante et connu du programme
-
-        :param line: str
-            La ligne d'arguments introduite a la suite de l'appel de la fonction do_write dans l'interface
-                en ligne de commande cree par le module cmd
-        """
-        do_write(line, user_instance)
-
-    @staticmethod
-    def do_append(line):
-        """
-        append [PATHNAME] [CONTENT]
-
-        Methode permettant d'ecrire du contenu a la fin d'un fichier
-
-        PRE : line est de type str et correspond a deux sequences de caracteres separees par un espace
-                    - la premiere sequence (pathname) correspond au pathname
-                        d'un fichier existant et connu du programme
-                    - la deuxieme sequence (content) correspond au contenu
-                        que l'on desire ecrire a la fin du fichier
-        POST : content est ecrit dans le fichier ssi pathname correspond au pathname d'un fichier existant sur la
-            memoire locale ou distante et connu du programme
-
-        :param line: str
-            La ligne d'arguments introduite a la suite de l'appel de la fonction do_write dans l'interface
-                en ligne de commande cree par le module cmd
-        """
-        do_append(line, user_instance)
+        try:
+            if not pathname:
+                raise ArgumentException
+            cli.cli_misc.pickle_get_file_if_owned(current_user_instance, pathname)
+            gui.open.open_file(pathname)
+        except ArgumentException:
+            print("Erreur : les conventions relatives au options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help move pour plus d'informations sur l'utilisation de move\n")
+        except FileNotOwnedException:
+            print(f"Erreur : le fichier appartient a un autre utilisateur\n")
+        except FileNotFoundException:
+            print(f"Erreur : le fichier est introuvable\n")
+        except Exception as e:
+            print(f"Erreur : {e}\n")
 
     @staticmethod
     def do_vi(pathname):
         """
-        vi [PATHNAME]
+        # NAME
+            vi  -  ouvre un fichier dans l'editeur de texte vi
 
-        Methode permettant d'ouvrir un fichier dans l'editeur de texte vi
+        # SYNOPSIS
+            vi <PATHNAME>
 
-        PRE : pathname est de type str et correspond au pathname d'un fichier existant et connu du programme
-        POST : le fichier est ouvert dans vi en console ssi pathname correspond au pathname d'un fichier
-            existant sur la memoire locale ou distante et connu du programme
+        # DESCRIPTION
+            Ouvre le fichier specifie par PATHNAME dans l'editeur de texte vi
 
-        :param pathname: str
-            Correspond au pathname sur la memoire locale ou distante du fichier que l'on desire editer avec vi
+        # AUTHOR
+            Ecrit par Nicolas Daxhelet
+
+        # RAISES
+            FileNotOwnedException
+                L'utilisateur tente d'acceder a un fichier possede par un autre utilisateur
+            FileNotFoundException
+                Le programme ne connait pas le fichier specifie par PATHNAME
         """
-        do_vi(pathname, user_instance)
 
-    @staticmethod
-    def do_my_files(line):
-        """
-        my_files
-
-        PRE : line est une chaine de caractere vide
-        RAISES : CommandHasNoArgumentsException si line n'est pas une chaine de caractere vide
-
-        Methode permettant de lister les fichiers appartenant a l'utilisateur connecte
-
-        :param line: str
-            chaine vide car la fonction reset ne demande pas de parametres
-        """
-        do_my_files(line, user_instance)
-
-    @staticmethod
-    def do_list_courses(line):
-        """
-        courses
-
-        PRE : line est une chaine de caractere vide
-        RAISES : CommandHasNoArgumentsException si line n'est pas une chaine de caractere vide
-
-        Methode permettant de lister les cours connus du programme
-
-        :param line: str
-            chaine vide car la fonction reset ne demande pas de parametres
-        """
-        do_list_courses(line)
-
-    @staticmethod
-    def do_my_courses(line):
-        """
-        my_courses
-
-        PRE : line est une chaine de caractere vide
-        RAISES : CommandHasNoArgumentsException si line n'est pas une chaine de caractere vide
-
-        Methode permettant de lister les cours auxquels l'utilisateur connecte est inscrit
-
-        :param line: str
-            chaine vide car la fonction reset ne demande pas de parametres
-        """
-        do_my_courses(line, user_instance)
+        try:
+            if not pathname:
+                raise ArgumentException
+            cli.cli_misc.pickle_get_file_if_owned(current_user_instance, pathname)
+            cli.cli_student.open_file_in_vi(pathname)
+        except ArgumentException:
+            print("Erreur : les conventions relatives au options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help vi pour plus d'informations sur l'utilisation de vi\n")
+        except FileNotOwnedException:
+            print(f"Erreur : le fichier appartient a un autre utilisateur\n")
+        except FileNotFoundException:
+            print(f"Erreur : le fichier est introuvable\n")
+        except FileExistsError:
+            print(f"Erreur : Le fichier n'existe pas")
+        except IOError:
+            print('Erreur : IO')
+        except Exception as e:
+            print(f"Erreur : {e}\n")
 
     @staticmethod
     def do_sub(course_name):
         """
-        sub [COURSE_NAME]
+        # NAME
+            sub  -  inscrit l'utilisateur a un cours
 
-        PRE : course_name est de type str et correspond au nom d'un cours connu du programme
-        POST : inscrit l'utilisateur connecte au cours ssi le cours est connu du programme
-        RAISES : UnknownObjectNameException si le cours n'existe pas
+        # SYNOPSIS
+            sub <COURSE_NAME>
 
-        :param course_name: str
-            Le nom du cours auquel l'utilisateur connecte desire s'inscrire
+        # DESCRIPTION
+            Inscrit l'utilisateur au cours specifie
+
+        # AUTHOR
+            Ecrit par Nicolas Daxhelet
         """
-        do_sub(course_name, user_instance)
+
+        try:
+            if not course_name:
+                raise ArgumentException
+            cli.cli_student.subscribe_user_to_course(course_name, current_user_instance)
+        except ArgumentException:
+            print("Erreur : les conventions relatives au options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help sub pour plus d'informations sur l'utilisation de sub\n")
+        except FileNotOwnedException:
+            print(f"Erreur : le fichier appartient a un autre utilisateur\n")
+        except FileNotFoundException:
+            print(f"Erreur : le fichier est introuvable\n")
+        except AlreadyInListException:
+            print("Vous etes deja inscrit a ce cours\n")
+        except Exception as e:
+            print(f"Erreur : {e}\n")
+        else:
+            print("Vous avez ete correctement inscrit au cours")
 
     @staticmethod
     def do_unsub(course_name):
         """
-        unsub [COURSE_NAME]
+        # NAME
+            unsub  -  desinscrit l'utilisateur d'un cours
 
-        PRE : course_name est de type str et correspond au nom d'un cours connu du programme
-        POST : desinscrit l'utilisateur connecte du cours ssi le cours est connu du programme
-        RAISES : UnknownObjectNameException si le cours n'existe pas
+        # SYNOPSIS
+            unsub <COURSE_NAME>
 
-        :param course_name: str
-            Le nom du cours auquel l'utilisateur connecte desire s'inscrire
+        # DESCRIPTION
+            Desinscrit l'utilisateur du cours specifie
+
+        # AUTHOR
+            Ecrit par Nicolas Daxhelet
         """
-        do_unsub(course_name, user_instance)
+
+        try:
+            if not course_name:
+                raise ArgumentException
+            cli.cli_student.unsubscribe_user_from_course(course_name, current_user_instance)
+        except ArgumentException:
+            print("Erreur : les conventions relatives au options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help sub pour plus d'informations sur l'utilisation de sub\n")
+        except FileNotOwnedException:
+            print(f"Erreur : le fichier appartient a un autre utilisateur\n")
+        except FileNotFoundException:
+            print(f"Erreur : le fichier est introuvable\n")
+        except NotInListException:
+            print("Vous n'etes pas inscrit a ce cours\n")
+        except Exception as e:
+            print(f"Erreur : {e}\n")
+        else:
+            print("Vous avez ete correctement desinscrit du cours")
 
     @staticmethod
-    def do_specify_course(line):
+    def do_list(line):
         """
-        specify_course [PATHNAME] [COURSE_NAME]
+        # NAME
+            list  -  liste des instances de classes persistantes
 
-        PRE : line est de type str et correspond a deux sequences de caracteres separees par un espace
-                    - la premiere sequence (pathname) correspond au pathname
-                        d'un fichier existant et connu du programme
-                    - la deuxieme sequence (course_name) correspond au nom d'un cours existant
-        POST : specifie que le fichier traite du cours precise ssi le fichier et le cours existent
-        RAISES : UnknownObjectNameException si le cours et/ou le fichier n'existe pas
+        # SYNOPSIS
+            list {users}
+            list {courses} [OPTION]
+            list {files}
 
-        :param line: str
-            La ligne d'arguments introduite a la suite de l'appel de la fonction do_write dans l'interface
-                en ligne de commande cree par le module cmd
+        # DESCRIPTION
+            Liste les instances persistantes de la classe specifiee
+
+            list courses
+                Sans preciser d'option, list affiche tous les cours
+
+        # OPTIONS
+            --subbed
+                Liste les cours auxquels l'utilisateur est inscrit
+                --subbed ne peut s'utiliser qu'avec list courses
+
+        # AUTHOR
+            Ecrit par Nicolas Daxhelet
         """
-        do_specify_course(line)
+
+        try:
+            class_to_list = line.split()[0]
+            if "users" in class_to_list and not ("courses" in class_to_list) and not ("files" in class_to_list):
+                if len(line.split()) == 1:
+                    cli.cli_common.list_all_students()
+                else:
+                    raise ArgumentException
+            elif "courses" in class_to_list and not ("users" in class_to_list) and not ("files" in class_to_list):
+                if "--subbed" in line:
+                    if len(line.split()) == 2:
+                        cli.cli_student.list_subbed_courses(current_user_instance)
+                else:
+                    if len(line.split()) == 1:
+                        cli.cli_common.list_all_courses()
+            elif "files" in class_to_list and not ("users" in class_to_list) and not ("courses" in class_to_list):
+                if len(line.split()) == 1:
+                    cli.cli_student.list_owned_files(current_user_instance)
+                else:
+                    raise ArgumentException
+            else:
+                raise ArgumentException
+        except ArgumentException:
+            print("Erreur : les conventions relatives aux options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help list pour plus d'informations sur l'utilisation de list\n")
+        except Exception as e:
+            print(f"Erreur : {e}\n")
 
     @staticmethod
-    def do_unspecify_course(pathname):
+    def do_sort(line):
         """
-        unspecify_course [PATHNAME]
+        # NAME
+            sort  -  trier les fichiers
 
-        PRE : pathname est de type str et correspond a un fichier existant et connu du programme
-        POST : supprimme les liens entre le fichier et le cours auquel il est associe
-        RAISES : UnknownObjectNameException si le fichier n'existe pas
+        # SYNOPSIS
+            sort [OPTION]...
 
-        :param pathname: str
-            Le chemin d'acces vers le fichier sur la memoire locale ou distante
+        # DESCRIPTION
+            Liste les fichiers de l'utilisateur connecte sur base de l'option ou des options specifiees
+
+            Si aucune option n'est specifie, liste l'entierete des fichiers de l'utilisateur
+
+        # OPTIONS
+            --tags [TAG]...
+                Trie les fichiers de l'utilisateur sur base du ou des tags specifies
+                --tags et --course sont mutuellement exclusifs
+
+            --course [COURSE_NAME]
+                Trie les fichiers de l'utilisateur sur base du cours specifie
+                --course et --tags sont mutuellement exclusifs
+
+        # AUTHOR
+            Ecrit par Gregoire Delannoit
         """
-        do_unspecify_course(pathname)
+
+        try:
+            # ### Si --tags est dans line (mais pas --course)
+            if ("--tags" in line) and not ("--course" in line):
+                tags = []
+                # OPERATIONS SUR LINE POUR EXTRAIRE TOUS LES TAGS (si il y en a plusieurs)
+                # ENREGISTRER CHAQUE TAG COMME UN ELEMENT DE LA VARIABLE LISTE tags
+                # PAS OUBLIER QUE SI --tags EST PRECISE MAIS QU'AUCUN TAG NE LE SUIT,
+                #       CA DOIT GENERER UNE EXCEPTION ArgumentException
+                # PAR EX :
+                #       if ([pas d'argument precise a la suite de --tags]):
+                #           raise ArgumentException
+                content_to_display = cli.cli_student.list_sorted_files_on_tags(tags)
+
+            # ### Si --course est dans line (mais pas --line)
+            elif ("--course" in line) and not ("--tags" in line):
+                course_name = ""
+                # OPERATIONS SUR LINE POUR EXTRAIRE LE NOM DU COURS
+                # PAS OUBLIER QUE SI --course EST PRECISE MAIS QU'AUCUN COURSE_NAME NE LE SUIT,
+                #       CA DOIT GENERER UNE EXCEPTION ArgumentException
+                # PAR EX :
+                #       if ([pas d'argument precise a la suite de --course]):
+                #           raise ArgumentException
+                content_to_display = cli.cli_student.list_sorted_files_on_course(course_name)
+            else:
+                raise ArgumentException
+        except ArgumentException:
+            print("Erreur : les conventions relatives au options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help sort pour plus d'informations sur l'utilisation de sort\n")
+        except Exception as e:
+            print(f"Erreur : {e}\n")
+        else:
+            # CETTE FONCTION EST PAS ENCORE IMPLEMENTEE AU PROPRE DONC ESSAYE DE VOIR PAR TOI MEME (avec des print).
+            # SI content_to_display EST GENERE CORRECTEMENT, ON FERA L'AFFICHAGE AU PROPRE PLUS TARD
+            cli.cli_misc.files_terminal_display(content_to_display)
+
+    @staticmethod
+    def do_exit(line):
+        """
+        # NAME
+            exit  -  Deconnection de l'utilisateur
+
+        # SYNOPSIS
+            exit
+
+        # DESCRIPTION
+            Termine la session de l'utilisateur et ferme le programme
+
+        # AUTHOR
+            Ecrit par Nicolas Daxhelet
+        """
+
+        try:
+            if line != "":
+                raise ArgumentException
+        except ArgumentException:
+            print("Erreur : les conventions relatives aux options et leurs arguments n'ont pas ete respectees\n",
+                  "Entrer la commande help exit pour plus d'informations sur l'utilisation de exit\n")
+        except Exception as e:
+            print(f"Erreur : {e}\n")
+        else:
+            sys.exit("Merci d'avoir utilise la CLI du projet python 2TL1_09\n")
 
 
 if __name__ == "__main__":
-    username = input("Veuillez entrer votre nom d'utilisateur :")
-    students = pickle_get_students()
-    admins = pickle_get_admins()
-    if username in students["name_id_dict"]:
-        try:
-            pwd = getpass.getpass("Veuillez entrer votre mot de passe :")
-            user_id = students["name_id_dict"][username]
-            user_instance = students["objects_dict"][user_id]
-            user_instance.verify_pwd(pwd)
-        except UnknownPasswordException:
-            print("Le mot de passe est errone")
-        else:
-            Cli.prompt = f"({username}) >>"
-            Cli().cmdloop()
-    elif username in admins["name_id_dict"]:
-        try:
-            pwd = getpass.getpass("Veuillez entrer votre mot de passe :")
-            user_id = admins["name_id_dict"][username]
-            user_instance = admins["objects_dict"][user_id]
-            user_instance.verify_pwd(pwd)
-        except UnknownPasswordException:
-            print("Le mot de passe est errone")
-        else:
-            AdminCli.prompt = f"({username}) ##"
-            AdminCli().cmdloop()
+    try:
+        current_user_instance, current_user_is_admin = cli.cli_misc.login()
+    except UnknownUsernameException:
+        print("Le nom d'utilisateur n'existe pas\n")
+    except UnknownPasswordException:
+        print("Le mot de passe est incorrect\n")
+    except Exception as exception:
+        print(f"Une erreur est survenue : {exception}\n")
     else:
-        print("Le nom d'utilisateur n'existe pas")
+        if current_user_is_admin:
+            AdminCli.prompt = f"({current_user_instance.username}) ##"
+            AdminCli().cmdloop()
+        else:
+            StudentCli.prompt = f"({current_user_instance.username}) >>"
+            StudentCli().cmdloop()

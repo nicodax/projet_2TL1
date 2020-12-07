@@ -5,7 +5,7 @@ from classes.course import Course
 from classes.user import Student, Admin
 import cli.cli_misc
 import cli.reset
-from cli.temp_exceptions import ObjectAlreadyExistantException, PasswordNotEqualException
+from cli.exceptions import ObjectAlreadyExistantException, PasswordNotEqualException
 
 
 def new_student(username, fullname):
@@ -111,7 +111,7 @@ def course_add_description(course_name, description):
     persistent_data = cli.cli_misc.pickle_get(courses_arg=True)
     all_courses = persistent_data[3]
     course_instance = cli.cli_misc.pickle_get_instance(course_name, course=True)
-    course_instance.description(description)
+    course_instance.description = description
     all_courses["objects_dict"][course_instance.course_id] = course_instance
     cli.cli_misc.pickle_save(all_courses=all_courses)
 
@@ -132,6 +132,6 @@ def course_remove_description(course_name):
     persistent_data = cli.cli_misc.pickle_get(courses_arg=True)
     all_courses = persistent_data[3]
     course_instance = cli.cli_misc.pickle_get_instance(course_name, course=True)
-    course_instance.description("")
+    course_instance.description = ""
     all_courses["objects_dict"][course_instance.course_id] = course_instance
     cli.cli_misc.pickle_save(all_courses=all_courses)
