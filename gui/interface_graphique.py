@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 ########################################################################################################
 #LOGIN WINDOW
 ########################################################################################################
@@ -76,4 +77,9 @@ def attribute_tag():
 def attribute_course():
     # Cette fonction est liee un bouton qui une fois clique attribue le cours selectionne dans une liste
     #   au fichier ouvert.
+    pass
+
+
+
+if __name__ == "__main__":
     pass

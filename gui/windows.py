@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from kivy.app import App
 from kivy.config import Config
 from kivy.uix.boxlayout import BoxLayout
@@ -18,12 +19,7 @@ class LoginApp(App):
         return box
 
 
-
 Config.set('graphics', 'width', '350')
 Config.set('graphics', 'height', '50')
 
 LoginApp().run()
-
-
-def test():
-    print('yo ca va')
