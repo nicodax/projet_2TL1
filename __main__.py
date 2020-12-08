@@ -11,7 +11,7 @@ import cli.reset
 from classes.exceptions import UnknownPasswordException, AlreadyInListException, NotInListException
 from cli.exceptions import ArgumentException, FileNotOwnedException, FileNotFoundException, \
     UnknownUsernameException, ObjectAlreadyExistantException, PasswordNotEqualException, UnknownObjectException, \
-    ImpossibleToDeleteUserException, UnknownObjectNameException, InexistantDirectoryException
+    ImpossibleToDeleteUserException, InexistantDirectoryException
 
 
 class AdminCli(cmd.Cmd):
@@ -415,7 +415,7 @@ class StudentCli(cmd.Cmd):
                         if course_name in all_courses["name_id_dict"]:
                             course_id = all_courses["name_id_dict"][course_name]
                         else:
-                            raise UnknownObjectNameException
+                            raise UnknownObjectException
                     if "--script" in line:
                         script = True
                     if "--tags" in line:
@@ -439,7 +439,7 @@ class StudentCli(cmd.Cmd):
                   "Entrer la commande help new pour plus d'informations sur l'utilisation de new\n")
         except InexistantDirectoryException:
             print("Erreur : Le chemin specifie pour le fichier a creer n'existe pas\n")
-        except UnknownObjectNameException:
+        except UnknownObjectException:
             print("Erreur : Le cours n'existe pas\n")
         except ObjectAlreadyExistantException:
             print("Erreur : Le fichier est deja connu du programme:\n")

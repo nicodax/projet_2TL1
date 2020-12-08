@@ -7,6 +7,10 @@ from cli.exceptions import UnknownUsernameException, FileNotOwnedException, File
 
 
 def users_terminal_display(content_to_display):
+    """
+    PRE : content_to_display est de type dict
+    POST : affiche et met en forme les informations contenues dans content_to_display (relatif a des utilisateurs)
+    """
     id_max_len = 3
     username_max_len = 25
     print(" id   username                         fullname")
@@ -26,6 +30,10 @@ def users_terminal_display(content_to_display):
 
 
 def files_terminal_display(content_to_display):
+    """
+    PRE : content_to_display est de type dict
+    POST : affiche et met en forme les informations contenues dans content_to_display (relatif a des fichiers)
+    """
     id_max_len = 3
     course_name_max_len = 5
     script_max_len = 5
@@ -56,6 +64,10 @@ def files_terminal_display(content_to_display):
 
 
 def courses_terminal_display(content_to_display):
+    """
+    PRE : content_to_display est de type dict
+    POST : affiche et met en forme les informations contenues dans content_to_display (relatif a des cours)
+    """
     id_max_len = 3
     name_max_len = 5
     description_max_len = 50
@@ -81,7 +93,13 @@ def courses_terminal_display(content_to_display):
 
 
 def pickle_get_file_if_owned(user_instance, pathname):
-    """Methode renvoyant l'instance de la classe File associee a un fichier si l'utilisateur connecte le possede"""
+    """
+    PRE :   - user_instance est l'instance de Student correspondant a l'utilisateur connecte
+            - pathname est de type str
+    POST : retourne l'instance de la classe File identifie a pathname ssi elle appartient a user_instance
+    RAISES :    - FileNotOwnedException si l'instance de File existe mais n'appartient pas a user_instance
+                - FileNotFoundException si l'instance de File n'existe pas
+    """
 
     persistent_data = pickle_get(files_arg=True)
     all_files = persistent_data[2]
@@ -100,6 +118,15 @@ def pickle_get_file_if_owned(user_instance, pathname):
 def pickle_get(students_arg=False, admins_arg=False, files_arg=False, courses_arg=False, id_dict_arg=False):
     """Fonction permettant de recuperer les classes persistantes du programme
             Seules les classes specifies dans les parametres sont recuperees
+    PRE : students_arg, admins_arg, files_arg, courses_arg et id_dict_arg sont de type bool
+    POST : retourne une liste contenant des dictionnaires a des index precis
+                - si students_arg == True, all_students se trouve a l'index 0
+                - si admins_arg == True, all_admins se trouve a l'index 1
+                - si files_arg == True, all_files se trouve a l'index 2
+                - si courses_arg == True, all_courses se trouve a l'index 3
+                - si id_dict_arg == True, id_dict se trouve a l'index 4
+            Plusieurs arguments peuvent valoir True en même temps
+            chaque dictionnaire correspond a l'entierete des instances persistantes du programme d'une classe specifique
     """
 
     all_students = {}
@@ -128,7 +155,12 @@ def pickle_get(students_arg=False, admins_arg=False, files_arg=False, courses_ar
 
 
 def pickle_get_instance(name, student=False, admin=False, file=False, course=False):
-    """Fonction permettant de recuperer une instance persistante specifique"""
+    """
+    PRE :   - name est de type str
+            - student, admin, file et course sont de type bool
+    POST : retourne l'instance de la classe specifie par l'unique argument valant True et identifie par name
+    RAISES : IncorrectUseOfArgumentsException si plusieurs arguments ont la valeur True
+    """
 
     if student and not admin and not file and not course:
         with open("pickle_saves/students.pkl", 'rb') as students_file:
@@ -159,8 +191,9 @@ def pickle_get_instance(name, student=False, admin=False, file=False, course=Fal
 
 
 def pickle_save(all_students=None, all_admins=None, all_files=None, all_courses=None, id_dict=None):
-    """Fonction permettant d'enregistrer les modifications sur les classes persistantes du programme
-            Seules les classes specfiees dans les parametres sont sauvegardees
+    """
+    PRE : all_students, all_admins, all_files, all_courses et id_dict sont soit de type dict soit None
+    POST : enregistre chaque dictionnaire passe en argument
     """
 
     if all_students is not None:
@@ -181,7 +214,9 @@ def pickle_save(all_students=None, all_admins=None, all_files=None, all_courses=
 
 
 def login():
-    """Fonction permettant de se connecter a un compte utilisateur"""
+    """
+    POST : permet de se connecter a un compte utilisateur
+    """
 
     username = input("Veuillez entrer votre nom d'utilisateur :")
     persistent_data = pickle_get(students_arg=True, admins_arg=True)

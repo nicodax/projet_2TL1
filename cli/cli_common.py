@@ -3,6 +3,9 @@ import cli.cli_misc
 
 
 def list_all_students():
+    """
+    POST : cree un dictionnaire des informations relatives aux etudiants
+    """
     persistent_data = cli.cli_misc.pickle_get(students_arg=True)
     all_students = persistent_data[0]
     content_to_display = []
@@ -19,6 +22,9 @@ def list_all_students():
 
 
 def list_all_courses():
+    """
+    POST : cree un dictionnaire des informations relatives aux cours
+    """
     persistent_data = cli.cli_misc.pickle_get(courses_arg=True)
     all_courses = persistent_data[3]
     content_to_display = []

@@ -9,8 +9,7 @@ from cli.exceptions import ObjectAlreadyExistantException, PasswordNotEqualExcep
 
 
 def new_student(username, fullname):
-    """Fonction permetant de creer une nouvelle instance de la classe Student
-
+    """
     PRE : username et fullname sont de type str
     POST : cree une instance de Student ssi le username n'existe pas deja
     RAISES :    - ObjectAlreadyExistantException si le username existe deja
@@ -34,8 +33,7 @@ def new_student(username, fullname):
 
 
 def new_admin(username, fullname):
-    """Fonction permetant de creer une nouvelle instance de la classe Admin
-
+    """
     PRE : username et fullname sont de type str
     POST : cree une instance de Admin ssi le username n'existe pas deja
     RAISES :    - ObjectAlreadyExistantException si le username existe deja
@@ -59,8 +57,7 @@ def new_admin(username, fullname):
 
 
 def new_course(course_name, teachers, description):
-    """Fonction permetant de creer une nouvelle instance de la classe Course
-
+    """
     PRE :   - course_name et description sont de type str
             - teachers est de type list
     POST : cree une instance de Course ssi le code de cours n'existe pas deja
@@ -79,10 +76,9 @@ def new_course(course_name, teachers, description):
 
 
 def delete_student(username):
-    """Fonction permetant de supprimer une instance de la classe Student
-
+    """
     PRE : username est de type str
-    POST : supprime l'instance de Student si le username existe
+    POST : supprime l'instance de Student correspondant a username si le username existe
     RAISES : UnknownObjectException si le username n'existe pas
     """
     persistent_data = cli.cli_misc.pickle_get(students_arg=True)
@@ -96,10 +92,9 @@ def delete_student(username):
 
 
 def delete_admin(username):
-    """Fonction permetant de supprimer une instance de la classe Admin
-
+    """
     PRE : username est de type str
-    POST : supprime l'instance de Admin si le username existe
+    POST : supprime l'instance de Admin correspondant a username si le username existe
     RAISES : UnknownObjectException si le username n'existe pas
     """
     persistent_data = cli.cli_misc.pickle_get(admins_arg=True)
@@ -113,11 +108,10 @@ def delete_admin(username):
 
 
 def delete_course(course_name):
-    """Fonction permetant de supprimer une instance de la classe Course
-
+    """
     PRE : course_name est de type str
-    POST : supprime l'instance de Course si le cours existe
-    RAISES : UnknownObjectException si le cours n'existe pas
+    POST : supprime l'instance de Course correspondant a course_name si le course_name existe
+    RAISES : UnknownObjectException si le course_name n'existe pas
     """
     persistent_data = cli.cli_misc.pickle_get(courses_arg=True)
     all_courses = persistent_data[3]
@@ -130,7 +124,9 @@ def delete_course(course_name):
 
 
 def list_all_admins():
-    """Fonction permettant de lister l'entierete des utilisateurs administrateurs"""
+    """
+    POST : cree un dictionnaire des informations relatives aux administrateurs
+    """
     persistent_data = cli.cli_misc.pickle_get(admins_arg=True)
     all_admins = persistent_data[1]
     content_to_display = []
@@ -147,10 +143,9 @@ def list_all_admins():
 
 
 def course_add_teacher(course_name, teacher_name):
-    """Fonction permettant d'ajouter un proffesseur titulaire a un cours
-
+    """
     PRE : course_name et teacher_name sont de type str
-    POST : ajoute le professeur a la liste des professeurs titulaires du cours ssi le cours existe
+    POST : ajoute teacher_name a la liste des professeurs titulaires du cours ssi le course_name existe
     RAISES : UnknownObjectException si le cours n'existe pas
     """
     persistent_data = cli.cli_misc.pickle_get(courses_arg=True)
@@ -164,11 +159,10 @@ def course_add_teacher(course_name, teacher_name):
 
 
 def course_add_description(course_name, description):
-    """Fonction permettant d'ajouter un intitule a un cours
-
+    """
     PRE : course_name et description sont de type str
-    POST : ajoute un intitule au cours ssi le cours existe
-    RAISES : UnknownObjectException si le cours n'existe pas
+    POST : modifie la description du cours ssi course_name existe
+    RAISES : UnknownObjectException si le course_name n'existe pas
     """
     persistent_data = cli.cli_misc.pickle_get(courses_arg=True)
     all_courses = persistent_data[3]
@@ -181,12 +175,11 @@ def course_add_description(course_name, description):
 
 
 def course_remove_teacher(course_name, teacher_name, all_teachers):
-    """Fonction permettant de retirer un proffesseur titulaire d'un cours
-
+    """
     PRE :   - course_name et teacher_name sont de type str
             - all_teachers est de type bool
-    POST : retire le professeur a la liste des professeurs titulaires du cours ssi le cours existe
-    RAISES : UnknownObjectException si le cours n'existe pas
+    POST : retire teacher_name de la liste des professeurs titulaires du cours ssi course_name existe
+    RAISES : UnknownObjectException si course_name n'existe pas
     """
     persistent_data = cli.cli_misc.pickle_get(courses_arg=True)
     all_courses = persistent_data[3]
@@ -202,11 +195,10 @@ def course_remove_teacher(course_name, teacher_name, all_teachers):
 
 
 def course_remove_description(course_name):
-    """Fonction permettant de supprimer l'intitule d'un cours
-
+    """
     PRE : course_name est de type str
-    POST : supprime l'intitule du cours ssi le cours existe
-    RAISES : UnknownObjectException si le cours n'existe pas
+    POST : supprime la description du cours ssi course_name existe
+    RAISES : UnknownObjectException si course_name n'existe pas
     """
     persistent_data = cli.cli_misc.pickle_get(courses_arg=True)
     all_courses = persistent_data[3]
