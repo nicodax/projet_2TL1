@@ -14,9 +14,6 @@ class Course:
         students        Liste les noms des etudiants inscrits au cours
         course_id       Identifiant unique associe au cours
         description     L'intitule du cours
-
-    Variables de classe:
-        course_id_counter     Compteur necessaire a la creation d'identifiants uniques
     """
 
     def __init__(self, name, teachers, course_id, description=""):
@@ -24,11 +21,9 @@ class Course:
 
         PRE :   - name est de type str
                 - teachers est de type list
-
-        :param name: str
-            Le code permettant d'identifier le cours
-        :param teachers: list
-            Liste les noms (str) des professeurs titulaires du cours
+                - course_id est de type int
+                - description est de type str
+        POST : initialise a vide les listes self.__files et self.description
         """
 
         self.name = name
@@ -40,82 +35,52 @@ class Course:
 
     @property
     def students(self):
-        """Methode permettant d'acceder a la variable privee students
-
-        :return self.__students : list
-            Liste des etudiants inscrits au cours
-        """
+        """Methode permettant d'acceder a self.__students"""
 
         return self.__students
 
     @property
     def name(self):
-        """Methode permettant d'acceder a la variable privee name
-
-        :return self.__name : str
-            L'intitule permettant d'identifier le cours
-        """
+        """Methode permettant d'acceder a self.__name"""
 
         return self.__name
 
     @property
     def teachers(self):
-        """Methode permettant d'acceder a la variable privee teachers
-
-        :return self.__teachers : list
-            Liste les noms (str) des professeurs titulaires du cours
-        """
+        """Methode permettant d'acceder a self.__teachers"""
 
         return self.__teachers
 
     @property
     def files(self):
-        """Methode permettant d'acceder a la variable privee files
-
-        :return self.__files : list
-            Liste les identifiants uniques des fichiers (file_id : int)
-            se rapportant au cours
-        """
+        """Methode permettant d'acceder a self.__files"""
 
         return self.__files
 
     @property
     def course_id(self):
-        """Methode permettant d'acceder a la variable privee course_id
-
-        :return self.__course_id : int
-            Identifiant unique associe au cours
-        """
+        """Methode permettant d'acceder a self.__course_id"""
 
         return self.__course_id
 
     def __str__(self):
-        """Methode permettant d'imprimer la description du cours en console
-
-        :return self.__description : str
-            Description du cours
-        """
+        """Methode permettant d'imprimer la description du cours en console"""
 
         return self.__description
 
     @property
     def description(self):
-        """Methode permettant d'acceder a la variable privee description
-
-        :return self.__description : str
-            L'intitule du cours
-        """
+        """Methode permettant d'acceder a self.description"""
 
         return self.__description
 
     @name.setter
     def name(self, new_name):
-        """Methode permettant de definir la valeur de l'attribut prive name
+        """Methode permettant de definir la valeur de self.__name
 
-        PRE : new_name est de type str et correspond au code du cours
-
-        :param new_name: str
-            Le nouveau code du cours
+        PRE :  new_name est de type str
+        POST : attribue la valeur de new_name a self.__name ssi elle fait moins de 5 caracteres.
+                    Sinon, attribue les 5 premiers caracteres de new_name
         """
 
         if len(new_name) < 6:
@@ -126,12 +91,11 @@ class Course:
 
     @description.setter
     def description(self, string):
-        """Methode permettant de definir la valeur de l'attribut prive description
+        """Methode permettant de definir la valeur de self.description
 
-        PRE : string est de type str et correspond a la description du cours
-
-        :param string: str
-            L'intitule du cours
+        PRE :  string est de type str
+        POST : attribue la valeur de string a self.description ssi elle fait moins de 50 caracteres.
+                    Sinon, attribue les 50 premiers caracteres de string
         """
 
         if len(string) < 51:
@@ -142,12 +106,9 @@ class Course:
 
     @teachers.setter
     def teachers(self, new_list):
-        """Methode permettant de definir la valeur de l'attribut prive teachers
+        """Methode permettant de definir la valeur de self.__teachers
 
-        PRE : new_list est de type list et correspond a la liste des proffesseurs titulaires du cours
-
-        :param new_list: list
-            Liste des proffesseurs titulaires du cours
+        PRE : new_list est de type list
         """
 
         self.__teachers = new_list
@@ -156,12 +117,7 @@ class Course:
         """Methode permettant de definir si un professeur est titulaire du cours
 
         PRE : name est de type str
-        POST : retourne True si le professeur est deja repertoriee dans la liste teachers
-
-        :param name: str
-            Le nom du professeur dont on cherche a savoir si il est deja titulaire du cours
-        :return: bool
-            Indique si le nom du professeur est deja repertorie dans la liste
+        POST : retourne True si le professeur est deja repertoriee dans la liste self.__teachers, retourne False sinon
         """
 
         return name in self.__teachers
@@ -170,12 +126,9 @@ class Course:
         """Methode permettant d'ajouter le nom d'un professeur a la liste des
         professeurs titulaires du cours
 
-        PRE : name est de type str et n'est pas deja repertorie dans la liste teachers
-        POST : ajoute le nom du professeur a la liste teachers ssi il n'y etait pas deja repertorie
+        PRE : name est de type str
+        POST : ajoute le nom du professeur a la liste self.__teachers ssi il n'y etait pas deja repertorie
         RAISES : AlreadyInListException si le nom est deja repertorie dans la liste
-
-        :param name: str
-            Le nom du professeur
         """
 
         if not self.is_in_teachers(name):
@@ -187,12 +140,9 @@ class Course:
         """Methode permettant de supprimer le nom d'un professeur de la liste
         des professeurs titulaires du cours
 
-        PRE : name est de type str et correspond a une entree de la liste teachers
-        POST : retire le nom du professeur de la liste teachers ssi il y est deja repertorie
+        PRE : name est de type str
+        POST : retire le nom du professeur de la liste self.__teachers ssi il y est deja repertorie
         RAISES : NotInListException si le nom n'est pas deja repertorie dans la liste
-
-        :param name: str
-            Le nom du professeur
         """
 
         if self.is_in_teachers(name):
@@ -204,12 +154,7 @@ class Course:
         """Methode permettant de definir si un fichier est attribué au cours
 
         PRE : file_id est de type int
-        POST : retourne True si le fichier est deja repertoriee dans la liste files
-
-        :param file_id: int
-            L'identifiant unique du fichier dont on cherche a determiner si il est deja attribue au cours
-        :return: bool
-            Indique si l'identifiant est deja repertorie dans la liste
+        POST : retourne True si le fichier est deja repertoriee dans la liste self.__files, retourne False sinon
         """
 
         return file_id in self.__files
@@ -218,12 +163,9 @@ class Course:
         """Methode permettant d'ajouter l'identifiant unique d'un fichier a la liste
         des fichiers associes au cours.
 
-        PRE : file_id est de type int et n'est pas deja repertorie dans la liste files
-        POST : ajoute file_id dans la liste ssi il n'y etait pas deja repertorie
+        PRE : file_id est de type int
+        POST : ajoute file_id dans la liste self.__files ssi il n'y etait pas deja repertorie
         RAISES : AlreadyInListException si file_id est deja repertorie dans la liste
-
-        :param file_id: int
-            L'identifiant unique du fichier se rapportant au cours
         """
 
         if not self.is_in_files(file_id):
@@ -235,12 +177,9 @@ class Course:
         """Methode permettant de supprimer l'identifiant unique d'un fichier a la liste
         des fichiers associes au cours.
 
-        PRE : file_id est de type int et est deja repertorie dans la liste files
-        POST : retire file_id de la liste ssi il y etait deja repertorie
+        PRE : file_id est de type int
+        POST : retire file_id de la liste self.__files ssi il y etait deja repertorie
         RAISES : NotInListException si file_id n'est pas repertorie dans la liste
-
-        :param file_id: int
-            L'identifiant unique du fichier se rapportant au cours
         """
 
         if self.is_in_files(file_id):
@@ -252,12 +191,7 @@ class Course:
         """Methode permettant de definir si un etudiant est inscrit au cours
 
         PRE : user_id est de type int
-        POST : retourne True si l'etudiant est deja repertoriee dans la liste students
-
-        :param user_id: int
-            L'identifiant unique de l'etudiant pour lequel on cherche a determiner si il est deja inscrit au cours
-        :return: bool
-            Indique si l'identifiant est deja repertorie dans la liste
+        POST : retourne True si l'etudiant est deja repertoriee dans la liste self.__students, retourne False sinon
         """
 
         return user_id in self.__students
@@ -266,12 +200,9 @@ class Course:
         """Methode permettant d'ajouter l'identifiant unique d'un etudiant a la liste
         des etudiants inscrits au cours.
 
-        PRE : user_id est de type int et n'est pas deja repertorie dans la liste students
-        POST : ajoute user_id dans la liste ssi il n'y etait pas deja repertorie
+        PRE : user_id est de type int
+        POST : ajoute user_id dans la liste self.__students ssi il n'y etait pas deja repertorie
         RAISES : AlreadyInListException si user_id est deja repertorie dans la liste
-
-        :param user_id: int
-            L'identifiant unique de l'etudiant inscrit au cours
         """
 
         if not self.is_in_students(user_id):
@@ -283,12 +214,9 @@ class Course:
         """Methode permettant de supprimer l'identifiant unique d'un etudiant de la liste
         des etudiants inscrits au cours.
 
-        PRE : user_id est de type int et est deja repertorie dans la liste files
-        POST : retire user_id de la liste ssi il y etait deja repertorie
+        PRE : user_id est de type int
+        POST : retire user_id de la liste self.__students ssi il y etait deja repertorie
         RAISES : NotInListException si user_id n'est pas repertorie dans la liste
-
-        :param user_id: int
-            L'identifiant unique de l'etudiant inscrit au cours
         """
 
         if self.is_in_students(user_id):

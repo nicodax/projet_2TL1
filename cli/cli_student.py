@@ -7,6 +7,15 @@ import cli.cli_misc
 
 
 def new_file(pathname, script, course_id, tags, student_instance):
+    """Fonction permetant de creer une nouvelle instance de la classe File
+
+    PRE :   - pathname est de type str
+            - script est de type bool
+            - course_id est de type int
+            - tags est soit de type list soit None
+            - student_instance est une instance de la classe Student
+    POST : cree une instance de File
+    """
     persistent_data = cli.cli_misc.pickle_get(students_arg=True, files_arg=True, courses_arg=True, id_dict_arg=True)
     all_students = persistent_data[0]
     all_files = persistent_data[2]
@@ -28,6 +37,12 @@ def new_file(pathname, script, course_id, tags, student_instance):
 
 
 def delete_file(file_instance, student_instance):
+    """Fonction permetant de supprimer une instance de la classe File
+
+    PRE :   - file_instance est une instance de la classe File
+            - student_instance est une instance de la classe Student
+    POST : supprime une instance de File
+    """
     persistent_data = cli.cli_misc.pickle_get(students_arg=True, files_arg=True, courses_arg=True)
     all_students = persistent_data[0]
     all_files = persistent_data[2]
@@ -48,6 +63,12 @@ def delete_file(file_instance, student_instance):
 
 
 def file_change_script_attribute(pathname, script):
+    """Fontion permettant de modifier l'attribut prive script d'une instance de File
+
+    PRE :   - pathname est de type str
+            - script est de type bool
+    POST : change la valeur de script
+    """
     persistent_data = cli.cli_misc.pickle_get(files_arg=True)
     all_files = persistent_data[2]
     file_instance = cli.cli_misc.pickle_get_instance(pathname, file=True)
@@ -57,6 +78,11 @@ def file_change_script_attribute(pathname, script):
 
 
 def file_add_course(pathname, course_name):
+    """Fonction permettant d'associer un cours a une instance de File
+
+    PRE : pathname et course_name sont de type str
+    POST : associe le cours au fichier
+    """
     persistent_data = cli.cli_misc.pickle_get(files_arg=True, courses_arg=True)
     all_files = persistent_data[2]
     all_courses = persistent_data[3]
@@ -70,11 +96,15 @@ def file_add_course(pathname, course_name):
 
 
 def file_add_tag(pathname, tags):
+    """Fonction permettant d'ajouter une ou plusieurs etiquettes a une instance de File
+
+    PRE :   - pathname est de type str
+            - tags est de type list
+    POST : ajoute la ou les etiquettes au fichier
+    """
     persistent_data = cli.cli_misc.pickle_get(files_arg=True)
     all_files = persistent_data[2]
     file_instance = cli.cli_misc.pickle_get_instance(pathname, file=True)
-    print(file_instance.tags)
-    print(tags)
     for i in range(len(tags)):
         file_instance.add_tag(tags[i])
     all_files["objects_dict"][file_instance.file_id] = file_instance
@@ -82,6 +112,11 @@ def file_add_tag(pathname, tags):
 
 
 def file_remove_course(pathname):
+    """Fonction permettant de dissocier un cours d'une instance de File
+
+    PRE : pathname est de type str
+    POST : dissocie le cours du fichier
+    """
     persistent_data = cli.cli_misc.pickle_get(files_arg=True)
     all_files = persistent_data[2]
     file_instance = cli.cli_misc.pickle_get_instance(pathname, file=True)
@@ -91,6 +126,11 @@ def file_remove_course(pathname):
 
 
 def file_remove_tag(pathname, tag):
+    """Fonction permettant d'ajouter une ou plusieurs etiquettes a une instance de File
+
+    PRE : pathname et tag sont de type str
+    POST : retire l'etiquette du fichier
+    """
     persistent_data = cli.cli_misc.pickle_get(files_arg=True)
     all_files = persistent_data[2]
     file_instance = cli.cli_misc.pickle_get_instance(pathname, file=True)
@@ -103,6 +143,11 @@ def file_remove_tag(pathname, tag):
 
 
 def move_file(current_pathname, new_pathname):
+    """Fonction permettant de modifier le pathname d'un fichier
+
+    PRE : current_pathname et new_pathname sont de type str
+    POST : modifie le pathname du fichier
+    """
     persistent_data = cli.cli_misc.pickle_get(files_arg=True)
     all_files = persistent_data[2]
     file_instance = cli.cli_misc.pickle_get_instance(current_pathname, file=True)
@@ -114,11 +159,17 @@ def move_file(current_pathname, new_pathname):
 
 
 def open_file_in_vi(pathname):
+    """Fonction permetant d'ouvrir un fichier dans l'editeur de texte vi
+
+    PRE : pathname est de type str
+    POST : ouvre le fichier dans vi
+    """
     editor = os.getenv('EDITOR', 'vi')
     subprocess.call(f"{editor} {pathname}", shell=True)
 
 
 def list_subbed_courses(user_instance):
+    """Fonction permettant de lister l'entierete des fichiers """
     persistent_data = cli.cli_misc.pickle_get(courses_arg=True)
     all_courses = persistent_data[3]
     content_to_display = []

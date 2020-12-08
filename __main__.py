@@ -8,7 +8,6 @@ import cli.cli_common
 import cli.cli_misc
 import cli.cli_student
 import cli.reset
-import gui.open
 from classes.exceptions import UnknownPasswordException, AlreadyInListException, NotInListException
 from cli.exceptions import ArgumentException, FileNotOwnedException, FileNotFoundException, \
     UnknownUsernameException, ObjectAlreadyExistantException, PasswordNotEqualException, UnknownObjectException, \
@@ -111,7 +110,7 @@ class AdminCli(cmd.Cmd):
                         if not teachers_number.isnumeric():
                             raise ArgumentException
                         for i in range(int(teachers_number)):
-                            teacher_temp = input(f"Veuillez entre le nom du titulaire numero {i + 1} :")
+                            teacher_temp = input(f"Veuillez entrer le nom du titulaire numero {i + 1} :")
                             if teacher_temp == "":
                                 raise ArgumentException
                             teachers.append(teacher_temp)
@@ -321,6 +320,8 @@ class AdminCli(cmd.Cmd):
             print("Le cours possede deja un des attributs specifies\n")
         except NotInListException:
             print("Le cours ne possede pas un des attributs specifies\n")
+        except UnknownObjectException:
+            print("Erreur : L'instance de classe n'existe pas\n")
         except Exception as e:
             print(f"Erreur : {e}\n")
         else:
@@ -410,7 +411,7 @@ class StudentCli(cmd.Cmd):
                 directory_pathname = os.path.dirname(pathname)
                 if os.path.isdir(directory_pathname):
                     if "--no_course" not in line:
-                        course_name = input("Veuillez entre le code du cours a associer au fichier:")
+                        course_name = input("Veuillez entrer le code du cours a associer au fichier:")
                         if course_name in all_courses["name_id_dict"]:
                             course_id = all_courses["name_id_dict"][course_name]
                         else:
@@ -423,7 +424,7 @@ class StudentCli(cmd.Cmd):
                             raise ArgumentException
                         tags = []
                         for i in range(int(number_of_tags)):
-                            tag = input(f"Veuillez entre l'etiquette numero {i + 1} :")
+                            tag = input(f"Veuillez entrer l'etiquette numero {i + 1} :")
                             if tag == "":
                                 raise ArgumentException
                             tags.append(tag)
@@ -545,7 +546,7 @@ class StudentCli(cmd.Cmd):
                             raise ArgumentException
                         tags = []
                         for i in range(int(tag_number)):
-                            tag = input(f"Veuillez entre l'etiquette numero {i + 1} :")
+                            tag = input(f"Veuillez entrer l'etiquette numero {i + 1} :")
                             if tag == "":
                                 raise ArgumentException
                             tags.append(tag)
@@ -632,42 +633,6 @@ class StudentCli(cmd.Cmd):
         else:
             os.rename(current_pathname, new_pathname)
             print("Le fichier a correctement ete deplace\n")
-
-    @staticmethod
-    def do_open(pathname):
-        """
-        # NAME
-            open  -  ouvre un fichier dans l'editeur de texte de la GUI
-
-        # SYNOPSIS
-            open <PATHNAME>
-
-        # DESCRIPTION
-            Ouvre le fichier specifie par PATHNAME dans l'editeur de texte de la GUI
-
-        # AUTHOR
-            Ecrit par Gregoire Delannoit
-
-        # RAISES
-            FileNotOwnedException
-                L'utilisateur tente d'acceder a un fichier possede par un autre utilisateur
-            FileNotFoundException
-                Le programme ne connait pas le fichier specifie par PATHNAME
-        """
-        try:
-            if not pathname:
-                raise ArgumentException
-            cli.cli_misc.pickle_get_file_if_owned(current_user_instance, pathname)
-            gui.open.open_file(pathname)
-        except ArgumentException:
-            print("Erreur : les conventions relatives au options et leurs arguments n'ont pas ete respectees\n",
-                  "Entrer la commande help move pour plus d'informations sur l'utilisation de move\n")
-        except FileNotOwnedException:
-            print(f"Erreur : le fichier appartient a un autre utilisateur\n")
-        except FileNotFoundException:
-            print(f"Erreur : le fichier est introuvable\n")
-        except Exception as e:
-            print(f"Erreur : {e}\n")
 
     @staticmethod
     def do_vi(pathname):
@@ -805,7 +770,6 @@ class StudentCli(cmd.Cmd):
         """
 
         try:
-            content_to_display = []
             class_to_list = line.split()[0]
             if "users" in class_to_list and not ("courses" in class_to_list) and not ("files" in class_to_list):
                 if len(line.split()) == 1:
@@ -822,6 +786,7 @@ class StudentCli(cmd.Cmd):
             elif "files" in class_to_list and not ("users" in class_to_list) and not ("courses" in class_to_list):
                 if len(line.split()) == 1:
                     content_to_display = cli.cli_student.list_owned_files(current_user_instance)
+                    cli.cli_misc.files_terminal_display(content_to_display)
                 else:
                     raise ArgumentException
             else:
@@ -831,8 +796,6 @@ class StudentCli(cmd.Cmd):
                   "Entrer la commande help list pour plus d'informations sur l'utilisation de list\n")
         except Exception as e:
             print(f"Erreur : {e}\n")
-        else:
-            cli.cli_misc.files_terminal_display(content_to_display)
 
     @staticmethod
     def do_sort(line):
@@ -859,14 +822,14 @@ class StudentCli(cmd.Cmd):
 
         try:
             if ("on_tags" in line) and not ("on_course" in line) and (len(line.split()) == 1):
-                number_of_tags = int(input("Veuillez entrez le nombre d'etiquettes recherchees :"))
+                number_of_tags = int(input("Veuillez entrer le nombre d'etiquettes recherchees :"))
                 tags_research = []
                 for i in range(number_of_tags):
                     course_name = input("Veuillez entrer l'etiquette :")
                     tags_research.append(course_name)
                 content_to_display = cli.cli_student.list_sorted_files_on_tags(tags_research, current_user_instance)
             elif ("on_course" in line) and not ("on_tags" in line) and (len(line.split()) == 1):
-                number_of_courses = int(input("Veuillez entrez le nombre de cours recherches :"))
+                number_of_courses = int(input("Veuillez entrer le nombre de cours recherches :"))
                 courses_research = []
                 for i in range(number_of_courses):
                     course_name = input("Veuillez entrer le code du cours :")
