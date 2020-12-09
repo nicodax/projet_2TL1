@@ -10,7 +10,7 @@ def new_file(pathname, script, course_id, tags, student_instance):
     """
     PRE :   - pathname est de type str
             - script est de type bool
-            - course_id est de type int
+            - course_id est soit de type int soit None
             - tags est soit de type list soit None
             - student_instance est une instance de la classe Student
     POST : cree une instance de File
@@ -26,7 +26,7 @@ def new_file(pathname, script, course_id, tags, student_instance):
     course_instance = None
     if course_id is not None:
         course_instance = all_courses["objects_dict"][course_id]
-        course_instance.add_file(id_dict["file"])
+        course_instance.add_file(file_instance.file_id)
     all_files["name_id_dict"][pathname] = file_instance.file_id
     all_files["objects_dict"][file_instance.file_id] = file_instance
     all_students["objects_dict"][student_instance.user_id] = student_instance
@@ -111,12 +111,17 @@ def file_remove_course(pathname):
     PRE : pathname est de type str
     POST : dissocie un cours d'une instance de File
     """
-    persistent_data = cli.cli_misc.pickle_get(files_arg=True)
+    persistent_data = cli.cli_misc.pickle_get(files_arg=True, courses_arg=True)
     all_files = persistent_data[2]
+    all_courses = persistent_data[3]
     file_instance = cli.cli_misc.pickle_get_instance(pathname, file=True)
+    if file_instance.course_id is not None:
+        course_instance = all_courses["objects_dict"][file_instance.course_id]
+        course_instance.remove_file(file_instance.file_id)
+        all_courses["objects_dict"][course_instance.course_id] = course_instance
     file_instance.course_id = None
     all_files["objects_dict"][file_instance.file_id] = file_instance
-    cli.cli_misc.pickle_save(all_files=all_files)
+    cli.cli_misc.pickle_save(all_files=all_files, all_courses=all_courses)
 
 
 def file_remove_tag(pathname, tag):

@@ -176,7 +176,8 @@ def course_add_description(course_name, description):
 
 def course_remove_teacher(course_name, teacher_name, all_teachers):
     """
-    PRE :   - course_name et teacher_name sont de type str
+    PRE :   - course_name est de type str
+            - teacher_name est soit de type str soit None
             - all_teachers est de type bool
     POST : retire teacher_name de la liste des professeurs titulaires du cours ssi course_name existe
     RAISES : UnknownObjectException si course_name n'existe pas

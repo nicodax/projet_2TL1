@@ -158,7 +158,8 @@ class AdminCli(cmd.Cmd):
             if (("student" in class_to_delete) ^ ("admin" in class_to_delete)) and not ("course" in class_to_delete):
                 if len(line.split()) == 2:
                     username = line.split()[1]
-                    if (username in cli.reset.initial_users) or (username == current_user_instance.username):
+                    if (username in cli.reset.initial_students) or (username in cli.reset.initial_admins) or \
+                            (username == current_user_instance.username):
                         raise ImpossibleToDeleteUserException
                     if "student" in class_to_delete:
                         cli.cli_admin.delete_student(username)
@@ -298,7 +299,9 @@ class AdminCli(cmd.Cmd):
                     all_teachers = False
                     if (len(line.split()) == 4) and (line.split()[3] == "--all"):
                         all_teachers = True
-                    if (len(line.split()) == 3) or ((line.split()[3] == "--all") and (len(line.split()) == 4)):
+                        teacher_name = None
+                        cli.cli_admin.course_remove_teacher(course_name, teacher_name, all_teachers)
+                    elif (len(line.split()) == 3) or ((line.split()[3] == "--all") and (len(line.split()) == 4)):
                         teacher_name = input("Veuillez entrer le nom du proffesseur a retirer de la liste des "
                                              "titulaires du cours :")
                         cli.cli_admin.course_remove_teacher(course_name, teacher_name, all_teachers)
@@ -583,9 +586,9 @@ class StudentCli(cmd.Cmd):
         except FileNotFoundException:
             print("Erreur : le fichier est introuvable\n")
         except AlreadyInListException:
-            print("Le fichier possede deja un des attributs specifies\n")
+            print("Le fichier possede deja au moins un des attributs specifies\n")
         except NotInListException:
-            print("Le fichier ne possede pas un des attributs specifies\n")
+            print("Le fichier ne possede pas au moins un des attributs specifies\n")
         except Exception as e:
             print(f"Erreur : {e}\n")
         else:

@@ -94,6 +94,6 @@ def pickle_save(all_students=None, all_admins=None, all_files=None, all_courses=
 
 
 if __name__ == "__main__":
-    students, admins, files, courses, id_dic = reset()
-    pickle_save(students, admins, files, courses, id_dic)
+    students, admins, files, courses, id_dict = reset()
+    pickle_save(students, admins, files, courses, id_dict)
     print("La memoire du programme a ete correctement reinitialisee")
