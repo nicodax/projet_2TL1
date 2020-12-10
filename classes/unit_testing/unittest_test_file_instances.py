@@ -5,9 +5,9 @@ user_id1 = 1
 user_id2 = 2
 user_id3 = 3
 
-pathname1 = "../../files/unittests_files/pathname1"
-pathname2 = "../../files/unittests_files/pathname2"
-pathname3 = "../../files/unittests_files/pathname3"
+pathname1 = "../../files/test.txt"
+pathname2 = "../../files/test3.txt"
+pathname3 = "../../files/test4.txt"
 
 course_id = None
 tags = None

@@ -6,11 +6,12 @@ import cli.reset
 import os
 
 from classes.exceptions import AlreadyInListException, NotInListException
+from cli.exceptions import UnknownObjectException
 
 
-class TestNewStudent(unittest.TestCase):
+class TestNewFile(unittest.TestCase):
     """Cette classe teste la methode cli.cli_student.new_file"""
-    def test_new_file_existing_pathname(self):
+    def test_new_file(self):
         os.chdir("..")
         students, admins, files, courses, id_dict = cli.reset.reset()
         cli.reset.pickle_save(students, admins, files, courses, id_dict)
@@ -133,9 +134,9 @@ class TestNewStudent(unittest.TestCase):
         os.chdir("unit_testing")
 
 
-class TestDeleteStudent(unittest.TestCase):
+class TestDeletefile(unittest.TestCase):
     """Cette classe teste la methode cli.cli_student.delete_file"""
-    def test_new_file_existing_pathname(self):
+    def test_delete_file(self):
         os.chdir("..")
         students, admins, files, courses, id_dict = cli.reset.reset()
         cli.reset.pickle_save(students, admins, files, courses, id_dict)
@@ -224,7 +225,7 @@ class TestFileChangeScriptAttribute(unittest.TestCase):
 
 class TestFileAddCourse(unittest.TestCase):
     """Cette classe teste la fonction cli.cli_student.file_add_course"""
-    def test_file_add_course_of_file_without_course(self):
+    def test_file_add_course_of_file_without_course_and_known_course(self):
         os.chdir("..")
         students, admins, files, courses, id_dict = cli.reset.reset()
         cli.reset.pickle_save(students, admins, files, courses, id_dict)
@@ -247,7 +248,7 @@ class TestFileAddCourse(unittest.TestCase):
         cli.reset.pickle_save(students, admins, files, courses, id_dict)
         os.chdir("unit_testing")
 
-    def test_file_add_course_of_file_with_different_course(self):
+    def test_file_add_course_of_file_with_different_course_and_known_course(self):
         os.chdir("..")
         students, admins, files, courses, id_dict = cli.reset.reset()
         cli.reset.pickle_save(students, admins, files, courses, id_dict)
@@ -280,6 +281,25 @@ class TestFileAddCourse(unittest.TestCase):
         cli.cli_student.new_file("files/test.txt", True, 0, None, student_instance)
 
         self.assertRaises(AlreadyInListException, cli.cli_student.file_add_course, "files/test.txt", "T2011")
+
+        if os.path.isfile("files/test.txt"):
+            os.remove("files/test.txt")
+
+        os.chdir("cli")
+        students, admins, files, courses, id_dict = cli.reset.reset()
+        cli.reset.pickle_save(students, admins, files, courses, id_dict)
+        os.chdir("unit_testing")
+
+    def test_file_add_course_to_file_with_unknown_course(self):
+        os.chdir("..")
+        students, admins, files, courses, id_dict = cli.reset.reset()
+        cli.reset.pickle_save(students, admins, files, courses, id_dict)
+        os.chdir("..")
+
+        student_instance = cli.cli_misc.pickle_get_instance("dax", student=True)
+        cli.cli_student.new_file("files/test.txt", True, 0, None, student_instance)
+
+        self.assertRaises(UnknownObjectException, cli.cli_student.file_add_course, "files/test.txt", "test")
 
         if os.path.isfile("files/test.txt"):
             os.remove("files/test.txt")
@@ -513,6 +533,12 @@ class TestSubscribeUserToCourse(unittest.TestCase):
         cli.reset.pickle_save(students, admins, files, courses, id_dict)
         os.chdir("unit_testing")
 
+    def test_subscribe_student_from_unknown_course(self):
+        os.chdir("../..")
+        student_instance = cli.cli_misc.pickle_get_instance("dax", student=True)
+        self.assertRaises(UnknownObjectException, cli.cli_student.subscribe_user_to_course, "test", student_instance)
+        os.chdir("cli/unit_testing")
+
 
 class TestUnsubscribeUserToCourse(unittest.TestCase):
     """Cette classe test la fonction cli.cli_student.unsubscribe_user_from_course"""
@@ -549,6 +575,12 @@ class TestUnsubscribeUserToCourse(unittest.TestCase):
         students, admins, files, courses, id_dict = cli.reset.reset()
         cli.reset.pickle_save(students, admins, files, courses, id_dict)
         os.chdir("unit_testing")
+
+    def test_unsubscribe_student_from_unknown_course(self):
+        os.chdir("../..")
+        student_instance = cli.cli_misc.pickle_get_instance("dax", student=True)
+        self.assertRaises(UnknownObjectException, cli.cli_student.unsubscribe_user_from_course, "test", student_instance)
+        os.chdir("cli/unit_testing")
 
 
 if __name__ == "__main__":

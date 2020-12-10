@@ -99,7 +99,7 @@ class TestNewAdmin(unittest.TestCase):
 
 class TestNewCourse(unittest.TestCase):
     """Cette classe teste la methode cli.cli_admin.new_course"""
-    def test_new_admin_not_existing_username(self):
+    def test_new_course_not_existing_name(self):
         os.chdir("..")
         students, admins, files, courses, id_dict = cli.reset.reset()
         cli.reset.pickle_save(students, admins, files, courses, id_dict)
@@ -131,7 +131,7 @@ class TestNewCourse(unittest.TestCase):
         cli.reset.pickle_save(students, admins, files, courses, id_dict)
         os.chdir("unit_testing")
 
-    def test_new_admin_existing_username(self):
+    def test_new_course_existing_name(self):
         os.chdir("../..")
         self.assertRaises(ObjectAlreadyExistantException, cli.cli_admin.new_course, "T2011", ["test", "test2", "test3"],
                           "test")
@@ -144,12 +144,38 @@ class TestDeleteStudent(unittest.TestCase):
     """Cette classe teste la fonction cli.cli_admin.delete_student"""
     @mock.patch('getpass.getpass', side_effect=["test", "test"])
     def test_delete_existant_student(self, side_effect):
-        os.chdir("../..")
+        os.chdir("..")
+        students, admins, files, courses, id_dict = cli.reset.reset()
+        cli.reset.pickle_save(students, admins, files, courses, id_dict)
+        os.chdir("..")
+
         cli.cli_admin.new_student("test", "test_fullname")
+        cli.cli_admin.new_course("test", ["test", "test2", "test3"], "test")
+        test_student_instance = cli.cli_misc.pickle_get_instance("test", student=True)
+        test_course_instance = cli.cli_misc.pickle_get_instance("test", course=True)
+        test_student_instance.add_course(test_course_instance.course_id)
+        test_course_instance.add_student(test_student_instance.user_id)
+
+        persistent_data = cli.cli_misc.pickle_get(students_arg=True, courses_arg=True)
+        all_students = persistent_data[0]
+        all_courses = persistent_data[3]
+        all_students["objects_dict"][test_student_instance.user_id] = test_student_instance
+        all_courses["objects_dict"][test_course_instance.course_id] = test_course_instance
+        cli.cli_misc.pickle_save(all_students=all_students, all_courses=all_courses)
+        test_student_instance = cli.cli_misc.pickle_get_instance("test", student=True)
+        self.assertEqual(True, test_student_instance.is_in_courses(test_course_instance.course_id))
+        self.assertEqual(True, test_course_instance.is_in_students(test_student_instance.user_id))
+
         cli.cli_admin.delete_student("test")
         all_students = cli.cli_misc.pickle_get(students_arg=True)[0]
+        test_course_instance = cli.cli_misc.pickle_get_instance("test", course=True)
         self.assertEqual(False, ("test" in all_students["name_id_dict"]))
-        os.chdir("cli/unit_testing")
+        self.assertEqual(False, test_course_instance.is_in_students(test_student_instance.user_id))
+
+        os.chdir("cli")
+        students, admins, files, courses, id_dict = cli.reset.reset()
+        cli.reset.pickle_save(students, admins, files, courses, id_dict)
+        os.chdir("unit_testing")
 
     def test_delete_unknown_student(self):
         os.chdir("../..")
@@ -176,15 +202,42 @@ class TestDeleteAdmin(unittest.TestCase):
 
 class TestDeleteCourse(unittest.TestCase):
     """Cette classe teste la fonction cli.cli_admin.delete_course"""
-    def test_delete_existant_admin(self):
-        os.chdir("../..")
+    @mock.patch('getpass.getpass', side_effect=["test", "test"])
+    def test_delete_existant_course(self, side_effect):
+        os.chdir("..")
+        students, admins, files, courses, id_dict = cli.reset.reset()
+        cli.reset.pickle_save(students, admins, files, courses, id_dict)
+        os.chdir("..")
+
         cli.cli_admin.new_course("test", ["test", "test2", "test3"], "test")
+        cli.cli_admin.new_student("test", "test_fullname")
+        test_student_instance = cli.cli_misc.pickle_get_instance("test", student=True)
+        test_course_instance = cli.cli_misc.pickle_get_instance("test", course=True)
+        test_student_instance.add_course(test_course_instance.course_id)
+        test_course_instance.add_student(test_student_instance.user_id)
+
+        persistent_data = cli.cli_misc.pickle_get(students_arg=True, courses_arg=True)
+        all_students = persistent_data[0]
+        all_courses = persistent_data[3]
+        all_students["objects_dict"][test_student_instance.user_id] = test_student_instance
+        all_courses["objects_dict"][test_course_instance.course_id] = test_course_instance
+        cli.cli_misc.pickle_save(all_students=all_students, all_courses=all_courses)
+        test_student_instance = cli.cli_misc.pickle_get_instance("test", student=True)
+        self.assertEqual(True, test_student_instance.is_in_courses(test_course_instance.course_id))
+        self.assertEqual(True, test_course_instance.is_in_students(test_student_instance.user_id))
+
         cli.cli_admin.delete_course("test")
         all_courses = cli.cli_misc.pickle_get(courses_arg=True)[3]
+        test_student_instance = cli.cli_misc.pickle_get_instance("test", student=True)
         self.assertEqual(False, ("test" in all_courses["name_id_dict"]))
-        os.chdir("cli/unit_testing")
+        self.assertEqual(False, test_student_instance.is_in_courses(test_course_instance.course_id))
 
-    def test_delete_unknown_admin(self):
+        os.chdir("cli")
+        students, admins, files, courses, id_dict = cli.reset.reset()
+        cli.reset.pickle_save(students, admins, files, courses, id_dict)
+        os.chdir("unit_testing")
+
+    def test_delete_unknown_course(self):
         os.chdir("../..")
         self.assertRaises(UnknownObjectException, cli.cli_admin.delete_course, "test")
         os.chdir("cli/unit_testing")

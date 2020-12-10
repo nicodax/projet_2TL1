@@ -81,14 +81,20 @@ def delete_student(username):
     POST : supprime l'instance de Student correspondant a username si le username existe
     RAISES : UnknownObjectException si le username n'existe pas
     """
-    persistent_data = cli.cli_misc.pickle_get(students_arg=True)
+    persistent_data = cli.cli_misc.pickle_get(students_arg=True, courses_arg=True)
     all_students = persistent_data[0]
+    all_courses = persistent_data[3]
     if username not in all_students["name_id_dict"]:
         raise UnknownObjectException
     student_instance = cli.cli_misc.pickle_get_instance(username, student=True)
+    if student_instance.courses:
+        for course_id in student_instance.courses:
+            course_instance = all_courses["objects_dict"][course_id]
+            course_instance.remove_student(student_instance.user_id)
+            all_courses["objects_dict"][course_id] = course_instance
     del all_students["name_id_dict"][username]
     del all_students["objects_dict"][student_instance.user_id]
-    cli.cli_misc.pickle_save(all_students=all_students)
+    cli.cli_misc.pickle_save(all_students=all_students, all_courses=all_courses)
 
 
 def delete_admin(username):
@@ -113,14 +119,20 @@ def delete_course(course_name):
     POST : supprime l'instance de Course correspondant a course_name si le course_name existe
     RAISES : UnknownObjectException si le course_name n'existe pas
     """
-    persistent_data = cli.cli_misc.pickle_get(courses_arg=True)
+    persistent_data = cli.cli_misc.pickle_get(students_arg=True, courses_arg=True)
+    all_students = persistent_data[0]
     all_courses = persistent_data[3]
     if course_name not in all_courses["name_id_dict"]:
         raise UnknownObjectException
     course_instance = cli.cli_misc.pickle_get_instance(course_name, course=True)
+    if course_instance.students:
+        for student_id in course_instance.students:
+            student_instance = all_students["objects_dict"][student_id]
+            student_instance.remove_course(course_instance.course_id)
+            all_students["objects_dict"][student_id] = student_instance
     del all_courses["name_id_dict"][course_name]
     del all_courses["objects_dict"][course_instance.course_id]
-    cli.cli_misc.pickle_save(all_courses=all_courses)
+    cli.cli_misc.pickle_save(all_students=all_students, all_courses=all_courses)
 
 
 def list_all_admins():

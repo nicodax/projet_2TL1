@@ -4,6 +4,7 @@ import subprocess
 
 from classes.file import File
 import cli.cli_misc
+from cli.exceptions import UnknownObjectException
 
 
 def new_file(pathname, script, course_id, tags, student_instance):
@@ -82,6 +83,8 @@ def file_add_course(pathname, course_name):
     persistent_data = cli.cli_misc.pickle_get(files_arg=True, courses_arg=True)
     all_files = persistent_data[2]
     all_courses = persistent_data[3]
+    if course_name not in all_courses["name_id_dict"]:
+        raise UnknownObjectException
     file_instance = cli.cli_misc.pickle_get_instance(pathname, file=True)
     course_instance = cli.cli_misc.pickle_get_instance(course_name, course=True)
     file_instance.course_id = course_instance.course_id
@@ -271,6 +274,8 @@ def subscribe_user_to_course(course_name, user_instance):
     persistent_data = cli.cli_misc.pickle_get(students_arg=True, courses_arg=True)
     all_students = persistent_data[0]
     all_courses = persistent_data[3]
+    if course_name not in all_courses["name_id_dict"]:
+        raise UnknownObjectException
     course_instance = cli.cli_misc.pickle_get_instance(course_name, course=True)
     user_instance.add_course(course_instance.course_id)
     course_instance.add_student(user_instance.user_id)
@@ -288,6 +293,8 @@ def unsubscribe_user_from_course(course_name, user_instance):
     persistent_data = cli.cli_misc.pickle_get(students_arg=True, courses_arg=True)
     all_students = persistent_data[0]
     all_courses = persistent_data[3]
+    if course_name not in all_courses["name_id_dict"]:
+        raise UnknownObjectException
     course_instance = cli.cli_misc.pickle_get_instance(course_name, course=True)
     user_instance.remove_course(course_instance.course_id)
     course_instance.remove_student(user_instance.user_id)

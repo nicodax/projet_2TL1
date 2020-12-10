@@ -88,7 +88,7 @@ class TestTagsFile(unittest.TestCase):
         file_test3.add_tag(tag5)
         file_test3.add_tag(tag6)
 
-    def test_remove_teacher_with_unknown_name(self):
+    def test_delete_tag_with_unknown_tag(self):
         """remove_teacher(name) avec name ne se trouvant pas dans __teachers"""
         self.assertRaises(NotInListException, file_test1.delete_tag, tag3)
         self.assertRaises(NotInListException, file_test1.delete_tag, tag4)

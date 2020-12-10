@@ -47,7 +47,8 @@ class AdminCli(cmd.Cmd):
             print(f"Erreur : {e}\n")
         else:
             cli.cli_misc.pickle_save(all_students, all_admins, all_files, all_courses, id_dict)
-            print("La memoire du programme a ete correctement reinitialisee\n")
+            print("La memoire du programme a ete correctement reinitialisee")
+            sys.exit("Merci d'avoir utilise la CLI admin du projet python 2TL1_09\n")
 
     @staticmethod
     def do_new(line):
@@ -586,9 +587,11 @@ class StudentCli(cmd.Cmd):
         except FileNotFoundException:
             print("Erreur : le fichier est introuvable\n")
         except AlreadyInListException:
-            print("Le fichier possede deja au moins un des attributs specifies\n")
+            print("Erreur : le fichier possede deja au moins un des attributs specifies\n")
         except NotInListException:
-            print("Le fichier ne possede pas au moins un des attributs specifies\n")
+            print("Erreur : le fichier ne possede pas au moins un des attributs specifies\n")
+        except NotInListException:
+            print("Erreur : le cours n'existe pas\n\n")
         except Exception as e:
             print(f"Erreur : {e}\n")
         else:
@@ -701,12 +704,10 @@ class StudentCli(cmd.Cmd):
         except ArgumentException:
             print("Erreur : les conventions relatives au options et leurs arguments n'ont pas ete respectees\n",
                   "Entrer la commande help sub pour plus d'informations sur l'utilisation de sub\n")
-        except FileNotOwnedException:
-            print(f"Erreur : le fichier appartient a un autre utilisateur\n")
-        except FileNotFoundException:
-            print(f"Erreur : le fichier est introuvable\n")
         except AlreadyInListException:
-            print("Vous etes deja inscrit a ce cours\n")
+            print("Erreur : Vous etes deja inscrit a ce cours\n")
+        except UnknownObjectException:
+            print("Erreur : le cours spécifié n'existe pas\n")
         except Exception as e:
             print(f"Erreur : {e}\n")
         else:
@@ -735,10 +736,8 @@ class StudentCli(cmd.Cmd):
         except ArgumentException:
             print("Erreur : les conventions relatives au options et leurs arguments n'ont pas ete respectees\n",
                   "Entrer la commande help sub pour plus d'informations sur l'utilisation de sub\n")
-        except FileNotOwnedException:
-            print(f"Erreur : le fichier appartient a un autre utilisateur\n")
-        except FileNotFoundException:
-            print(f"Erreur : le fichier est introuvable\n")
+        except UnknownObjectException:
+            print("Erreur : le cours spécifié n'existe pas\n")
         except NotInListException:
             print("Vous n'etes pas inscrit a ce cours\n")
         except Exception as e:
