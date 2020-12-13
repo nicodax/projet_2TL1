@@ -4,7 +4,7 @@ from classes.exceptions import UnknownPasswordException
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
-
+from tkinter import filedialog
 from cli.exceptions import UnknownObjectException
 from gui.exceptions import UserNameNotFoundException
 from cli.cli_student import list_sorted_files_on_tags, list_sorted_files_on_course
@@ -37,15 +37,6 @@ class ToolWindow(Screen):
 
     def new(self):
         self.ids.Affichage.text = "Lancemement d'un nouveau fichier."
-
-    def open(self):
-        file = "C:/Users/delan/Downloads/aventure.txt"
-        resultat = ""
-        with open(file, 'r') as filin:
-            lignes = filin.readlines()
-            for ligne in lignes:
-                resultat += ligne
-        self.ids.TextArea.text = resultat
 
     def delete(self):
         self.ids.Affichage.text = "Suppression d'un fichier existant."
@@ -100,7 +91,17 @@ class ToolWindow(Screen):
 
 
 class EditorWindow(Screen):
-    pass
+    pathname = ""
+
+    def open(self):
+        pathname = filedialog.askopenfilename(initialdir="/", title="Choisir le fichier",
+                                              filetype=(("Text File", "*.txt"), ("All Files", "*.*")))
+        resultat = ""
+        with open(pathname, 'r') as filin:
+            lignes = filin.readlines()
+            for ligne in lignes:
+                resultat += ligne
+        self.ids.TextArea.text = resultat
 
 
 class WindowManager(ScreenManager):
