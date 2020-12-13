@@ -71,7 +71,7 @@ class ToolWindow(Screen):
         else:
             self.ids.Affichage.text = 'Veuillez entrer:"etudiants","cours" ou "fichiers"'
 
-    def sort(self):
+    def sort_on_course(self):
         try:
             valid_course_name = False
             list_courses = pickle_get(courses_arg=True)[3]["name_id_dict"].keys()
@@ -86,11 +86,17 @@ class ToolWindow(Screen):
             self.ids.Affichage.text = f"Erreur : {e}\n"
         else:
             list_dict = list_sorted_files_on_course([self.ids.Recherche.text], self.student_instance)
-            print(list_dict)
             all_pathname = []
             for x in list_dict:
                 all_pathname.append(x["pathname"])
             self.ids.Affichage.text = self.list_to_string(all_pathname)
+
+    def sort_on_tag(self):
+        list_dict = list_sorted_files_on_tags([self.ids.Recherche.text], self.student_instance)
+        all_pathname = []
+        for x in list_dict:
+            all_pathname.append(x["pathname"])
+        self.ids.Affichage.text = self.list_to_string(all_pathname)
 
 
 class EditorWindow(Screen):
