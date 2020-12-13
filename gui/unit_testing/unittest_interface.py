@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
+import os
 import unittest
 import cli.cli_misc
 from gui.exceptions import UserNameNotFoundException, WrongExtensionException
 from classes.exceptions import UnknownPasswordException
-from gui.interface_graphique import login, open, delete, verify_extension
+from gui.interface_graphique import connexion, open, verify_extension
 
 
 class TestLoginInterface(unittest.TestCase):
@@ -14,15 +15,17 @@ class TestLoginInterface(unittest.TestCase):
 
     def test_recognized_username(self):
         """login() avec un nom utilisateurs reconnu"""
+        os.chdir("../..")
         username1 = "greg"
         username2 = "dax"
         all_students = cli.cli_misc.pickle_get(students_arg=True)[0]
         self.assertEqual(True, (username1 in all_students["name_id_dict"]))
         self.assertEqual(True, (username2 in all_students["name_id_dict"]))
+        os.chdir("gui/unit_testing")
 
     def test_unknow_username(self):
         """login() avec un nom utilisateurs inconnu"""
-        self.assertRaises(UserNameNotFoundException, login)
+        self.assertRaises(UserNameNotFoundException, connexion)
 
     def test_good_password(self):
         """login() avec un mot de passe correspondant au nom utilisateurs reconnu"""
@@ -33,7 +36,7 @@ class TestLoginInterface(unittest.TestCase):
 
     def test_wrong_password(self):
         """login() avec un mot de passe ne correspondant pas au nom utilisateurs reconnu"""
-        self.assertRaises(UnknownPasswordException, login)
+        self.assertRaises(UnknownPasswordException, connexion)
 
 
 class TestToolInterface(unittest.TestCase):
@@ -52,10 +55,10 @@ class TestToolInterface(unittest.TestCase):
         self.assertEqual(True, verify_extension(file_test1))
         self.assertEqual(True, verify_extension(file_test2))
 
-
     def test_wrong_extension(self):
         """open() avec la bonne extension(.py ou .txt)"""
         self.assertRaises(WrongExtensionException, open)
+
 
 class TestEditorInterface(unittest.TestCase):
     """ Cette classe teste les methodes associees a la fenetre tool_window d'un

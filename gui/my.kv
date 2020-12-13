@@ -1,0 +1,129 @@
+WindowManager:
+    LoginWindow:
+    ToolWindow:
+    EditorWindow:
+
+
+<LoginWindow>:
+    name: "login"
+
+    BoxLayout:
+        orientation: 'vertical'
+        spacing: 20
+
+        Button:
+            id: Submit
+            text: "Se connecter"
+            size_hint: (0.5, 0.15)
+            pos_hint: {'right': 0.75}
+            background_color: [0, 1, 0, 1]
+            on_press:
+                root.connexion()
+            on_release:
+                app.root.current = "tool" if root.connexion() == True else "login"
+
+        Label:
+            id: Error
+            text: "Veuillez entrer votre nom d'utilisateur et votre mot de passe:"
+            font_size: 30
+            color: [1, 0, 0, 1]
+
+        TextInput:
+            id: Usrname
+            text: "Username"
+            font_size: 30
+            size_hint_x: 0.5
+            size_hint_y:  0.2
+            multiline: False
+
+        TextInput:
+            id: Psw
+            text: "Password"
+            font_size: 30
+            size_hint_x: 0.5
+            size_hint_y:  0.2
+            multiline: False
+
+
+
+<ToolWindow>:
+    name: "tool"
+
+    BoxLayout:
+        orientation: 'vertical'
+        spacing: 20
+
+        Button:
+            id: New
+            text: 'Nouveau'
+            size_hint: (0.5, 0.15)
+            background_color: [0, 1, 0, 1]
+            on_press:
+                root.new()
+            on_release:
+                app.root.current = "editor"
+
+        Button:
+            id: Open
+            text: 'Ouvrir'
+            size_hint: (0.5, 0.15)
+            background_color: [0, 1, 0, 1]
+            on_press:
+                root.open()
+            on_release:
+                app.root.current = "editor"
+
+        Button:
+            id: Delete
+            text: 'Supprimer'
+            size_hint: (0.5, 0.15)
+            background_color: [0, 1, 0, 1]
+            on_press:
+                root.delete()
+
+        Button:
+            id: List
+            text: 'Lister'
+            size_hint: (0.5, 0.15)
+            background_color: [0, 1, 0, 1]
+            on_press:
+                root.list()
+
+        Button:
+            id: Sort
+            text: 'Trier'
+            size_hint: (0.5, 0.15)
+            background_color: [0, 1, 0, 1]
+            on_press:
+                root.sort()
+
+
+        Label:
+            id: Affichage
+            text: "Cliquez su un bouton:"
+            font_size: 30
+            color: [1, 0, 0, 1]
+            TextInput:
+                id: Recherche
+                text: "Que rechercher vous ?"
+                size_hint: (.2, None)
+                height: 30
+                multiline: False
+                font_size: 15
+
+
+
+
+<EditorWindow>:
+    name: "editor"
+
+    BoxLayout:
+        orientation: 'vertical'
+        spacing: 20
+
+        TextInput:
+            id:TextArea
+            text: ""
+            font_size: 30
+            size_hint_x: 1
+            size_hint_y: 1

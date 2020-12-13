@@ -4,7 +4,7 @@ from gui.exceptions import WrongExtensionException
 # LOGIN WINDOW
 ########################################################################################################
 
-def login():
+def connexion():
     """
     POST: Lance tool.window si username et mot de passe existe et corresponde.
     RAISES: Affiche un message d erreur si username et mot de passe ne sont pas reconnu.
