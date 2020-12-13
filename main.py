@@ -7,7 +7,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from tkinter import filedialog
 from cli.exceptions import UnknownObjectException
 from gui.exceptions import UserNameNotFoundException
-from cli.cli_student import list_sorted_files_on_tags, list_sorted_files_on_course
+from cli.cli_student import list_sorted_files_on_tags, list_sorted_files_on_course, new_file
 
 
 class LoginWindow(Screen):
@@ -19,6 +19,7 @@ class LoginWindow(Screen):
                 if not student_instance.verify_pwd(self.ids.Psw.text):
                     raise UnknownPasswordException
                 ToolWindow.student_instance = student_instance
+                EditorWindow.student_instance = student_instance
             else:
                 raise UserNameNotFoundException
         except UnknownPasswordException:
@@ -91,23 +92,32 @@ class ToolWindow(Screen):
 
 
 class EditorWindow(Screen):
+    student_instance = None
     pathname = ""
 
     def open(self):
-        pathname = filedialog.askopenfilename(initialdir="/", title="Choisir le fichier",
-                                              filetype=(("Text File", "*.txt"), ("All Files", "*.*")))
+        self.pathname = filedialog.askopenfilename(initialdir="/", title="Choisir le fichier",
+                                                   filetype=(("Text File", "*.txt"), ("All Files", "*.*")))
+        list_files = pickle_get(files_arg=True)[2]["name_id_dict"].keys()
+        if self.pathname not in list_files:
+            new_file(self.pathname, True, None, None, self.student_instance)
+
         resultat = ""
-        with open(pathname, 'r') as filin:
+        with open(self.pathname, 'r') as filin:
             lignes = filin.readlines()
             for ligne in lignes:
                 resultat += ligne
         self.ids.TextArea.text = resultat
 
     def enregistrer_sous(self):
-        fichier = filedialog.asksaveasfilename(defaultextension='.*', initialdir="/", title='Enregistrer sous',
-                                               filetype=(
-                                                   ("Text File", "*.txt"), ("xls file", "*.xls"), ("All File", "*.*")))
-        f = open(fichier, 'w')
+        self.pathname = filedialog.asksaveasfilename(defaultextension='.*', initialdir="/", title='Enregistrer sous',
+                                                     filetype=(
+                                                         ("Text File", "*.txt"), ("xls file", "*.xls"),
+                                                         ("All File", "*.*")))
+        list_files = pickle_get(files_arg=True)[2]["name_id_dict"].keys()
+        if self.pathname not in list_files:
+            new_file(self.pathname, True, None, None, self.student_instance)
+        f = open(self.pathname, 'w')
         s = self.ids.TextArea.text
         f.write(s)
         f.close()
