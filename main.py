@@ -4,6 +4,8 @@ from classes.exceptions import UnknownPasswordException
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
+
+from cli.exceptions import UnknownObjectException
 from gui.exceptions import UserNameNotFoundException
 from cli.cli_student import list_sorted_files_on_tags, list_sorted_files_on_course
 
@@ -70,11 +72,26 @@ class ToolWindow(Screen):
             self.ids.Affichage.text = 'Veuillez entrer:"etudiants","cours" ou "fichiers"'
 
     def sort(self):
-        list_dict = list_sorted_files_on_course(self.ids.Recherche.text, self.student_instance)
-        all_pathname = []
-        for x in list_dict:
-            all_pathname.append(x["pathname"])
-        self.ids.Affichage.text = self.list_to_string(all_pathname)
+        try:
+            valid_course_name = False
+            list_courses = pickle_get(courses_arg=True)[3]["name_id_dict"].keys()
+            for x in list_courses:
+                if self.ids.Recherche.text == x:
+                    valid_course_name = True
+            if not valid_course_name:
+                raise UnknownObjectException
+        except UnknownObjectException:
+            self.ids.Affichage.text = "Le cours entre n'existe pas."
+        except Exception as e:
+            self.ids.Affichage.text = f"Erreur : {e}\n"
+        else:
+            list_dict = list_sorted_files_on_course([self.ids.Recherche.text], self.student_instance)
+            print(list_dict)
+            all_pathname = []
+            for x in list_dict:
+                all_pathname.append(x["pathname"])
+            self.ids.Affichage.text = self.list_to_string(all_pathname)
+
 
 class EditorWindow(Screen):
     pass

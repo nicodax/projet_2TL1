@@ -251,7 +251,7 @@ def list_sorted_files_on_tags(tags, user_instance):
 def list_sorted_files_on_course(course_name, user_instance):
     """
     PRE :   - user_instance est l'instance de Student correspondant a l'utilisateur connecte
-            - course_name est de type str
+            - course_name est de type list
     POST : cree un dictionnaire des informations relatives aux fichiers appartenant a l'utilisateur et associés au cours
             identifie par course_name
     """
