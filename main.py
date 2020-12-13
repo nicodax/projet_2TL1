@@ -103,6 +103,15 @@ class EditorWindow(Screen):
                 resultat += ligne
         self.ids.TextArea.text = resultat
 
+    def enregistrer_sous(self):
+        fichier = filedialog.asksaveasfilename(defaultextension='.*', initialdir="/", title='Enregistrer sous',
+                                               filetype=(
+                                                   ("Text File", "*.txt"), ("xls file", "*.xls"), ("All File", "*.*")))
+        f = open(fichier, 'w')
+        s = self.ids.TextArea.text
+        f.write(s)
+        f.close()
+
 
 class WindowManager(ScreenManager):
     pass

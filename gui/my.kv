@@ -98,12 +98,12 @@ WindowManager:
 
         Label:
             id: Affichage
-            text: "Cliquez su un bouton:"
+            text: "Cliquez sur un bouton:"
             font_size: 30
             color: [1, 0, 0, 1]
             TextInput:
                 id: Recherche
-                text: "Que rechercher vous ?"
+                text: "Recherche"
                 size_hint: (.2, None)
                 height: 30
                 multiline: False
@@ -133,3 +133,11 @@ WindowManager:
             background_color: [0, 1, 0, 1]
             on_press:
                 root.open()
+
+        Button:
+            id: register
+            text: 'enregistrer'
+            size_hint: (0.5, 0.15)
+            background_color: [0, 1, 0, 1]
+            on_press:
+                root.enregistrer_sous()
