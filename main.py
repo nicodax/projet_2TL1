@@ -181,6 +181,10 @@ class EditorWindow(Screen):
          RAISES: Affiche un message d erreur si le fichier n'a ni l'extension .txt, ni
             l'extension .py.
         """
+        self.pathname = filedialog.(defaultextension='.*', initialdir="/", title='Enregistrer sous',
+                                                     filetype=(
+                                                         ("Text File", "*.txt"), ("xls file", "*.xls"),
+                                                         ("All File", "*.*")))
         pass
 
     def file_add_tag_gui(self):

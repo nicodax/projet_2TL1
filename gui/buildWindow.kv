@@ -167,11 +167,11 @@ WindowManager:
                 root.file_add_course_gui()
 
         Button:
-            id:btnExit
-            text:"Exit"
+            text:"Outils"
             size_hint: (0.5, 0.15)
             background_color: [0, 1, 0, 1]
-            on_press: app.Exit()
+            on_release:
+                app.root.current = "tool"
 
         Label:
             id: Error
