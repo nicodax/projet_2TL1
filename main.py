@@ -113,7 +113,6 @@ class ToolWindow(Screen):
         except Exception as e:
             self.ids.Affichage.text = f"Erreur : {e}\n"
         else:
-            print(self.ids.Recherche.text)
             list_dict = list_sorted_files_on_course([self.ids.Recherche.text], self.student_instance)
             all_pathname = []
             for x in list_dict:
@@ -183,6 +182,7 @@ class EditorWindow(Screen):
             l'extension .py.
         """
         pass
+
     def file_add_tag_gui(self):
         """
         POST : ajoute l'etiquette specifiee si elle n'est pas deja referencee
@@ -198,6 +198,22 @@ class EditorWindow(Screen):
         else:
             self.ids.Error.text = f"L'etiquette a correctement ete assignee au fichier"
 
+    def file_add_course_gui(self):
+        """
+        POST : associe le fichier au cours specifie
+        """
+        try:
+            course_name = self.ids.Recherche.text
+            file_add_course(self.pathname, course_name)
+        except UnknownObjectException:
+            self.ids.Error.text = "Erreur : le cours spécifié n'existe pas"
+        except AlreadyInListException:
+            self.ids.Error.text = "Erreur : le fichier est deja associe a ce cours"
+        except Exception as e:
+            self.ids.Error.text = f"Erreur : {e}"
+        else:
+            self.ids.Error.text = f"Le fichier a correctement ete assigne au cours"
+
     def deplacer(self):
         """
         POST: Ouvre le navigateur de fichier apres avoir cliquer sur l'onglet
@@ -209,18 +225,6 @@ class EditorWindow(Screen):
 ########################################################################################################
 # WINDOW MANAGER
 ########################################################################################################
-
-    def file_add_course_gui(self):
-        """
-        POST : associe le fichier au cours specifie
-        """
-        try:
-            course_name = self.ids.Recherche.text
-            file_add_course(self.pathname, course_name)
-        except Exception as e:
-            self.ids.Error.text = f"Erreur : {e}"
-        else:
-            self.ids.Error.text = f"Le fichier a correctement ete assigne au cours"
 
 
 class WindowManager(ScreenManager):

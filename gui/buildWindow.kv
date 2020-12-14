@@ -159,6 +159,14 @@ WindowManager:
                 root.file_add_tag_gui()
 
         Button:
+            id: add_course
+            text: 'Spécifier un cours'
+            size_hint: (0.5, 0.15)
+            background_color: [0, 1, 0, 1]
+            on_press:
+                root.file_add_course_gui()
+
+        Button:
             id:btnExit
             text:"Exit"
             size_hint: (0.5, 0.15)
@@ -170,3 +178,16 @@ WindowManager:
             text: ""
             font_size: 30
             color: [1, 0, 0, 1]
+
+        Label:
+            id: Affichage
+            text: "Cliquez sur un bouton:"
+            font_size: 30
+            color: [1, 0, 0, 1]
+            TextInput:
+                id: Recherche
+                text: "Recherche"
+                size_hint: (.2, None)
+                height: 30
+                multiline: False
+                font_size: 15

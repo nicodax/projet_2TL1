@@ -79,6 +79,7 @@ def file_add_course(pathname, course_name):
     """
     PRE : pathname et course_name sont de type str
     POST : associe un cours a une instance de File
+                si l'instance de file etait deja associee a un cours, cette liaison est rompue
     """
     persistent_data = cli.cli_misc.pickle_get(files_arg=True, courses_arg=True)
     all_files = persistent_data[2]
@@ -86,6 +87,9 @@ def file_add_course(pathname, course_name):
     if course_name not in all_courses["name_id_dict"]:
         raise UnknownObjectException
     file_instance = cli.cli_misc.pickle_get_instance(pathname, file=True)
+    if file_instance.course_id is not None:
+        previous_course_instance = all_courses["objects_dict"][file_instance.course_id]
+        previous_course_instance.remove_file(file_instance.file_id)
     course_instance = cli.cli_misc.pickle_get_instance(course_name, course=True)
     file_instance.course_id = course_instance.course_id
     course_instance.add_file(file_instance.file_id)
@@ -259,9 +263,7 @@ def list_sorted_files_on_course(course_name, user_instance):
     owned_files = list_owned_files(user_instance)
     for i in owned_files:
         for g in course_name:
-            print(g)
-            print(i["course_name"])
-            if g in i["course_name"]:
+            if g == i["course_name"]:
                 content_to_display.append(i)
                 break
     return content_to_display
