@@ -5,12 +5,12 @@ from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
 from tkinter import filedialog
-from cli.exceptions import UnknownObjectException
+from cli.exceptions import UnknownObjectException, ArgumentException
 from gui.exceptions import UserNameNotFoundException
 from cli.cli_student import list_sorted_files_on_tags, list_sorted_files_on_course, new_file, file_add_tag, \
-    file_add_course, file_remove_tag, file_remove_course
+    file_add_course, file_remove_tag, file_remove_course, file_change_script_attribute
 
-#inutile
+
 ########################################################################################################
 # LOGIN WINDOW
 ########################################################################################################
@@ -239,6 +239,26 @@ class EditorWindow(Screen):
             self.ids.Error.text = f"Erreur : {e}"
         else:
             self.ids.Error.text = f"Le fichier a correctement ete assigne au cours"
+
+    def file_change_script_attribute_gui(self):
+        """
+        POST : indique si le fichier est un script ou non
+        """
+        try:
+            script_string = self.ids.Recherche.text
+            if script_string == "True" or script_string == "true":
+                script = True
+            elif script_string == "False" or script_string == "false":
+                script = False
+            else:
+                raise ArgumentException
+            file_change_script_attribute(self.pathname, script)
+        except ArgumentException:
+            self.ids.Error.text = "Erreur : la valeur de script peut être True, False, true, false"
+        except Exception as e:
+            self.ids.Error.text = f"Erreur : {e}"
+        else:
+            self.ids.Error.text = f"L'attribut file.script a correctement ete modifie"
 
     def deplacer(self):
         """
