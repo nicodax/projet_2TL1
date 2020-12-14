@@ -259,6 +259,8 @@ def list_sorted_files_on_course(course_name, user_instance):
     owned_files = list_owned_files(user_instance)
     for i in owned_files:
         for g in course_name:
+            print(g)
+            print(i["course_name"])
             if g in i["course_name"]:
                 content_to_display.append(i)
                 break

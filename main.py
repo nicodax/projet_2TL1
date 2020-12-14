@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 from cli.cli_misc import pickle_get, pickle_get_instance
-from classes.exceptions import UnknownPasswordException
+from classes.exceptions import UnknownPasswordException, AlreadyInListException
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
 from tkinter import filedialog
 from cli.exceptions import UnknownObjectException
 from gui.exceptions import UserNameNotFoundException
-from cli.cli_student import list_sorted_files_on_tags, list_sorted_files_on_course, new_file
+from cli.cli_student import list_sorted_files_on_tags, list_sorted_files_on_course, new_file, file_add_tag, \
+    file_add_course
 
 
 ########################################################################################################
@@ -74,19 +75,21 @@ class ToolWindow(Screen):
         RAISES: UnknownObjectException se lance si la valeur de Recherche(TextInput) n'est pas
             un argument reconnu.
         """
-        try:
-            list_users = pickle_get(students_arg=True)[0]["name_id_dict"].keys()
-            list_courses = pickle_get(courses_arg=True)[3]["name_id_dict"].keys()
-            list_files = pickle_get(files_arg=True)[2]["name_id_dict"].keys()
-            if self.ids.Recherche.text == "etudiants":
-                self.ids.Affichage.text = self.list_to_string(list_users)
-            elif self.ids.Recherche.text == "cours":
-                self.ids.Affichage.text = self.list_to_string(list_courses)
-            elif self.ids.Recherche.text == "fichiers":
-                self.ids.Affichage.text = self.list_to_string(list_files)
-            else:
-                raise UnknownObjectException
-        except UnknownObjectException:
+        list_users = pickle_get(students_arg=True)[0]["name_id_dict"].keys()
+        list_courses = pickle_get(courses_arg=True)[3]["name_id_dict"].keys()
+        list_files = pickle_get(files_arg=True)[2]["name_id_dict"].keys()
+        list_owned_files = []
+        for pathname in list_files:
+            file_instance_id = pickle_get_instance(pathname, file=True).file_id
+            if file_instance_id in self.student_instance.files:
+                list_owned_files.append(pathname)
+        if self.ids.Recherche.text == "etudiants":
+            self.ids.Affichage.text = self.list_to_string(list_users)
+        elif self.ids.Recherche.text == "cours":
+            self.ids.Affichage.text = self.list_to_string(list_courses)
+        elif self.ids.Recherche.text == "fichiers":
+            self.ids.Affichage.text = self.list_to_string(list_owned_files)
+        else:
             self.ids.Affichage.text = 'Veuillez entrer:"etudiants","cours" ou "fichiers"'
 
     def sort_on_course(self):
@@ -110,6 +113,7 @@ class ToolWindow(Screen):
         except Exception as e:
             self.ids.Affichage.text = f"Erreur : {e}\n"
         else:
+            print(self.ids.Recherche.text)
             list_dict = list_sorted_files_on_course([self.ids.Recherche.text], self.student_instance)
             all_pathname = []
             for x in list_dict:
@@ -124,7 +128,7 @@ class ToolWindow(Screen):
         list_dict = list_sorted_files_on_tags([self.ids.Recherche.text], self.student_instance)
         all_pathname = []
         for x in list_dict:
-            all_pathname.append(x["pathname"])
+            all_pathname.append(x["pathname"] + "  [" + x["tags"] + "]")
         self.ids.Affichage.text = self.list_to_string(all_pathname)
 
 
@@ -179,6 +183,20 @@ class EditorWindow(Screen):
             l'extension .py.
         """
         pass
+    def file_add_tag_gui(self):
+        """
+        POST : ajoute l'etiquette specifiee si elle n'est pas deja referencee
+        RAISES : AlreadyInListException si l'etiquette specifiee est deja referencee
+        """
+        try:
+            tag = [self.ids.Recherche.text]
+            file_add_tag(self.pathname, tag)
+        except AlreadyInListException:
+            self.ids.Error.text = "Erreur : l'etiquette specifiee existe deja"
+        except Exception as e:
+            self.ids.Error.text = f"Erreur : {e}"
+        else:
+            self.ids.Error.text = f"L'etiquette a correctement ete assignee au fichier"
 
     def deplacer(self):
         """
@@ -191,6 +209,19 @@ class EditorWindow(Screen):
 ########################################################################################################
 # WINDOW MANAGER
 ########################################################################################################
+
+    def file_add_course_gui(self):
+        """
+        POST : associe le fichier au cours specifie
+        """
+        try:
+            course_name = self.ids.Recherche.text
+            file_add_course(self.pathname, course_name)
+        except Exception as e:
+            self.ids.Error.text = f"Erreur : {e}"
+        else:
+            self.ids.Error.text = f"Le fichier a correctement ete assigne au cours"
+
 
 class WindowManager(ScreenManager):
     pass

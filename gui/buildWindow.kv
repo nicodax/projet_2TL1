@@ -151,6 +151,14 @@ WindowManager:
                 root.deplacer()
 
         Button:
+            id: add_tag
+            text: 'Ajouter une étiquette'
+            size_hint: (0.5, 0.15)
+            background_color: [0, 1, 0, 1]
+            on_press:
+                root.file_add_tag_gui()
+
+        Button:
             id:btnExit
             text:"Exit"
             size_hint: (0.5, 0.15)
