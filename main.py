@@ -10,6 +10,10 @@ from gui.exceptions import UserNameNotFoundException
 from cli.cli_student import list_sorted_files_on_tags, list_sorted_files_on_course, new_file
 
 
+########################################################################################################
+# LOGIN WINDOW
+########################################################################################################
+
 class LoginWindow(Screen):
     def connexion(self):
         """
@@ -39,6 +43,10 @@ class LoginWindow(Screen):
             return True
 
 
+########################################################################################################
+# TOOL WINDOW
+########################################################################################################
+
 class ToolWindow(Screen):
     student_instance = None
 
@@ -47,9 +55,6 @@ class ToolWindow(Screen):
         POST: Ouvre le fenetre EditorWindow.
         """
         self.ids.Affichage.text = "Lancemement d'un nouveau fichier."
-
-    def delete(self):
-        self.ids.Affichage.text = "Suppression d'un fichier existant."
 
     @staticmethod
     def list_to_string(liste):
@@ -123,6 +128,10 @@ class ToolWindow(Screen):
         self.ids.Affichage.text = self.list_to_string(all_pathname)
 
 
+########################################################################################################
+# EDITOR WINDOW
+########################################################################################################
+
 class EditorWindow(Screen):
     student_instance = None
     pathname = ""
@@ -162,6 +171,26 @@ class EditorWindow(Screen):
         f.write(s)
         f.close()
 
+    def delete(self):
+        """
+        POST: Ouvre un navigateur de fichier, puis après avoir choisis un fichier,
+            supprime ce dernier.
+         RAISES: Affiche un message d erreur si le fichier n'a ni l'extension .txt, ni
+            l'extension .py.
+        """
+        pass
+
+    def deplacer(self):
+        """
+        POST: Ouvre le navigateur de fichier apres avoir cliquer sur l'onglet
+            deplacer et deplace le fichier a l endroit choisi.
+        """
+        pass
+
+
+########################################################################################################
+# WINDOW MANAGER
+########################################################################################################
 
 class WindowManager(ScreenManager):
     pass

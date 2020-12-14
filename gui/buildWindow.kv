@@ -64,14 +64,6 @@ WindowManager:
                 app.root.current = "editor"
 
         Button:
-            id: Delete
-            text: 'Supprimer'
-            size_hint: (0.5, 0.15)
-            background_color: [0, 1, 0, 1]
-            on_press:
-                root.delete()
-
-        Button:
             id: List
             text: 'Lister'
             size_hint: (0.5, 0.15)
@@ -141,6 +133,22 @@ WindowManager:
             background_color: [0, 1, 0, 1]
             on_press:
                 root.enregistrer_sous()
+
+        Button:
+            id: Delete
+            text: 'Supprimer'
+            size_hint: (0.5, 0.15)
+            background_color: [0, 1, 0, 1]
+            on_press:
+                root.delete()
+
+        Button:
+            id: Move
+            text: 'Deplacer'
+            size_hint: (0.5, 0.15)
+            background_color: [0, 1, 0, 1]
+            on_press:
+                root.deplacer()
 
         Button:
             id:btnExit
