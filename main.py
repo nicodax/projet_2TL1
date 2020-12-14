@@ -146,7 +146,7 @@ class EditorWindow(Screen):
             implement son contenu dans TextArea(textInput).
         """
         self.pathname = filedialog.askopenfilename(initialdir="/", title="Choisir le fichier",
-                                                   filetype=(("Text File", "*.txt"), ("All Files", "*.*")))
+                                                   filetype=[("Text File", "*.txt"), ("Python File", "*.py")])
         list_files = pickle_get(files_arg=True)[2]["name_id_dict"].keys()
         if self.pathname not in list_files:
             new_file(self.pathname, True, None, None, self.student_instance)
@@ -259,9 +259,9 @@ class EditorWindow(Screen):
         """
 
         new_pathname = filedialog.asksaveasfilename(defaultextension='.*', initialdir="/", title='Enregistrer sous',
-                                                    filetype=(
+                                                    filetype=[
                                                         ("Text File", "*.txt"), ("xls file", "*.xls"),
-                                                        ("All File", "*.*")))
+                                                        ("All File", "*.*")])
         list_files = pickle_get(files_arg=True)[2]["name_id_dict"].keys()
         if new_pathname not in list_files:
             new_file(new_pathname, True, None, None, self.student_instance)
