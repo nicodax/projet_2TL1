@@ -17,6 +17,7 @@ from cli.cli_student import list_sorted_files_on_tags, list_sorted_files_on_cour
 ########################################################################################################
 
 class LoginWindow(Screen):
+    """Cette classe permet de creer une fenetre pour le login de l'utilisateur"""
     def connexion(self):
         """
         POST: Lance tool.window si le nom utilisateur existe et que le mot de passe correspond.
@@ -50,6 +51,12 @@ class LoginWindow(Screen):
 ########################################################################################################
 
 class ToolWindow(Screen):
+    """
+    Cette classe permet de creer une fenetre rassemblant tous les outils disponibles a l'utilisateur connecte
+
+    Variables de classe:
+        student_instance:   instance de classe de l'utilisateur connecté
+    """
     student_instance = None
 
     def new(self):
@@ -137,6 +144,15 @@ class ToolWindow(Screen):
 ########################################################################################################
 
 class EditorWindow(Screen):
+    """
+    Cette classe permet de creer une fenetre avec un editeur de texte pour le fichier ouvert et differents outils
+    specifiques a la gestion de fichier
+
+
+    Variables de classe:
+        student_instance:   instance de classe de l'utilisateur connecté
+        pathname:           pathname du fichier ouvert dans l'editeur
+    """
     student_instance = None
     pathname = ""
 
