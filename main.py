@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-from cli.cli_misc import pickle_get, pickle_get_instance
+import os
+from cli.cli_misc import pickle_get, pickle_get_instance, pickle_get_file_if_owned
 from classes.exceptions import UnknownPasswordException, AlreadyInListException, NotInListException
 from kivy.app import App
 from kivy.lang import Builder
@@ -8,9 +9,9 @@ from tkinter import filedialog
 from cli.exceptions import UnknownObjectException
 from gui.exceptions import UserNameNotFoundException
 from cli.cli_student import list_sorted_files_on_tags, list_sorted_files_on_course, new_file, file_add_tag, \
-    file_add_course, file_remove_tag, file_remove_course
+    file_add_course, file_remove_tag, file_remove_course, delete_file, move_file
 
-#inutile
+
 ########################################################################################################
 # LOGIN WINDOW
 ########################################################################################################
@@ -174,15 +175,6 @@ class EditorWindow(Screen):
         f.write(s)
         f.close()
 
-    def delete(self):
-        """
-        POST: Ouvre un navigateur de fichier, puis après avoir choisis un fichier,
-            supprime ce dernier.
-         RAISES: Affiche un message d erreur si le fichier n'a ni l'extension .txt, ni
-            l'extension .py.
-        """
-        pass
-
     def file_add_tag_gui(self):
         """
         POST : ajoute l'etiquette specifiee si elle n'est pas deja referencee
@@ -245,8 +237,34 @@ class EditorWindow(Screen):
         POST: Ouvre le navigateur de fichier apres avoir cliquer sur l'onglet
             deplacer et deplace le fichier a l endroit choisi.
         """
-        pass
 
+        new_pathname = filedialog.asksaveasfilename(defaultextension='.*', initialdir="/", title='Enregistrer sous',
+                                                     filetype=(
+                                                         ("Text File", "*.txt"), ("xls file", "*.xls"),
+                                                         ("All File", "*.*")))
+        list_files = pickle_get(files_arg=True)[2]["name_id_dict"].keys()
+        if new_pathname not in list_files:
+            new_file(new_pathname, True, None, None, self.student_instance)
+        f = open(new_pathname, 'w')
+        s = self.ids.TextArea.text
+        f.write(s)
+        move_file(self.pathname, new_pathname)
+        os.remove(self.pathname)
+        self.pathname = new_pathname
+        f.close()
+
+    def delete(self):
+        """
+        POST: Supprime le fichier ouvert actuellement.
+        """
+        try:
+            file_instance = pickle_get_file_if_owned(self.student_instance, self.pathname)
+            delete_file(file_instance, self.student_instance)
+        except Exception as e:
+            self.ids.Error.text = f"Erreur : {e}"
+        else:
+            self.ids.TextArea.text = ""
+            self.ids.Error.text = "Le fichier a ete supprime"
 
 ########################################################################################################
 # WINDOW MANAGER
