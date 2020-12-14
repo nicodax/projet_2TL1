@@ -239,9 +239,9 @@ class EditorWindow(Screen):
         """
 
         new_pathname = filedialog.asksaveasfilename(defaultextension='.*', initialdir="/", title='Enregistrer sous',
-                                                     filetype=(
-                                                         ("Text File", "*.txt"), ("xls file", "*.xls"),
-                                                         ("All File", "*.*")))
+                                                    filetype=(
+                                                        ("Text File", "*.txt"), ("xls file", "*.xls"),
+                                                        ("All File", "*.*")))
         list_files = pickle_get(files_arg=True)[2]["name_id_dict"].keys()
         if new_pathname not in list_files:
             new_file(new_pathname, True, None, None, self.student_instance)
@@ -265,6 +265,7 @@ class EditorWindow(Screen):
         else:
             self.ids.TextArea.text = ""
             self.ids.Error.text = "Le fichier a ete supprime"
+
 
 ########################################################################################################
 # WINDOW MANAGER
