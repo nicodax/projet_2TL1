@@ -6,10 +6,10 @@ from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
 from tkinter import filedialog
-from cli.exceptions import UnknownObjectException
 from gui.exceptions import UserNameNotFoundException, SamePathnameException
+from cli.exceptions import UnknownObjectException, ArgumentException
 from cli.cli_student import list_sorted_files_on_tags, list_sorted_files_on_course, new_file, file_add_tag, \
-    file_add_course, file_remove_tag, file_remove_course, delete_file, move_file
+    file_add_course, file_remove_tag, file_remove_course, delete_file, move_file, file_change_script_attribute
 
 
 ########################################################################################################
@@ -146,7 +146,7 @@ class EditorWindow(Screen):
             implement son contenu dans TextArea(textInput).
         """
         self.pathname = filedialog.askopenfilename(initialdir="/", title="Choisir le fichier",
-                                                   filetype=(("Text File", "*.txt"), ("All Files", "*.*")))
+                                                   filetype=[("Text File", "*.txt"), ("Python File", "*.py")])
         list_files = pickle_get(files_arg=True)[2]["name_id_dict"].keys()
         if self.pathname not in list_files:
             new_file(self.pathname, True, None, None, self.student_instance)
@@ -232,6 +232,26 @@ class EditorWindow(Screen):
         else:
             self.ids.Error.text = f"Le fichier a correctement ete assigne au cours"
 
+    def file_change_script_attribute_gui(self):
+        """
+        POST : indique si le fichier est un script ou non
+        """
+        try:
+            script_string = self.ids.Recherche.text
+            if script_string == "True" or script_string == "true":
+                script = True
+            elif script_string == "False" or script_string == "false":
+                script = False
+            else:
+                raise ArgumentException
+            file_change_script_attribute(self.pathname, script)
+        except ArgumentException:
+            self.ids.Error.text = "Erreur : la valeur de script peut être True, False, true, false"
+        except Exception as e:
+            self.ids.Error.text = f"Erreur : {e}"
+        else:
+            self.ids.Error.text = f"L'attribut file.script a correctement ete modifie"
+
     def deplacer(self):
         """
         POST: Ouvre le navigateur de fichier apres avoir cliquer sur l'onglet
@@ -261,6 +281,21 @@ class EditorWindow(Screen):
             self.ids.Error.text = f"Erreur : {e}"
         else:
             self.ids.Error.text = "Le fichier a ete deplace."
+
+        new_pathname = filedialog.asksaveasfilename(defaultextension='.*', initialdir="/", title='Enregistrer sous',
+                                                    filetype=[
+                                                        ("Text File", "*.txt"), ("xls file", "*.xls"),
+                                                        ("All File", "*.*")])
+        list_files = pickle_get(files_arg=True)[2]["name_id_dict"].keys()
+        if new_pathname not in list_files:
+            new_file(new_pathname, True, None, None, self.student_instance)
+        f = open(new_pathname, 'w')
+        s = self.ids.TextArea.text
+        f.write(s)
+        move_file(self.pathname, new_pathname)
+        os.remove(self.pathname)
+        self.pathname = new_pathname
+        f.close()
 
     def delete(self):
         """

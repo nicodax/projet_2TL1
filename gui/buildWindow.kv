@@ -167,6 +167,14 @@ WindowManager:
                 root.file_add_course_gui()
 
         Button:
+            id: change_script
+            text: 'Script ?'
+            size_hint: (0.5, 0.15)
+            background_color: [0, 1, 0, 1]
+            on_press:
+                root.file_change_script_attribute_gui()
+
+        Button:
             text:"Outils"
             size_hint: (0.5, 0.15)
             background_color: [0, 1, 0, 1]
