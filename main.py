@@ -10,7 +10,7 @@ from gui.exceptions import UserNameNotFoundException
 from cli.cli_student import list_sorted_files_on_tags, list_sorted_files_on_course, new_file, file_add_tag, \
     file_add_course, file_remove_tag, file_remove_course
 
-
+#inutile
 ########################################################################################################
 # LOGIN WINDOW
 ########################################################################################################
@@ -181,10 +181,6 @@ class EditorWindow(Screen):
          RAISES: Affiche un message d erreur si le fichier n'a ni l'extension .txt, ni
             l'extension .py.
         """
-        self.pathname = filedialog.(defaultextension='.*', initialdir="/", title='Enregistrer sous',
-                                                     filetype=(
-                                                         ("Text File", "*.txt"), ("xls file", "*.xls"),
-                                                         ("All File", "*.*")))
         pass
 
     def file_add_tag_gui(self):
