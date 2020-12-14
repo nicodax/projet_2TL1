@@ -40,7 +40,7 @@ class TestLoginInterface(unittest.TestCase):
         self.assertEqual(True, student_instance.verify_pwd(password1))
 
     def test_wrong_password(self):
-        """login() avec un mot de passe ne correspondant pas au nom utilisateurs reconnu"""
+        """connexion() avec un mot de passe ne correspondant pas au nom utilisateurs reconnu"""
         password1 = "user987"
         username1 = "greg"
         student_instance = pickle_get_instance(username1, student=True)
@@ -54,7 +54,6 @@ class TestToolInterface(unittest.TestCase):
      """
 
     def test_list_to_string(self):
-        """list_to_string(list)"""
         resultat_test = 'test1, test2, test3'
         liste_test = ['test1', 'test2', 'test3']
         self.assertEqual(resultat_test, ToolWindow.list_to_string(liste_test))
@@ -81,6 +80,7 @@ class TestEditorInterface(unittest.TestCase):
     #    new_pathname = "files1/test.txt"
 
     def test_delete(self):
+        """Cette fonction test le fait que le fichier est bel et bien supprimé."""
         EditorWindow.pathname = "files/test.txt"
         EditorWindow.student_instance = pickle_get_instance("greg", student=True)
         new_file(EditorWindow.pathname, False, None, None, EditorWindow.student_instance)

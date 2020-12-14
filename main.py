@@ -143,7 +143,7 @@ class EditorWindow(Screen):
     def open(self):
         """
         POST: Ouvre un navigateur de fichier, puis après avoir choisis un fichier,
-            implement son contenu dans TextArea(textInput).
+            implemente son contenu dans TextArea(textInput).
         """
         self.pathname = filedialog.askopenfilename(initialdir="/", title="Choisir le fichier",
                                                    filetype=[("Text File", "*.txt"), ("Python File", "*.py")])
@@ -254,8 +254,9 @@ class EditorWindow(Screen):
 
     def deplacer(self):
         """
-        POST: Ouvre le navigateur de fichier apres avoir cliquer sur l'onglet
-            deplacer et deplace le fichier a l endroit choisi.
+        POST: Ouvre le navigateur de fichier apres avoir cliquer sur le bouton deplacer
+            et deplace le fichier a l endroit choisi.
+        RAISES: SamePathnameException est appele si l'ancien pathname correspond a l'endroit choisi.
         """
         try:
             new_pathname = filedialog.asksaveasfilename(defaultextension='.*', initialdir="/", title='Enregistrer sous',
@@ -317,6 +318,10 @@ class EditorWindow(Screen):
 
 
 class WindowManager(ScreenManager):
+    """
+    Correspond a la fenetre mere de LoginWindow, ToolWindow et EditorWindow. C'est la
+    classe qui permet de passer d un ecran a l autre (module ScreenManager).
+    """
     pass
 
 
@@ -324,6 +329,9 @@ buildWindow = Builder.load_file("gui/buildWindow.kv")
 
 
 class MyMainApp(App):
+    """
+    Il s'agit du corps de l'application.
+    """
     def build(self):
         return buildWindow
 
