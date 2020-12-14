@@ -12,6 +12,12 @@ from cli.cli_student import list_sorted_files_on_tags, list_sorted_files_on_cour
 
 class LoginWindow(Screen):
     def connexion(self):
+        """
+        POST: Lance tool.window si le nom utilisateur existe et que le mot de passe correspond.
+        RAISES:
+            -UserNameNotFoundException si le nom utilisateur n'existe pas.
+            -UnknownPasswordException si le mot de passe ne correspond pas au nom utilisateur reconnu.
+        """
         try:
             list_users = pickle_get(students_arg=True)[0]["name_id_dict"].keys()
             if self.ids.Usrname.text in list_users:
@@ -27,7 +33,7 @@ class LoginWindow(Screen):
         except UserNameNotFoundException:
             self.ids.Error.text = "Mauvais nom d'utilisateurs !"
         except Exception as e:
-            print(f"Erreur : {e}\n")
+            self.ids.Error.text = f"Erreur : {e}\n"
         else:
             self.ids.Error.text = "Connexion en cours..."
             return True
@@ -37,6 +43,9 @@ class ToolWindow(Screen):
     student_instance = None
 
     def new(self):
+        """
+        POST: Ouvre le fenetre EditorWindow.
+        """
         self.ids.Affichage.text = "Lancemement d'un nouveau fichier."
 
     def delete(self):
@@ -44,6 +53,9 @@ class ToolWindow(Screen):
 
     @staticmethod
     def list_to_string(liste):
+        """
+        POST: Recoit une liste et la transforme en string.
+        """
         resultat = ""
         for x in liste:
             resultat += x + ', '
@@ -51,19 +63,35 @@ class ToolWindow(Screen):
         return resultat
 
     def list(self):
-        list_users = pickle_get(students_arg=True)[0]["name_id_dict"].keys()
-        list_courses = pickle_get(courses_arg=True)[3]["name_id_dict"].keys()
-        list_files = pickle_get(files_arg=True)[2]["name_id_dict"].keys()
-        if self.ids.Recherche.text == "etudiants":
-            self.ids.Affichage.text = self.list_to_string(list_users)
-        elif self.ids.Recherche.text == "cours":
-            self.ids.Affichage.text = self.list_to_string(list_courses)
-        elif self.ids.Recherche.text == "fichiers":
-            self.ids.Affichage.text = self.list_to_string(list_files)
-        else:
+        """
+        POST: Affiche la liste des fichiers, des cours ou des utilisateurs recenses
+            dans Affichage(Label) en fonction de la valeur de Recherche(TextInput).
+        RAISES: UnknownObjectException se lance si la valeur de Recherche(TextInput) n'est pas
+            un argument reconnu.
+        """
+        try:
+            list_users = pickle_get(students_arg=True)[0]["name_id_dict"].keys()
+            list_courses = pickle_get(courses_arg=True)[3]["name_id_dict"].keys()
+            list_files = pickle_get(files_arg=True)[2]["name_id_dict"].keys()
+            if self.ids.Recherche.text == "etudiants":
+                self.ids.Affichage.text = self.list_to_string(list_users)
+            elif self.ids.Recherche.text == "cours":
+                self.ids.Affichage.text = self.list_to_string(list_courses)
+            elif self.ids.Recherche.text == "fichiers":
+                self.ids.Affichage.text = self.list_to_string(list_files)
+            else:
+                raise UnknownObjectException
+        except UnknownObjectException:
             self.ids.Affichage.text = 'Veuillez entrer:"etudiants","cours" ou "fichiers"'
 
     def sort_on_course(self):
+        """
+        POST: Affiche la liste des fichiers tries dans Affichage(Label) en fonction du
+            cours defini dans Recherche(TextInput).
+        RAISES:
+              -UnknownObjectException si la valeur de Recherche(TextInput) n'est pas
+            un argument reconnu.
+        """
         try:
             valid_course_name = False
             list_courses = pickle_get(courses_arg=True)[3]["name_id_dict"].keys()
@@ -84,6 +112,10 @@ class ToolWindow(Screen):
             self.ids.Affichage.text = self.list_to_string(all_pathname)
 
     def sort_on_tag(self):
+        """
+        POST: Affiche la liste des fichiers tries dans Affichage(Label) en fonction de
+             l'etiquette definie dans Recherche(TextInput).
+        """
         list_dict = list_sorted_files_on_tags([self.ids.Recherche.text], self.student_instance)
         all_pathname = []
         for x in list_dict:
@@ -96,6 +128,10 @@ class EditorWindow(Screen):
     pathname = ""
 
     def open(self):
+        """
+        POST: Ouvre un navigateur de fichier, puis après avoir choisis un fichier,
+            implement son contenu dans TextArea(textInput).
+        """
         self.pathname = filedialog.askopenfilename(initialdir="/", title="Choisir le fichier",
                                                    filetype=(("Text File", "*.txt"), ("All Files", "*.*")))
         list_files = pickle_get(files_arg=True)[2]["name_id_dict"].keys()
@@ -110,6 +146,10 @@ class EditorWindow(Screen):
         self.ids.TextArea.text = resultat
 
     def enregistrer_sous(self):
+        """
+        POST: Ouvre le navigateur de fichier apres avoir cliquer sur l'onglet
+            enregistrer et sauvegarde le fichier a l endroit choisi.
+        """
         self.pathname = filedialog.asksaveasfilename(defaultextension='.*', initialdir="/", title='Enregistrer sous',
                                                      filetype=(
                                                          ("Text File", "*.txt"), ("xls file", "*.xls"),
@@ -127,12 +167,12 @@ class WindowManager(ScreenManager):
     pass
 
 
-kv = Builder.load_file("gui/my.kv")
+buildWindow = Builder.load_file("gui/buildWindow.kv")
 
 
 class MyMainApp(App):
     def build(self):
-        return kv
+        return buildWindow
 
 
 if __name__ == '__main__':

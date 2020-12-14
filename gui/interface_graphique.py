@@ -95,7 +95,7 @@ def sort():
 
 def leave():
     """
-    POST: Ferme la fenetre editor_window apres avoir cliquer sur l onglet quitter.
+    POST: Ferme la fenetre editor_window apres avoir cliquer sur le bouton quitter.
     """
     # Cette fonction est liee a une liste deroulante (onglet quitter) qui ferme la fenetre editor_window.
     pass

@@ -2,7 +2,5 @@
 
 
 class UserNameNotFoundException(Exception):
-    pass
-
-class WrongExtensionException(Exception):
+    """Exception generee lorsque le nom utilisateur n est pas reconnu."""
     pass
