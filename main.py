@@ -7,7 +7,7 @@ from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
 from tkinter import filedialog
 from cli.exceptions import UnknownObjectException
-from gui.exceptions import UserNameNotFoundException
+from gui.exceptions import UserNameNotFoundException, SamePathnameException
 from cli.cli_student import list_sorted_files_on_tags, list_sorted_files_on_course, new_file, file_add_tag, \
     file_add_course, file_remove_tag, file_remove_course, delete_file, move_file
 
@@ -237,21 +237,30 @@ class EditorWindow(Screen):
         POST: Ouvre le navigateur de fichier apres avoir cliquer sur l'onglet
             deplacer et deplace le fichier a l endroit choisi.
         """
-
-        new_pathname = filedialog.asksaveasfilename(defaultextension='.*', initialdir="/", title='Enregistrer sous',
-                                                    filetype=(
-                                                        ("Text File", "*.txt"), ("xls file", "*.xls"),
-                                                        ("All File", "*.*")))
-        list_files = pickle_get(files_arg=True)[2]["name_id_dict"].keys()
-        if new_pathname not in list_files:
-            new_file(new_pathname, True, None, None, self.student_instance)
-        f = open(new_pathname, 'w')
-        s = self.ids.TextArea.text
-        f.write(s)
-        move_file(self.pathname, new_pathname)
-        os.remove(self.pathname)
-        self.pathname = new_pathname
-        f.close()
+        try:
+            new_pathname = filedialog.asksaveasfilename(defaultextension='.*', initialdir="/", title='Enregistrer sous',
+                                                        filetype=(
+                                                            ("Text File", "*.txt"), ("xls file", "*.xls"),
+                                                            ("All File", "*.*")))
+            list_files = pickle_get(files_arg=True)[2]["name_id_dict"].keys()
+            if new_pathname not in list_files:
+                new_file(new_pathname, True, None, None, self.student_instance)
+            if self.pathname != new_pathname:
+                f = open(new_pathname, 'w')
+                s = self.ids.TextArea.text
+                f.write(s)
+                move_file(self.pathname, new_pathname)
+                os.remove(self.pathname)
+                self.pathname = new_pathname
+                f.close()
+            else:
+                raise SamePathnameException
+        except SamePathnameException:
+            self.ids.Error.text = "Le nouvel emplacement est le meme que le precedent."
+        except Exception as e:
+            self.ids.Error.text = f"Erreur : {e}"
+        else:
+            self.ids.Error.text = "Le fichier a ete deplace."
 
     def delete(self):
         """
