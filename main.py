@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from cli.cli_misc import pickle_get, pickle_get_instance
-from classes.exceptions import UnknownPasswordException, AlreadyInListException
+from classes.exceptions import UnknownPasswordException, AlreadyInListException, NotInListException
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
@@ -8,7 +8,7 @@ from tkinter import filedialog
 from cli.exceptions import UnknownObjectException
 from gui.exceptions import UserNameNotFoundException
 from cli.cli_student import list_sorted_files_on_tags, list_sorted_files_on_course, new_file, file_add_tag, \
-    file_add_course
+    file_add_course, file_remove_tag, file_remove_course
 
 
 ########################################################################################################
@@ -209,6 +209,32 @@ class EditorWindow(Screen):
             self.ids.Error.text = "Erreur : le cours spécifié n'existe pas"
         except AlreadyInListException:
             self.ids.Error.text = "Erreur : le fichier est deja associe a ce cours"
+        except Exception as e:
+            self.ids.Error.text = f"Erreur : {e}"
+        else:
+            self.ids.Error.text = f"Le fichier a correctement ete assigne au cours"
+
+    def file_remove_tag_gui(self):
+        """
+        POST : retire l'etiquette specifiee si elle est deja referencee
+        RAISES : NotInListException si l'etiquette specifiee n'est pas deja referencee
+        """
+        try:
+            tag = self.ids.Recherche.text
+            file_remove_tag(self.pathname, tag)
+        except NotInListException:
+            self.ids.Error.text = "Erreur : l'etiquette specifiee n'existe pas"
+        except Exception as e:
+            self.ids.Error.text = f"Erreur : {e}"
+        else:
+            self.ids.Error.text = f"L'etiquette a correctement ete retiree du fichier"
+
+    def file_remove_course_gui(self):
+        """
+        POST : dissocie le fichier de tout cours
+        """
+        try:
+            file_remove_course(self.pathname)
         except Exception as e:
             self.ids.Error.text = f"Erreur : {e}"
         else:
