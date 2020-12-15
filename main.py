@@ -6,6 +6,7 @@ from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.dropdown import DropDown
 from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.widget import Widget
 
 from classes.exceptions import UnknownPasswordException, AlreadyInListException, NotInListException
 from cli.cli_misc import pickle_get, pickle_get_instance, pickle_get_file_if_owned
@@ -54,6 +55,15 @@ class LoginWindow(Screen):
 ########################################################################################################
 # TOOL WINDOW
 ########################################################################################################
+class HListBox(Widget):
+    def __init__(self, **kwargs):
+        super(HListBox, self).__init__(**kwargs)
+
+
+class HSortBox(Widget):
+    def __init__(self, **kwargs):
+        super(HSortBox, self).__init__(**kwargs)
+
 
 class ToolWindow(Screen):
     """
@@ -63,6 +73,8 @@ class ToolWindow(Screen):
         student_instance:   instance de classe de l'utilisateur connecté
     """
     student_instance = None
+    sort_choice = None
+    list_choice = None
 
     def new(self):
         """
@@ -81,11 +93,15 @@ class ToolWindow(Screen):
         resultat = resultat[:-2]
         return resultat
 
-    def open_list(self):
+    def open_list_choices(self):
         dropdown = CustomDropDown()
-        self.ids.List.bind(on_release=dropdown.open)
+        self.ids.HListBox.ids.List.bind(on_release=dropdown.open)
 
-    def list(self, choice):
+    def open_sort_choices(self):
+        dropdown = CustomDropDown2()
+        self.ids.HSortBox.ids.SortList.bind(on_release=dropdown.open)
+
+    def list(self):
         """
         POST: Affiche la liste des fichiers, des cours ou des utilisateurs recenses
             dans Affichage(Label) en fonction de la valeur de Recherche(TextInput).
@@ -100,12 +116,18 @@ class ToolWindow(Screen):
             file_instance_id = pickle_get_instance(pathname, file=True).file_id
             if file_instance_id in self.student_instance.files:
                 list_owned_files.append(pathname)
-        if choice == "students":
+        if self.list_choice == "students":
             self.ids.Affichage.text = self.list_to_string(list_users)
-        elif choice == "courses":
+        elif self.list_choice == "courses":
             self.ids.Affichage.text = self.list_to_string(list_courses)
-        elif choice == "files":
+        elif self.list_choice == "files":
             self.ids.Affichage.text = self.list_to_string(list_owned_files)
+
+    def sort_launcher(self):
+        if self.sort_choice == "course":
+            self.sort_on_course()
+        elif self.sort_choice == "tag":
+            self.sort_on_tag()
 
     def sort_on_course(self):
         """
@@ -119,7 +141,7 @@ class ToolWindow(Screen):
             valid_course_name = False
             list_courses = pickle_get(courses_arg=True)[3]["name_id_dict"].keys()
             for x in list_courses:
-                if self.ids.Recherche.text == x:
+                if self.ids.HSortBox.ids.Recherche.text == x:
                     valid_course_name = True
             if not valid_course_name:
                 raise UnknownObjectException
@@ -128,7 +150,7 @@ class ToolWindow(Screen):
         except Exception as e:
             self.ids.Affichage.text = f"Erreur : {e}\n"
         else:
-            list_dict = list_sorted_files_on_course([self.ids.Recherche.text], self.student_instance)
+            list_dict = list_sorted_files_on_course([self.ids.HSortBox.ids.Recherche.text], self.student_instance)
             all_pathname = []
             for x in list_dict:
                 all_pathname.append(x["pathname"])
@@ -139,7 +161,7 @@ class ToolWindow(Screen):
         POST: Affiche la liste des fichiers tries dans Affichage(Label) en fonction de
              l'etiquette definie dans Recherche(TextInput).
         """
-        list_dict = list_sorted_files_on_tags([self.ids.Recherche.text], self.student_instance)
+        list_dict = list_sorted_files_on_tags([self.ids.HSortBox.ids.Recherche.text], self.student_instance)
         all_pathname = []
         for x in list_dict:
             all_pathname.append(x["pathname"] + "  [" + x["tags"] + "]")
@@ -352,10 +374,14 @@ class CustomDropDown(DropDown):
     pass
 
 
+class CustomDropDown2(DropDown):
+    pass
+
+
 buildWindow = Builder.load_file("gui/buildWindow.kv")
 
 
-class MyMainApp(App):
+class projet_2TL1_09(App):
     """
     Il s'agit du corps de l'application.
     """
@@ -364,4 +390,4 @@ class MyMainApp(App):
 
 
 if __name__ == '__main__':
-    MyMainApp().run()
+    projet_2TL1_09().run()

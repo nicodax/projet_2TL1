@@ -95,75 +95,130 @@ WindowManager:
         orientation: 'vertical'
         spacing: 20
 
-        FloatLayout:
+        HListBox:
+            id: HListBox
 
-            Button:
-                id: List
-                text: 'Lister'
-                size_hint: (0.5, 0.15)
-                pos_hint: {"x":0, "y":1}
-                background_color: [1.6, 0.6, 1.7, 1.0]
-                on_press:
-                    root.open_list()
+        HSortBox:
+            id: HSortBox
 
-            Button:
-                id: SortC
-                text: 'Trier par cours'
-                size_hint: (0.5, 0.15)
-                background_color: [1.6, 0.6, 1.7, 1.0]
-                on_press:
-                    root.sort_on_course()
+        Label:
+            id: Affichage
+            text: "Cliquer sur un bouton:"
+            font_size: 30
+            color: [1, 0, 0, 1]
 
-            Button:
-                id: SortT
-                text: 'Trier par tags'
-                size_hint: (0.5, 0.15)
-                background_color: [1.6, 0.6, 1.7, 1.0]
-                on_press:
-                    root.sort_on_tag()
+        Button:
+            id: New
+            text: 'Vers editeur'
+            pos_hint: {"x":0.85, "y":0}
+            size_hint: 0.15, 0.05
+            background_color: [1.6, 0.6, 1.7, 1.0]
+            on_press:
+                root.new()
+            on_release:
+                app.root.current = "editor"
 
-            Label:
-                id: Affichage
-                text: "Cliquer sur un bouton:"
-                font_size: 30
-                color: [1, 0, 0, 1]
 
-            Button:
-                id: New
-                text: 'Vers editeur'
-                pos_hint: {"x":0.85, "y":0}
-                size_hint: 0.15, 0.05
-                background_color: [1.6, 0.6, 1.7, 1.0]
-                on_press:
-                    root.new()
-                on_release:
-                    app.root.current = "editor"
 
-            TextInput:
-                id: Recherche
-                hint_text: "Recherche"
-                size_hint: (.2, None)
-                height: 30
-                multiline: False
-                font_size: 15
+<HListBox>
+    BoxLayout:
+        orientation: 'horizontal'
+        pos: root.pos
+
+        Label:
+            id: List_label
+            text: 'Lister les :'
+            color: [1, 0, 0, 1]
+
+        Button:
+            id: List
+            text: 'choisir'
+            background_color: [1.6, 0.6, 1.7, 1.0]
+            on_press:
+                app.root.ids.tools.open_list_choices()
+
+        Button:
+            id: Rechercher
+            text: 'Go!'
+            background_color: [1.6, 0.6, 1.7, 1.0]
+            on_press:
+                app.root.ids.tools.list()
+
+<HSortBox>
+    BoxLayout:
+        orientation: 'horizontal'
+        pos: root.pos
+
+        Label:
+            id: sort_label
+            text: 'Trier sur base :'
+            color: [1, 0, 0, 1]
+
+        Button:
+            id: SortList
+            text: 'choisir'
+            background_color: [1.6, 0.6, 1.7, 1.0]
+            on_press:
+                app.root.ids.tools.open_sort_choices()
+
+        TextInput:
+            id: Recherche
+            hint_text: ""
+            font_size: 20
+            multiline: False
+
+        Button:
+            id: Rechercher
+            text: 'Go!'
+            background_color: [1.6, 0.6, 1.7, 1.0]
+            on_press:
+                app.root.ids.tools.sort_launcher()
 
 <CustomDropDown>:
     Button:
         text: 'étudiants'
         size_hint_y: None
-        height: 44
+        height: 20
         on_release:
-            app.root.ids.tools.list("students")
+            app.root.ids.tools.list_choice = "students"
+            app.root.ids.tools.ids.HListBox.ids.List.text = "étudiants"
+            root.dismiss()
     Button:
         text: 'cours'
         size_hint_y: None
-        height: 44
-        on_release: app.root.ids.tools.list("courses")
+        height: 20
+        on_release:
+            app.root.ids.tools.list_choice = "courses"
+            app.root.ids.tools.ids.HListBox.ids.List.text = "cours"
+            root.dismiss()
     Button:
         text: 'fichiers'
         size_hint_y: None
-        height: 44
-        on_release: app.root.ids.tools.list("files")
+        height: 20
+        on_release:
+            app.root.ids.tools.list_choice = "files"
+            app.root.ids.tools.ids.HListBox.ids.List.text = "fichiers"
+            root.dismiss()
+
+<CustomDropDown2>:
+    Button:
+        text: 'des cours'
+        size_hint_y: None
+        height: 20
+        on_release:
+            app.root.ids.tools.sort_choice = "course"
+            app.root.ids.tools.ids.HSortBox.ids.SortList.text = "du cours"
+            root.dismiss()
+
+    Button:
+        text: 'des étiquettes'
+        size_hint_y: None
+        height: 20
+        on_release:
+            app.root.ids.tools.sort_choice = "tag"
+            app.root.ids.tools.ids.HSortBox.ids.SortList.text = "de l'étiquette"
+            root.dismiss()
+
 
 
 <EditorWindow>:
