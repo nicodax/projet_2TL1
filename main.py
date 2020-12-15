@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 import os
-from cli.cli_misc import pickle_get, pickle_get_instance, pickle_get_file_if_owned
-from classes.exceptions import UnknownPasswordException, AlreadyInListException, NotInListException
+from tkinter import filedialog
+
 from kivy.app import App
 from kivy.lang import Builder
+from kivy.uix.dropdown import DropDown
 from kivy.uix.screenmanager import ScreenManager, Screen
-from tkinter import filedialog
-from gui.exceptions import UserNameNotFoundException, SamePathnameException
-from cli.exceptions import UnknownObjectException, ArgumentException
+
+from classes.exceptions import UnknownPasswordException, AlreadyInListException, NotInListException
+from cli.cli_misc import pickle_get, pickle_get_instance, pickle_get_file_if_owned
 from cli.cli_student import list_sorted_files_on_tags, list_sorted_files_on_course, new_file, file_add_tag, \
     file_add_course, file_remove_tag, file_remove_course, delete_file, move_file, file_change_script_attribute
+from cli.exceptions import UnknownObjectException, ArgumentException
+from gui.exceptions import UserNameNotFoundException, SamePathnameException
 
 
 ########################################################################################################
@@ -18,6 +21,7 @@ from cli.cli_student import list_sorted_files_on_tags, list_sorted_files_on_cour
 
 class LoginWindow(Screen):
     """Cette classe permet de creer une fenetre pour le login de l'utilisateur"""
+
     def connexion(self):
         """
         POST: Lance tool.window si le nom utilisateur existe et que le mot de passe correspond.
@@ -76,7 +80,11 @@ class ToolWindow(Screen):
         resultat = resultat[:-2]
         return resultat
 
-    def list(self):
+    def open_list(self):
+        dropdown = CustomDropDown()
+        self.ids.List.bind(on_release=dropdown.open)
+
+    def list(self, choice):
         """
         POST: Affiche la liste des fichiers, des cours ou des utilisateurs recenses
             dans Affichage(Label) en fonction de la valeur de Recherche(TextInput).
@@ -91,14 +99,12 @@ class ToolWindow(Screen):
             file_instance_id = pickle_get_instance(pathname, file=True).file_id
             if file_instance_id in self.student_instance.files:
                 list_owned_files.append(pathname)
-        if self.ids.Recherche.text == "etudiants":
+        if choice == "students":
             self.ids.Affichage.text = self.list_to_string(list_users)
-        elif self.ids.Recherche.text == "cours":
+        elif choice == "courses":
             self.ids.Affichage.text = self.list_to_string(list_courses)
-        elif self.ids.Recherche.text == "fichiers":
+        elif choice == "files":
             self.ids.Affichage.text = self.list_to_string(list_owned_files)
-        else:
-            self.ids.Affichage.text = 'Veuillez entrer:"etudiants","cours" ou "fichiers"'
 
     def sort_on_course(self):
         """
@@ -338,6 +344,10 @@ class WindowManager(ScreenManager):
     Correspond a la fenetre mere de LoginWindow, ToolWindow et EditorWindow. C'est la
     classe qui permet de passer d un ecran a l autre (module ScreenManager).
     """
+    pass
+
+
+class CustomDropDown(DropDown):
     pass
 
 

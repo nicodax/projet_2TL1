@@ -1,6 +1,7 @@
 WindowManager:
     LoginWindow:
     ToolWindow:
+        id: tools
     EditorWindow:
 
 
@@ -68,8 +69,8 @@ WindowManager:
             text: 'Lister'
             size_hint: (0.5, 0.15)
             background_color: [0, 1, 0, 1]
-            on_press:
-                root.list()
+            on_release:
+                root.open_list()
 
         Button:
             id: SortC
@@ -101,7 +102,23 @@ WindowManager:
                 multiline: False
                 font_size: 15
 
-
+<CustomDropDown>:
+    Button:
+        text: 'étudiants'
+        size_hint_y: None
+        height: 44
+        on_release:
+            app.root.ids.tools.list("students")
+    Button:
+        text: 'cours'
+        size_hint_y: None
+        height: 44
+        on_release: app.root.ids.tools.list("courses")
+    Button:
+        text: 'fichiers'
+        size_hint_y: None
+        height: 44
+        on_release: app.root.ids.tools.list("files")
 
 
 <EditorWindow>:
