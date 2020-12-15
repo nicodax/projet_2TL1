@@ -7,96 +7,141 @@ WindowManager:
 
 <LoginWindow>:
     name: "login"
+    canvas.before:
+        Color:
+            rgba: [1.6, 0.6, 1.7, 1.0]
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
 
     BoxLayout:
         orientation: 'vertical'
         spacing: 20
-
-        Button:
-            id: Submit
-            text: "Se connecter"
-            size_hint: (0.5, 0.15)
-            pos_hint: {'right': 0.75}
-            background_color: [0, 1, 0, 1]
-            on_press:
-                root.connexion()
-            on_release:
-                app.root.current = "tool" if root.connexion() == True else "login"
 
         Label:
             id: Error
             text: "Veuillez entrer votre nom d'utilisateur et votre mot de passe:"
             font_size: 30
+            text_size: cm(20), cm(5)
+            halign: 'center'
+            valign: 'middle'
             color: [1, 0, 0, 1]
+            canvas.before:
+                Color:
+                    rgba: [3.0, 0.7, 4.3, 2.0]
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
 
-        TextInput:
-            id: Usrname
-            text: "Username"
-            font_size: 30
-            size_hint_x: 0.5
-            size_hint_y:  0.2
-            multiline: False
 
-        TextInput:
-            id: Psw
-            text: "Password"
-            font_size: 30
-            size_hint_x: 0.5
-            size_hint_y:  0.2
-            multiline: False
+        FloatLayout:
 
+            Label:
+                pos_hint: {"x":0.01, "y":0.6}
+                size_hint: 0.2, 0.15
+                text: "Username:"
+                font_size: 30
+                color: [1, 0, 0, 1]
+
+
+            TextInput:
+                id: Usrname
+                hint_text: "Nom"
+                pos_hint: {"x":0.2, "y":0.6}
+                size_hint: 0.2, 0.15
+                font_size: 20
+                multiline: False
+
+            Label:
+                pos_hint: {"x":0.01, "y":0.3}
+                size_hint: 0.2, 0.15
+                text: "Password:"
+                font_size: 30
+                color: [1, 0, 0, 1]
+
+            TextInput:
+                id: Psw
+                hint_text: "Mdp"
+                font_size: 20
+                pos_hint: {"x":0.2, "y":0.3}
+                size_hint: 0.2, 0.15
+                multiline: False
+
+
+            Button:
+                id: Submit
+                text: "Se connecter"
+                pos_hint: {"x":0.7, "y":0.35}
+                size_hint: 0.2, 0.4
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                on_press:
+                    root.connexion()
+                on_release:
+                    app.root.current = "tool" if root.connexion() == True else "login"
 
 
 <ToolWindow>:
     name: "tool"
+    canvas.before:
+        Color:
+            rgba: [1.6, 0.6, 1.7, 1.0]
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
 
     BoxLayout:
         orientation: 'vertical'
         spacing: 20
 
-        Button:
-            id: New
-            text: 'Vers editeur'
-            size_hint: (0.5, 0.15)
-            background_color: [0, 1, 0, 1]
-            on_press:
-                root.new()
-            on_release:
-                app.root.current = "editor"
+        FloatLayout:
 
-        Button:
-            id: List
-            text: 'Lister'
-            size_hint: (0.5, 0.15)
-            background_color: [0, 1, 0, 1]
-            on_release:
-                root.open_list()
+            Button:
+                id: List
+                text: 'Lister'
+                size_hint: (0.5, 0.15)
+                pos_hint: {"x":0, "y":1}
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                on_press:
+                    root.open_list()
 
-        Button:
-            id: SortC
-            text: 'Trier par cours'
-            size_hint: (0.5, 0.15)
-            background_color: [0, 1, 0, 1]
-            on_press:
-                root.sort_on_course()
+            Button:
+                id: SortC
+                text: 'Trier par cours'
+                size_hint: (0.5, 0.15)
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                on_press:
+                    root.sort_on_course()
 
-        Button:
-            id: SortT
-            text: 'Trier par tags'
-            size_hint: (0.5, 0.15)
-            background_color: [0, 1, 0, 1]
-            on_press:
-                root.sort_on_tag()
+            Button:
+                id: SortT
+                text: 'Trier par tags'
+                size_hint: (0.5, 0.15)
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                on_press:
+                    root.sort_on_tag()
 
+            Label:
+                id: Affichage
+                text: "Cliquer sur un bouton:"
+                font_size: 30
+                color: [1, 0, 0, 1]
 
-        Label:
-            id: Affichage
-            text: "Cliquer sur un bouton:"
-            font_size: 30
-            color: [1, 0, 0, 1]
+            Button:
+                id: New
+                text: 'Vers editeur'
+                pos_hint: {"x":0.85, "y":0}
+                size_hint: 0.15, 0.05
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                on_press:
+                    root.new()
+                on_release:
+                    app.root.current = "editor"
+
             TextInput:
                 id: Recherche
-                text: "Recherche"
+                hint_text: "Recherche"
                 size_hint: (.2, None)
                 height: 30
                 multiline: False
@@ -132,87 +177,89 @@ WindowManager:
             id:TextArea
             text: ""
             font_size: 30
-            size_hint_x: 1
-            size_hint_y:
+            pos: self.pos
+            size: self.size
 
-        Button:
-            id: open
-            text: 'ouvrir'
-            size_hint: (0.5, 0.15)
-            background_color: [0, 1, 0, 1]
-            on_press:
-                root.open()
+            FloatLayout:
+                Button:
+                    id: open
+                    text: 'ouvrir'
+                    pos_hint: {"x":0.2, "y":0.1}
+                    size_hint: 0.2, 0.15
+                    background_color: [0, 1, 0, 1]
+                    on_press:
+                        root.open()
 
-        Button:
-            id: register
-            text: 'enregistrer'
-            size_hint: (0.5, 0.15)
-            background_color: [0, 1, 0, 1]
-            on_press:
-                root.enregistrer_sous()
+                Button:
+                    id: register
+                    text: 'enregistrer'
+                    size_hint: (0.5, 0.15)
+                    background_color: [0, 1, 0, 1]
+                    on_press:
+                        root.enregistrer_sous()
 
-        Button:
-            id: Delete
-            text: 'Supprimer'
-            size_hint: (0.5, 0.15)
-            background_color: [0, 1, 0, 1]
-            on_press:
-                root.delete()
+                Button:
+                    id: Delete
+                    text: 'Supprimer'
+                    size_hint: (0.5, 0.15)
+                    background_color: [0, 1, 0, 1]
+                    on_press:
+                        root.delete()
 
-        Button:
-            id: Move
-            text: 'Deplacer'
-            size_hint: (0.5, 0.15)
-            background_color: [0, 1, 0, 1]
-            on_press:
-                root.deplacer()
+                Button:
+                    id: Move
+                    text: 'Deplacer'
+                    size_hint: (0.5, 0.15)
+                    background_color: [0, 1, 0, 1]
+                    on_press:
+                        root.deplacer()
 
-        Button:
-            id: add_tag
-            text: 'Ajouter une étiquette'
-            size_hint: (0.5, 0.15)
-            background_color: [0, 1, 0, 1]
-            on_press:
-                root.file_add_tag_gui()
+                Button:
+                    id: add_tag
+                    text: 'Ajouter une étiquette'
+                    size_hint: (0.5, 0.15)
+                    background_color: [0, 1, 0, 1]
+                    on_press:
+                        root.file_add_tag_gui()
 
-        Button:
-            id: add_course
-            text: 'Spécifier un cours'
-            size_hint: (0.5, 0.15)
-            background_color: [0, 1, 0, 1]
-            on_press:
-                root.file_add_course_gui()
+                Button:
+                    id: add_course
+                    text: 'Spécifier un cours'
+                    size_hint: (0.5, 0.15)
+                    background_color: [0, 1, 0, 1]
+                    on_press:
+                        root.file_add_course_gui()
 
-        Button:
-            id: change_script
-            text: 'Script ?'
-            size_hint: (0.5, 0.15)
-            background_color: [0, 1, 0, 1]
-            on_press:
-                root.file_change_script_attribute_gui()
+                Button:
+                    id: change_script
+                    text: 'Script ?'
+                    size_hint: (0.5, 0.15)
+                    background_color: [0, 1, 0, 1]
+                    on_press:
+                        root.file_change_script_attribute_gui()
 
-        Button:
-            text:"Outils"
-            size_hint: (0.5, 0.15)
-            background_color: [0, 1, 0, 1]
-            on_release:
-                app.root.current = "tool"
+                Button:
+                    text:"Outils"
+                    size_hint: (0.5, 0.15)
+                    background_color: [0, 1, 0, 1]
+                    on_release:
+                        app.root.current = "tool"
 
-        Label:
-            id: Error
-            text: ""
-            font_size: 30
-            color: [1, 0, 0, 1]
+                Label:
+                    id: Error
+                    text: ""
+                    font_size: 30
+                    color: [1, 0, 0, 1]
 
-        Label:
-            id: Affichage
-            text: "Cliquez sur un bouton:"
-            font_size: 30
-            color: [1, 0, 0, 1]
-            TextInput:
-                id: Recherche
-                text: "Recherche"
-                size_hint: (.2, None)
-                height: 30
-                multiline: False
-                font_size: 15
+                Label:
+                    id: Affichage
+                    text: "Cliquez sur un bouton:"
+                    font_size: 30
+                    color: [1, 0, 0, 1]
+                    TextInput:
+                        id: Recherche
+                        text: "Recherche"
+                        size_hint: (.2, None)
+                        height: 30
+                        multiline: False
+                        font_size: 15

@@ -24,6 +24,7 @@ class LoginWindow(Screen):
 
     def connexion(self):
         """
+        PRE:
         POST: Lance tool.window si le nom utilisateur existe et que le mot de passe correspond.
         RAISES:
             -UserNameNotFoundException si le nom utilisateur n'existe pas.
