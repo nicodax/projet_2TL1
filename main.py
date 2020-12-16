@@ -230,6 +230,7 @@ class EditorWindow(Screen):
             for ligne in lignes:
                 resultat += ligne
         self.ids.TextArea.text = resultat
+        self.ids.Affichage.text = "Le fichier  '"+self.pathname.split('/')[-1]+"' a été ouvert"
 
     def enregistrer_sous(self):
         """
@@ -249,6 +250,7 @@ class EditorWindow(Screen):
         s = self.ids.TextArea.text
         f.write(s)
         f.close()
+        self.ids.Affichage.text = "Le fichier '" + self.pathname.split('/')[-1] + "' a été enregistré"
 
     def file_add_tag_gui(self):
         """
@@ -361,11 +363,11 @@ class EditorWindow(Screen):
             else:
                 raise SamePathnameException
         except SamePathnameException:
-            self.ids.Error.text = "Le nouvel emplacement est le meme que le precedent."
+            self.ids.Affichage.text = "Le nouvel emplacement est le meme que le precedent."
         except Exception as e:
-            self.ids.Error.text = f"Erreur : {e}"
+            self.ids.Affichage.text = f"Erreur : {e}"
         else:
-            self.ids.Error.text = "Le fichier a ete deplace."
+            self.ids.Affichage.text = "Le fichier a ete deplace."
 
         new_pathname = filedialog.asksaveasfilename(defaultextension='.*', initialdir="/", title='Enregistrer sous',
                                                     filetype=[
@@ -392,10 +394,10 @@ class EditorWindow(Screen):
             file_instance = pickle_get_file_if_owned(self.student_instance, self.pathname)
             delete_file(file_instance, self.student_instance)
         except Exception as e:
-            self.ids.Error.text = f"Erreur : {e}"
+            self.ids.Affichage.text = f"Erreur : {e}"
         else:
             self.ids.TextArea.text = ""
-            self.ids.Error.text = "Le fichier a ete supprime"
+            self.ids.Affichage.text = "Le fichier '"+self.pathname.split('/')[-1]+"' a été supprimé"
 
 
 ########################################################################################################
