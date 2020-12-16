@@ -432,7 +432,6 @@ class StudentCli(cmd.Cmd):
                             if tag == "":
                                 raise ArgumentException
                             tags.append(tag)
-                            print(tags)
                     cli.cli_student.new_file(pathname, script, course_id, tags, current_user_instance)
                 else:
                     raise InexistantDirectoryException
@@ -590,8 +589,6 @@ class StudentCli(cmd.Cmd):
             print("Erreur : le fichier possede deja au moins un des attributs specifies\n")
         except NotInListException:
             print("Erreur : le fichier ne possede pas au moins un des attributs specifies\n")
-        except NotInListException:
-            print("Erreur : le cours n'existe pas\n\n")
         except Exception as e:
             print(f"Erreur : {e}\n")
         else:

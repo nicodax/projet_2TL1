@@ -9,12 +9,13 @@ from cli.exceptions import UnknownObjectException
 
 def new_file(pathname, script, course_id, tags, student_instance):
     """
-    PRE :   - pathname est de type str
+    PRE:    - pathname est de type str
             - script est de type bool
             - course_id est soit de type int soit None
             - tags est soit de type list soit None
             - student_instance est une instance de la classe Student
-    POST : cree une instance de File
+    POST: cree une instance de File
+    RAISES:
     """
     persistent_data = cli.cli_misc.pickle_get(students_arg=True, files_arg=True, courses_arg=True, id_dict_arg=True)
     all_students = persistent_data[0]
@@ -38,9 +39,10 @@ def new_file(pathname, script, course_id, tags, student_instance):
 
 def delete_file(file_instance, student_instance):
     """
-    PRE :   - file_instance est une instance de la classe File
+    PRE:    - file_instance est une instance de la classe File
             - student_instance est une instance de la classe Student
-    POST : supprime une instance de File
+    POST: supprime une instance de File
+    RAISES:
     """
     persistent_data = cli.cli_misc.pickle_get(students_arg=True, files_arg=True, courses_arg=True)
     all_students = persistent_data[0]
@@ -63,9 +65,10 @@ def delete_file(file_instance, student_instance):
 
 def file_change_script_attribute(pathname, script):
     """
-    PRE :   - pathname est de type str
+    PRE:    - pathname est de type str
             - script est de type bool
-    POST : change la valeur de l'attribut script de l'instance de File correspondant a pathname
+    POST: change la valeur de l'attribut script de l'instance de File correspondant a pathname
+    RAISES:
     """
     persistent_data = cli.cli_misc.pickle_get(files_arg=True)
     all_files = persistent_data[2]
@@ -77,9 +80,10 @@ def file_change_script_attribute(pathname, script):
 
 def file_add_course(pathname, course_name):
     """
-    PRE : pathname et course_name sont de type str
-    POST : associe un cours a une instance de File
+    PRE: pathname et course_name sont de type str
+    POST: associe un cours a une instance de File
                 si l'instance de file etait deja associee a un cours, cette liaison est rompue
+    RAISES:
     """
     persistent_data = cli.cli_misc.pickle_get(files_arg=True, courses_arg=True)
     all_files = persistent_data[2]
@@ -100,9 +104,10 @@ def file_add_course(pathname, course_name):
 
 def file_add_tag(pathname, tags):
     """
-    PRE :   - pathname est de type str
+    PRE:    - pathname est de type str
             - tags est de type list
-    POST : ajoute un ou plusieurs tags a une instance de File
+    POST: ajoute un ou plusieurs tags a une instance de File
+    RAISES:
     """
     persistent_data = cli.cli_misc.pickle_get(files_arg=True)
     all_files = persistent_data[2]
@@ -115,8 +120,9 @@ def file_add_tag(pathname, tags):
 
 def file_remove_course(pathname):
     """
-    PRE : pathname est de type str
-    POST : dissocie un cours d'une instance de File
+    PRE: pathname est de type str
+    POST: dissocie un cours d'une instance de File
+    RAISES:
     """
     persistent_data = cli.cli_misc.pickle_get(files_arg=True, courses_arg=True)
     all_files = persistent_data[2]
@@ -133,8 +139,9 @@ def file_remove_course(pathname):
 
 def file_remove_tag(pathname, tag):
     """
-    PRE : pathname et tag sont de type str
-    POST : retire un tag d'une instance de File
+    PRE: pathname et tag sont de type str
+    POST: retire un tag d'une instance de File
+    RAISES:
     """
     persistent_data = cli.cli_misc.pickle_get(files_arg=True)
     all_files = persistent_data[2]
@@ -149,8 +156,9 @@ def file_remove_tag(pathname, tag):
 
 def move_file(current_pathname, new_pathname):
     """
-    PRE : current_pathname et new_pathname sont de type str
-    POST : modifie le pathname d'une instance de File
+    PRE: current_pathname et new_pathname sont de type str
+    POST: modifie le pathname d'une instance de File
+    RAISES:
     """
     persistent_data = cli.cli_misc.pickle_get(files_arg=True)
     all_files = persistent_data[2]
@@ -164,8 +172,9 @@ def move_file(current_pathname, new_pathname):
 
 def open_file_in_vi(pathname):
     """
-    PRE : pathname est de type str
-    POST : ouvri un fichier dans l'editeur de texte vi
+    PRE: pathname est de type str
+    POST: ouvri un fichier dans l'editeur de texte vi
+    RAISES:
     """
     editor = os.getenv('EDITOR', 'vi')
     subprocess.call(f"{editor} {pathname}", shell=True)
@@ -173,8 +182,9 @@ def open_file_in_vi(pathname):
 
 def list_subbed_courses(user_instance):
     """
-    PRE : user_instance est l'instance de Student correspondant a l'utilisateur
-    POST : cree un dictionnaire des informations relatives aux cours auxquels l'utilisateur est inscrit
+    PRE: user_instance est l'instance de Student correspondant a l'utilisateur
+    POST: cree un dictionnaire des informations relatives aux cours auxquels l'utilisateur est inscrit
+    RAISES:
     """
     persistent_data = cli.cli_misc.pickle_get(courses_arg=True)
     all_courses = persistent_data[3]
@@ -201,8 +211,9 @@ def list_subbed_courses(user_instance):
 
 def list_owned_files(user_instance):
     """
-    PRE : user_instance est l'instance de Student correspondant a l'utilisateur connecte
-    POST : cree un dictionnaire des informations relatives aux fichiers appartenant a l'utilisateur
+    PRE: user_instance est l'instance de Student correspondant a l'utilisateur connecte
+    POST: cree un dictionnaire des informations relatives aux fichiers appartenant a l'utilisateur
+    RAISES:
     """
     persistent_data = cli.cli_misc.pickle_get(files_arg=True, courses_arg=True)
     all_files = persistent_data[2]
@@ -234,10 +245,11 @@ def list_owned_files(user_instance):
 
 def list_sorted_files_on_tags(tags, user_instance):
     """
-    PRE :   - user_instance est l'instance de Student correspondant a l'utilisateur connecte
+    PRE:    - user_instance est l'instance de Student correspondant a l'utilisateur connecte
             - tags est de type list
-    POST : cree un dictionnaire des informations relatives aux fichiers appartenant a l'utilisateur et marqués par les
+    POST: cree un dictionnaire des informations relatives aux fichiers appartenant a l'utilisateur et marqués par les
             etiquettes listées dans tags
+    RAISES:
     """
     content_to_display = []
     owned_files = list_owned_files(user_instance)
@@ -254,10 +266,11 @@ def list_sorted_files_on_tags(tags, user_instance):
 
 def list_sorted_files_on_course(course_name, user_instance):
     """
-    PRE :   - user_instance est l'instance de Student correspondant a l'utilisateur connecte
+    PRE:    - user_instance est l'instance de Student correspondant a l'utilisateur connecte
             - course_name est de type list
-    POST : cree un dictionnaire des informations relatives aux fichiers appartenant a l'utilisateur et associés au cours
+    POST: cree un dictionnaire des informations relatives aux fichiers appartenant a l'utilisateur et associés au cours
             identifie par course_name
+    RAISES:
     """
     content_to_display = []
     owned_files = list_owned_files(user_instance)
@@ -271,9 +284,10 @@ def list_sorted_files_on_course(course_name, user_instance):
 
 def subscribe_user_to_course(course_name, user_instance):
     """
-    PRE :   - course_name est de type str
+    PRE:    - course_name est de type str
             - user_instance est l'instance de Student correspondant a l'utilisateur connecte
-    POST : inscrit l'utilisateur au cours identifie par course_name
+    POST: inscrit l'utilisateur au cours identifie par course_name
+    RAISES:
     """
     persistent_data = cli.cli_misc.pickle_get(students_arg=True, courses_arg=True)
     all_students = persistent_data[0]
@@ -290,9 +304,10 @@ def subscribe_user_to_course(course_name, user_instance):
 
 def unsubscribe_user_from_course(course_name, user_instance):
     """
-    PRE :   - course_name est de type str
+    PRE:    - course_name est de type str
             - user_instance est l'instance de Student correspondant a l'utilisateur connecte
-    POST : desinscrit l'utilisateur du cours identifie par course_name
+    POST: desinscrit l'utilisateur du cours identifie par course_name
+    RAISES:
     """
     persistent_data = cli.cli_misc.pickle_get(students_arg=True, courses_arg=True)
     all_students = persistent_data[0]

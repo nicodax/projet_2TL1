@@ -17,14 +17,15 @@ class File:
     """
     def __init__(self, user_id, pathname, course_id, file_id, script, tags):
         """
-        PRE :   - user_id est de type int
+        PRE:    - user_id est de type int
                 - pathname est de type str
                 - script est de type bool
                 - course_id est soit de type int soit None
                 - tags est soit de type list soit None
                 - file_id est de type int
-        POST : initialise chaque instance de la classe
+        POST: initialise chaque instance de la classe
                 cree le fichier sur la memoire si il n'y existait pas deja
+        RAISES:
         """
         if tags is None:
             tags = []
@@ -43,89 +44,106 @@ class File:
     @property
     def file_id(self):
         """
-        POST : accede a self.__file_id
+        PRE:
+        POST: accede a self.__file_id
+        RAISES:
         """
         return self.__file_id
 
     @property
     def script(self):
         """
-        POST : accede a self.__script
+        PRE:
+        POST: accede a self.__script
+        RAISES:
         """
         return self.__script
 
     @property
     def tags(self):
         """
-        POST : accede a self.__tags
+        PRE:
+        POST: accede a self.__tags
+        RAISES:
         """
         return self.__tags
 
     @property
     def pathname(self):
         """
-        POST : accede a self.__pathname
+        PRE:
+        POST: accede a self.__pathname
+        RAISES:
         """
         return self.__pathname
 
     @property
     def user_id(self):
         """
-        POST : accede a self.__user_id
+        PRE:
+        POST: accede a self.__user_id
+        RAISES:
         """
         return self.__user_id
 
     @property
     def course_id(self):
         """
-        POST : accede a self.__course_name
+        PRE:
+        POST: accede a self.__course_name
+        RAISES:
         """
         return self.__course_id
 
     @pathname.setter
     def pathname(self, new_pathname):
         """
-        PRE : new_pathname est de type str
-        POST : modifie la valeur de self.__fullname
+        PRE: new_pathname est de type str
+        POST: modifie la valeur de self.__fullname
+        RAISES:
         """
         self.__pathname = new_pathname
 
     @course_id.setter
     def course_id(self, new_course_id):
         """
-        PRE : new_course_id est de type int
-        POST : modifie la valeur de self.__course_id
+        PRE: new_course_id est de type int
+        POST: modifie la valeur de self.__course_id
+        RAISES:
         """
         self.__course_id = new_course_id
 
     @script.setter
     def script(self, new_value):
         """
-        PRE : new_value est de type bool
-        POST : modifie la valeur de self.__script
+        PRE: new_value est de type bool
+        POST: modifie la valeur de self.__script
+        RAISES:
         """
         self.__script = new_value
 
     @tags.setter
     def tags(self, new_tags):
         """
-        PRE : new_tags est de type list
-        POST : modifie la valeur de self.__tags
+        PRE: new_tags est de type list
+        POST: modifie la valeur de self.__tags
+        RAISES:
         """
         self.__tags = new_tags
 
     def is_in_tags(self, tag):
         """
-        PRE : tag est de type str
-        POST : retourne True si tag est deja repertorie dans la liste self.__tags, retourne False sinon
+        PRE: tag est de type str
+        POST: retourne True si tag est deja repertorie dans la liste self.__tags, retourne False sinon
+        RAISES:
         """
         return tag in self.__tags
 
     def add_tag(self, new_tag):
         """
-        PRE : new_tag est de type str
-        POST : ajoute new_tag a la liste self.__tags ssi il n'y etait pas deja repertorie
-        RAISES : AlreadyInListException si new_tag est deja repertorie dans la liste
+        PRE: new_tag est de type str
+        POST: ajoute new_tag a la liste self.__tags ssi il n'y etait pas deja repertorie
+        RAISES: AlreadyInListException si new_tag est deja repertorie dans la liste
         """
         if not self.is_in_tags(new_tag):
             self.__tags.append(new_tag)
@@ -134,9 +152,9 @@ class File:
 
     def delete_tag(self, tag):
         """
-        PRE : tag est de type str et existe deja comme etiquette du fichier
-        POST : supprime tag de la liste self.__tags ssi elle y etait deja repertoriee
-        RAISES : NotInListException si tag n'est pas deja repertorie dans la liste
+        PRE: tag est de type str et existe deja comme etiquette du fichier
+        POST: supprime tag de la liste self.__tags ssi elle y etait deja repertoriee
+        RAISES: NotInListException si tag n'est pas deja repertorie dans la liste
         """
         if self.is_in_tags(tag):
             self.__tags.remove(tag)

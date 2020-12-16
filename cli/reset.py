@@ -33,7 +33,9 @@ initial_course_descriptions = ["Developpement Informatique II (Theorie)", "Devel
 
 def reset():
     """
-    POST : reinitialise la memoire du programme (reinitialise les fichiers de sauvegarde pickle)
+    PRE:
+    POST: reinitialise la memoire du programme (reinitialise les fichiers de sauvegarde pickle)
+    RAISES:
     """
     id_dict = {"user": 0, "file": 0, "course": 0}
 
@@ -72,8 +74,9 @@ def pickle_save(all_students=None, all_admins=None, all_files=None, all_courses=
     si la CLI est inaccessible pour une raison ou une autre, il doit quand meme etre possible de reinitialiser la
     memoire du programme
 
-    PRE : all_students, all_admins, all_files, all_courses et id_dict sont soit de type dict soit None
-    POST : enregistre chaque dictionnaire passe en argument
+    PRE: all_students, all_admins, all_files, all_courses et id_dict sont soit de type dict soit None
+    POST: enregistre chaque dictionnaire passe en argument
+    RAISES:
     """
 
     if all_students is not None:

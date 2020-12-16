@@ -27,9 +27,8 @@ class LoginWindow(Screen):
         """
         PRE:
         POST: Lance tool.window si le nom utilisateur existe et que le mot de passe correspond.
-        RAISES:
-            -UserNameNotFoundException si le nom utilisateur n'existe pas.
-            -UnknownPasswordException si le mot de passe ne correspond pas au nom utilisateur reconnu.
+        RAISES:     -UserNameNotFoundException si le nom utilisateur n'existe pas.
+                    -UnknownPasswordException si le mot de passe ne correspond pas au nom utilisateur reconnu.
         """
         try:
             list_users = pickle_get(students_arg=True)[0]["name_id_dict"].keys()
@@ -56,11 +55,13 @@ class LoginWindow(Screen):
 # TOOL WINDOW
 ########################################################################################################
 class HListBox(Widget):
+    """Cette classe permet de creer une ligne au sein de l'interface pour l'utilisation de list"""
     def __init__(self, **kwargs):
         super(HListBox, self).__init__(**kwargs)
 
 
 class HSortBox(Widget):
+    """Cette classe permet de creer une ligne au sein de l'interface pour l'utilisation de sort"""
     def __init__(self, **kwargs):
         super(HSortBox, self).__init__(**kwargs)
 
@@ -71,6 +72,9 @@ class ToolWindow(Screen):
 
     Variables de classe:
         student_instance:   instance de classe de l'utilisateur connecté
+        sort_choice:        lors de l'utilisation de sort(), doit avoir une de ces deux valeurs ("course" ou "tag")
+        list_choice:        lors de l'utilisation de sort(), doit avoir une de ces trois valeurs ("students",
+                                "courses" ou "files")
     """
     student_instance = None
     sort_choice = None
@@ -78,14 +82,18 @@ class ToolWindow(Screen):
 
     def new(self):
         """
+        PRE:
         POST: Ouvre le fenetre EditorWindow.
+        RAISES:
         """
         self.ids.Affichage.text = "Lancemement d'un nouveau fichier."
 
     @staticmethod
     def list_to_string(liste):
         """
+        PRE:
         POST: Recoit une liste et la transforme en string.
+        RAISES:
         """
         resultat = ""
         for x in liste:
@@ -94,19 +102,30 @@ class ToolWindow(Screen):
         return resultat
 
     def open_list_choices(self):
+        """
+        PRE:
+        POST: ouvre la liste deroulante des choix de listage
+        RAISES:
+        """
         dropdown = CustomDropDown()
         self.ids.HListBox.ids.List.bind(on_release=dropdown.open)
 
     def open_sort_choices(self):
+        """
+        PRE:
+        POST: ouvre la liste deroulante des choix de triage
+        RAISES:
+        """
         dropdown = CustomDropDown2()
         self.ids.HSortBox.ids.SortList.bind(on_release=dropdown.open)
 
     def list(self):
         """
+        PRE: list_choice doit avoir la valeur "students", "courses" ou "files"
         POST: Affiche la liste des fichiers, des cours ou des utilisateurs recenses
-            dans Affichage(Label) en fonction de la valeur de Recherche(TextInput).
+                dans Affichage(Label) en fonction de la valeur de Recherche(TextInput).
         RAISES: UnknownObjectException se lance si la valeur de Recherche(TextInput) n'est pas
-            un argument reconnu.
+                    un argument reconnu.
         """
         list_users = pickle_get(students_arg=True)[0]["name_id_dict"].keys()
         list_courses = pickle_get(courses_arg=True)[3]["name_id_dict"].keys()
@@ -124,6 +143,11 @@ class ToolWindow(Screen):
             self.ids.Affichage.text = self.list_to_string(list_owned_files)
 
     def sort_launcher(self):
+        """
+        PRE: sort_choice doit avoir la valeur "course" ou "tag"
+        POST: en fonction de la valeur de sort_choice, lance la methode adequate
+        RAISES:
+        """
         if self.sort_choice == "course":
             self.sort_on_course()
         elif self.sort_choice == "tag":
@@ -131,11 +155,11 @@ class ToolWindow(Screen):
 
     def sort_on_course(self):
         """
+        PRE:
         POST: Affiche la liste des fichiers tries dans Affichage(Label) en fonction du
-            cours defini dans Recherche(TextInput).
-        RAISES:
-              -UnknownObjectException si la valeur de Recherche(TextInput) n'est pas
-            un argument reconnu.
+                cours defini dans Recherche(TextInput).
+        RAISES: UnknownObjectException si la valeur de Recherche(TextInput) n'est pas
+                    un argument reconnu.
         """
         try:
             valid_course_name = False
@@ -158,8 +182,10 @@ class ToolWindow(Screen):
 
     def sort_on_tag(self):
         """
+        PRE:
         POST: Affiche la liste des fichiers tries dans Affichage(Label) en fonction de
-             l'etiquette definie dans Recherche(TextInput).
+                l'etiquette definie dans Recherche(TextInput).
+        RAISES:
         """
         list_dict = list_sorted_files_on_tags([self.ids.HSortBox.ids.Recherche.text], self.student_instance)
         all_pathname = []
@@ -187,8 +213,10 @@ class EditorWindow(Screen):
 
     def open(self):
         """
+        PRE:
         POST: Ouvre un navigateur de fichier, puis après avoir choisis un fichier,
-            implemente son contenu dans TextArea(textInput).
+                  implemente son contenu dans TextArea(textInput).
+        RAISES:
         """
         self.pathname = filedialog.askopenfilename(initialdir="/", title="Choisir le fichier",
                                                    filetype=[("Text File", "*.txt"), ("Python File", "*.py")])
@@ -205,8 +233,10 @@ class EditorWindow(Screen):
 
     def enregistrer_sous(self):
         """
+        PRE:
         POST: Ouvre le navigateur de fichier apres avoir cliquer sur l'onglet
-            enregistrer et sauvegarde le fichier a l endroit choisi.
+                  enregistrer et sauvegarde le fichier a l endroit choisi.
+        RAISES:
         """
         self.pathname = filedialog.asksaveasfilename(defaultextension='.*', initialdir="/", title='Enregistrer sous',
                                                      filetype=(
@@ -222,8 +252,9 @@ class EditorWindow(Screen):
 
     def file_add_tag_gui(self):
         """
-        POST : ajoute l'etiquette specifiee si elle n'est pas deja referencee
-        RAISES : AlreadyInListException si l'etiquette specifiee est deja referencee
+        PRE:
+        POST: ajoute l'etiquette specifiee si elle n'est pas deja referencee
+        RAISES: AlreadyInListException si l'etiquette specifiee est deja referencee
         """
         try:
             tag = [self.ids.Recherche.text]
@@ -237,7 +268,9 @@ class EditorWindow(Screen):
 
     def file_add_course_gui(self):
         """
-        POST : associe le fichier au cours specifie
+        PRE:
+        POST: associe le fichier au cours specifie
+        RAISES:
         """
         try:
             course_name = self.ids.Recherche.text
@@ -253,8 +286,9 @@ class EditorWindow(Screen):
 
     def file_remove_tag_gui(self):
         """
-        POST : retire l'etiquette specifiee si elle est deja referencee
-        RAISES : NotInListException si l'etiquette specifiee n'est pas deja referencee
+        PRE:
+        POST: retire l'etiquette specifiee si elle est deja referencee
+        RAISES: NotInListException si l'etiquette specifiee n'est pas deja referencee
         """
         try:
             tag = self.ids.Recherche.text
@@ -268,7 +302,9 @@ class EditorWindow(Screen):
 
     def file_remove_course_gui(self):
         """
-        POST : dissocie le fichier de tout cours
+        PRE:
+        POST: dissocie le fichier de tout cours
+        RAISES:
         """
         try:
             file_remove_course(self.pathname)
@@ -279,7 +315,9 @@ class EditorWindow(Screen):
 
     def file_change_script_attribute_gui(self):
         """
-        POST : indique si le fichier est un script ou non
+        PRE:
+        POST: indique si le fichier est un script ou non
+        RAISES:
         """
         try:
             script_string = self.ids.Recherche.text
@@ -299,8 +337,9 @@ class EditorWindow(Screen):
 
     def deplacer(self):
         """
+        PRE:
         POST: Ouvre le navigateur de fichier apres avoir cliquer sur le bouton deplacer
-            et deplace le fichier a l endroit choisi.
+                et deplace le fichier a l endroit choisi.
         RAISES: SamePathnameException est appele si l'ancien pathname correspond a l'endroit choisi.
         """
         try:
@@ -345,7 +384,9 @@ class EditorWindow(Screen):
 
     def delete(self):
         """
+        PRE:
         POST: Supprime le fichier ouvert actuellement.
+        RAISES:
         """
         try:
             file_instance = pickle_get_file_if_owned(self.student_instance, self.pathname)
@@ -371,10 +412,12 @@ class WindowManager(ScreenManager):
 
 
 class CustomDropDown(DropDown):
+    """Cette classe permet la construction de la dropdown list associee aux choix de listage"""
     pass
 
 
 class CustomDropDown2(DropDown):
+    """Cette classe permet la construction de la dropdown list associee aux choix de triage"""
     pass
 
 
