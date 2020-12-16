@@ -312,15 +312,12 @@ class EditorWindow(Screen):
                                                         filetype=(
                                                             ("Text File", "*.txt"), ("xls file", "*.xls"),
                                                             ("All File", "*.*")))
-            list_files = pickle_get(files_arg=True)[2]["name_id_dict"].keys()
-            if new_pathname not in list_files:
-                new_file(new_pathname, True, None, None, self.student_instance)
             if self.pathname != new_pathname:
                 f = open(new_pathname, 'w')
                 s = self.ids.TextArea.text
                 f.write(s)
                 move_file(self.pathname, new_pathname)
-                os.remove(self.pathname)
+                os.rename(self.pathname, new_pathname)
                 self.pathname = new_pathname
                 f.close()
             else:
