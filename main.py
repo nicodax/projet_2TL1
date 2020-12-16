@@ -4,9 +4,7 @@ from tkinter import filedialog
 
 from kivy.app import App
 from kivy.lang import Builder
-from kivy.uix.dropdown import DropDown
 from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.uix.widget import Widget
 
 from classes.exceptions import UnknownPasswordException, AlreadyInListException, NotInListException
 from cli.cli_misc import pickle_get, pickle_get_instance, pickle_get_file_if_owned
@@ -23,7 +21,7 @@ from gui.exceptions import UserNameNotFoundException, SamePathnameException
 class LoginWindow(Screen):
     """Cette classe permet de creer une fenetre pour le login de l'utilisateur"""
 
-    def connexion(self):
+    def login(self):
         """
         PRE:
         POST: Lance tool.window si le nom utilisateur existe et que le mot de passe correspond.
@@ -41,30 +39,19 @@ class LoginWindow(Screen):
             else:
                 raise UserNameNotFoundException
         except UnknownPasswordException:
-            self.ids.Error.text = "Mauvais mot de passe !"
+            self.ids.displayLogin.text = "Mauvais mot de passe !"
         except UserNameNotFoundException:
-            self.ids.Error.text = "Mauvais nom d'utilisateurs !"
+            self.ids.displayLogin.text = "Mauvais nom d'utilisateur !"
         except Exception as e:
-            self.ids.Error.text = f"Erreur : {e}\n"
+            self.ids.displayLogin.text = f"Erreur : {e}\n"
         else:
-            self.ids.Error.text = "Connexion en cours..."
+            self.ids.displayLogin.text = "Connexion en cours..."
             return True
 
 
 ########################################################################################################
 # TOOL WINDOW
 ########################################################################################################
-class HListBox(Widget):
-    """Cette classe permet de creer une ligne au sein de l'interface pour l'utilisation de list"""
-    def __init__(self, **kwargs):
-        super(HListBox, self).__init__(**kwargs)
-
-
-class HSortBox(Widget):
-    """Cette classe permet de creer une ligne au sein de l'interface pour l'utilisation de sort"""
-    def __init__(self, **kwargs):
-        super(HSortBox, self).__init__(**kwargs)
-
 
 class ToolWindow(Screen):
     """
@@ -72,21 +59,16 @@ class ToolWindow(Screen):
 
     Variables de classe:
         student_instance:   instance de classe de l'utilisateur connecté
-        sort_choice:        lors de l'utilisation de sort(), doit avoir une de ces deux valeurs ("course" ou "tag")
-        list_choice:        lors de l'utilisation de sort(), doit avoir une de ces trois valeurs ("students",
-                                "courses" ou "files")
     """
     student_instance = None
-    sort_choice = None
-    list_choice = None
 
-    def new(self):
+    def open_editor(self):
         """
         PRE:
         POST: Ouvre le fenetre EditorWindow.
         RAISES:
         """
-        self.ids.Affichage.text = "Lancemement d'un nouveau fichier."
+        self.ids.displayTool.text = "Lancemement d'un nouveau fichier."
 
     @staticmethod
     def list_to_string(liste):
@@ -100,24 +82,6 @@ class ToolWindow(Screen):
             resultat += x + ', '
         resultat = resultat[:-2]
         return resultat
-
-    def open_list_choices(self):
-        """
-        PRE:
-        POST: ouvre la liste deroulante des choix de listage
-        RAISES:
-        """
-        dropdown = CustomDropDown()
-        self.ids.HListBox.ids.List.bind(on_release=dropdown.open)
-
-    def open_sort_choices(self):
-        """
-        PRE:
-        POST: ouvre la liste deroulante des choix de triage
-        RAISES:
-        """
-        dropdown = CustomDropDown2()
-        self.ids.HSortBox.ids.SortList.bind(on_release=dropdown.open)
 
     def list(self):
         """
@@ -135,23 +99,22 @@ class ToolWindow(Screen):
             file_instance_id = pickle_get_instance(pathname, file=True).file_id
             if file_instance_id in self.student_instance.files:
                 list_owned_files.append(pathname)
-        if self.list_choice == "students":
-            self.ids.Affichage.text = self.list_to_string(list_users)
-        elif self.list_choice == "courses":
-            self.ids.Affichage.text = self.list_to_string(list_courses)
-        elif self.list_choice == "files":
-            self.ids.Affichage.text = self.list_to_string(list_owned_files)
+        if self.ids.objectList.text == 'les étudiants:':
+            self.ids.displayTool.text = self.list_to_string(list_users)
+        elif self.ids.objectList.text == 'les cours:':
+            self.ids.displayTool.text = self.list_to_string(list_courses)
+        elif self.ids.objectList.text == 'les fichiers:':
+            self.ids.displayTool.text = self.list_to_string(list_owned_files)
+        else:
+            self.ids.displayTool.text = "Veuillez cliquer sur un des trois boutons pour définir la liste a afficher."
 
     def sort_launcher(self):
-        """
-        PRE: sort_choice doit avoir la valeur "course" ou "tag"
-        POST: en fonction de la valeur de sort_choice, lance la methode adequate
-        RAISES:
-        """
-        if self.sort_choice == "course":
+        if self.ids.objectSort.text == self.ids.onCourses.text:
             self.sort_on_course()
-        elif self.sort_choice == "tag":
+        elif self.ids.objectSort.text == self.ids.onTags.text:
             self.sort_on_tag()
+        else:
+            self.ids.displayTool.txt = "Veuillez cliquer sur un des deux boutons pour définir le type de tri."
 
     def sort_on_course(self):
         """
@@ -165,20 +128,20 @@ class ToolWindow(Screen):
             valid_course_name = False
             list_courses = pickle_get(courses_arg=True)[3]["name_id_dict"].keys()
             for x in list_courses:
-                if self.ids.HSortBox.ids.Recherche.text == x:
+                if self.ids.Research.text == x:
                     valid_course_name = True
             if not valid_course_name:
                 raise UnknownObjectException
         except UnknownObjectException:
-            self.ids.Affichage.text = "Le cours entre n'existe pas."
+            self.ids.displayTool.text = "Le cours entre n'existe pas."
         except Exception as e:
-            self.ids.Affichage.text = f"Erreur : {e}\n"
+            self.ids.displayTool.text = f"Erreur : {e}\n"
         else:
-            list_dict = list_sorted_files_on_course([self.ids.HSortBox.ids.Recherche.text], self.student_instance)
+            list_dict = list_sorted_files_on_course([self.ids.Research.text], self.student_instance)
             all_pathname = []
             for x in list_dict:
                 all_pathname.append(x["pathname"])
-            self.ids.Affichage.text = self.list_to_string(all_pathname)
+            self.ids.displayTool.text = self.list_to_string(all_pathname)
 
     def sort_on_tag(self):
         """
@@ -187,11 +150,11 @@ class ToolWindow(Screen):
                 l'etiquette definie dans Recherche(TextInput).
         RAISES:
         """
-        list_dict = list_sorted_files_on_tags([self.ids.HSortBox.ids.Recherche.text], self.student_instance)
+        list_dict = list_sorted_files_on_tags([self.ids.Research.text], self.student_instance)
         all_pathname = []
         for x in list_dict:
             all_pathname.append(x["pathname"] + "  [" + x["tags"] + "]")
-        self.ids.Affichage.text = self.list_to_string(all_pathname)
+        self.ids.displayTool.text = self.list_to_string(all_pathname)
 
 
 ########################################################################################################
@@ -230,9 +193,9 @@ class EditorWindow(Screen):
             for ligne in lignes:
                 resultat += ligne
         self.ids.TextArea.text = resultat
-        self.ids.Affichage.text = "Le fichier  '"+self.pathname.split('/')[-1]+"' a été ouvert"
+        self.ids.displayEditor.text = "Le fichier  '" + self.pathname.split('/')[-1] + "' a été ouvert"
 
-    def enregistrer_sous(self):
+    def save(self):
         """
         PRE:
         POST: Ouvre le navigateur de fichier apres avoir cliquer sur l'onglet
@@ -250,7 +213,7 @@ class EditorWindow(Screen):
         s = self.ids.TextArea.text
         f.write(s)
         f.close()
-        self.ids.Affichage.text = "Le fichier '" + self.pathname.split('/')[-1] + "' a été enregistré"
+        self.ids.displayEditor.text = "Le fichier '" + self.pathname.split('/')[-1] + "' a été enregistré"
 
     def file_add_tag_gui(self):
         """
@@ -259,14 +222,14 @@ class EditorWindow(Screen):
         RAISES: AlreadyInListException si l'etiquette specifiee est deja referencee
         """
         try:
-            tag = [self.ids.Recherche.text]
+            tag = [self.ids.Research.text]
             file_add_tag(self.pathname, tag)
         except AlreadyInListException:
-            self.ids.Error.text = "Erreur : l'etiquette specifiee existe deja"
+            self.ids.displayEditor.text = "Erreur : l'etiquette specifiee existe deja"
         except Exception as e:
-            self.ids.Error.text = f"Erreur : {e}"
+            self.ids.displayEditor.text = f"Erreur : {e}"
         else:
-            self.ids.Error.text = f"L'etiquette a correctement ete assignee au fichier"
+            self.ids.displayEditor.text = f"L'etiquette a correctement ete assignee au fichier"
 
     def file_add_course_gui(self):
         """
@@ -275,16 +238,16 @@ class EditorWindow(Screen):
         RAISES:
         """
         try:
-            course_name = self.ids.Recherche.text
+            course_name = self.ids.Research.text
             file_add_course(self.pathname, course_name)
         except UnknownObjectException:
-            self.ids.Error.text = "Erreur : le cours spécifié n'existe pas"
+            self.ids.displayEditor.text = "Erreur : le cours spécifié n'existe pas"
         except AlreadyInListException:
-            self.ids.Error.text = "Erreur : le fichier est deja associe a ce cours"
+            self.ids.displayEditor.text = "Erreur : le fichier est deja associe a ce cours"
         except Exception as e:
-            self.ids.Error.text = f"Erreur : {e}"
+            self.ids.displayEditor.text = f"Erreur : {e}"
         else:
-            self.ids.Error.text = f"Le fichier a correctement ete assigne au cours"
+            self.ids.displayEditor.text = f"Le fichier a correctement ete assigne au cours"
 
     def file_remove_tag_gui(self):
         """
@@ -293,14 +256,14 @@ class EditorWindow(Screen):
         RAISES: NotInListException si l'etiquette specifiee n'est pas deja referencee
         """
         try:
-            tag = self.ids.Recherche.text
+            tag = self.ids.Research.text
             file_remove_tag(self.pathname, tag)
         except NotInListException:
-            self.ids.Error.text = "Erreur : l'etiquette specifiee n'existe pas"
+            self.ids.displayEditor.text = "Erreur : l'etiquette specifiee n'existe pas"
         except Exception as e:
-            self.ids.Error.text = f"Erreur : {e}"
+            self.ids.displayEditor.text = f"Erreur : {e}"
         else:
-            self.ids.Error.text = f"L'etiquette a correctement ete retiree du fichier"
+            self.ids.displayEditor.text = f"L'etiquette a correctement ete retiree du fichier"
 
     def file_remove_course_gui(self):
         """
@@ -311,9 +274,9 @@ class EditorWindow(Screen):
         try:
             file_remove_course(self.pathname)
         except Exception as e:
-            self.ids.Error.text = f"Erreur : {e}"
+            self.ids.displayEditor.text = f"Erreur : {e}"
         else:
-            self.ids.Error.text = f"Le fichier a correctement ete assigne au cours"
+            self.ids.displayEditor.text = f"Le fichier a correctement ete assigne au cours"
 
     def file_change_script_attribute_gui(self):
         """
@@ -322,7 +285,7 @@ class EditorWindow(Screen):
         RAISES:
         """
         try:
-            script_string = self.ids.Recherche.text
+            script_string = self.ids.Research.text
             if script_string == "True" or script_string == "true":
                 script = True
             elif script_string == "False" or script_string == "false":
@@ -331,13 +294,13 @@ class EditorWindow(Screen):
                 raise ArgumentException
             file_change_script_attribute(self.pathname, script)
         except ArgumentException:
-            self.ids.Error.text = "Erreur : la valeur de script peut être True, False, true, false"
+            self.ids.displayEditor.text = "Erreur : la valeur de script peut être True, False, true, false"
         except Exception as e:
-            self.ids.Error.text = f"Erreur : {e}"
+            self.ids.displayEditor.text = f"Erreur : {e}"
         else:
-            self.ids.Error.text = f"L'attribut file.script a correctement ete modifie"
+            self.ids.displayEditor.text = f"L'attribut file.script a correctement ete modifie"
 
-    def deplacer(self):
+    def move_file(self):
         """
         PRE:
         POST: Ouvre le navigateur de fichier apres avoir cliquer sur le bouton deplacer
@@ -363,11 +326,11 @@ class EditorWindow(Screen):
             else:
                 raise SamePathnameException
         except SamePathnameException:
-            self.ids.Affichage.text = "Le nouvel emplacement est le meme que le precedent."
+            self.ids.displayEditor.text = "Le nouvel emplacement est le meme que le precedent."
         except Exception as e:
-            self.ids.Affichage.text = f"Erreur : {e}"
+            self.ids.displayEditor.text = f"Erreur : {e}"
         else:
-            self.ids.Affichage.text = "Le fichier a ete deplace."
+            self.ids.displayEditor.text = "Le fichier a ete deplace."
 
         new_pathname = filedialog.asksaveasfilename(defaultextension='.*', initialdir="/", title='Enregistrer sous',
                                                     filetype=[
@@ -377,7 +340,7 @@ class EditorWindow(Screen):
         if new_pathname not in list_files:
             new_file(new_pathname, True, None, None, self.student_instance)
         f = open(new_pathname, 'w')
-        s = self.ids.TextArea.text
+        s = self.ids.displayEditor.text
         f.write(s)
         move_file(self.pathname, new_pathname)
         os.remove(self.pathname)
@@ -394,10 +357,10 @@ class EditorWindow(Screen):
             file_instance = pickle_get_file_if_owned(self.student_instance, self.pathname)
             delete_file(file_instance, self.student_instance)
         except Exception as e:
-            self.ids.Affichage.text = f"Erreur : {e}"
+            self.ids.displayEditor.text = f"Erreur : {e}"
         else:
             self.ids.TextArea.text = ""
-            self.ids.Affichage.text = "Le fichier '"+self.pathname.split('/')[-1]+"' a été supprimé"
+            self.ids.displayEditor.text = "Le fichier '" + self.pathname.split('/')[-1] + "' a été supprimé"
 
 
 ########################################################################################################
@@ -413,16 +376,6 @@ class WindowManager(ScreenManager):
     pass
 
 
-class CustomDropDown(DropDown):
-    """Cette classe permet la construction de la dropdown list associee aux choix de listage"""
-    pass
-
-
-class CustomDropDown2(DropDown):
-    """Cette classe permet la construction de la dropdown list associee aux choix de triage"""
-    pass
-
-
 buildWindow = Builder.load_file("gui/buildWindow.kv")
 
 
@@ -430,6 +383,7 @@ class projet_2TL1_09(App):
     """
     Il s'agit du corps de l'application.
     """
+
     def build(self):
         return buildWindow
 
