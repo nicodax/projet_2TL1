@@ -11,7 +11,7 @@ from cli.cli_misc import pickle_get, pickle_get_instance, pickle_get_file_if_own
 from cli.cli_student import list_sorted_files_on_tags, list_sorted_files_on_course, new_file, file_add_tag, \
     file_add_course, file_remove_tag, file_remove_course, delete_file, move_file, file_change_script_attribute
 from cli.exceptions import UnknownObjectException, ArgumentException
-from gui.exceptions import UserNameNotFoundException, SamePathnameException
+from gui.exceptions import UserNameNotFoundException, SamePathnameException, NoPathnameException
 
 
 ########################################################################################################
@@ -195,7 +195,7 @@ class EditorWindow(Screen):
         self.ids.TextArea.text = resultat
         self.ids.displayEditor.text = "Le fichier  '" + self.pathname.split('/')[-1] + "' a été ouvert"
 
-    def save(self):
+    def save_as(self):
         """
         PRE:
         POST: Ouvre le navigateur de fichier apres avoir cliquer sur l'onglet
@@ -203,9 +203,7 @@ class EditorWindow(Screen):
         RAISES:
         """
         self.pathname = filedialog.asksaveasfilename(defaultextension='.*', initialdir="/", title='Enregistrer sous',
-                                                     filetype=(
-                                                         ("Text File", "*.txt"), ("xls file", "*.xls"),
-                                                         ("All File", "*.*")))
+                                                     filetype=[("Text File", "*.txt"), ("Python File", "*.py")])
         list_files = pickle_get(files_arg=True)[2]["name_id_dict"].keys()
         if self.pathname not in list_files:
             new_file(self.pathname, True, None, None, self.student_instance)
@@ -309,9 +307,7 @@ class EditorWindow(Screen):
         """
         try:
             new_pathname = filedialog.asksaveasfilename(defaultextension='.*', initialdir="/", title='Enregistrer sous',
-                                                        filetype=(
-                                                            ("Text File", "*.txt"), ("xls file", "*.xls"),
-                                                            ("All File", "*.*")))
+                                                        filetype=[("Text File", "*.txt"), ("Python File", "*.py")])
             if self.pathname != new_pathname:
                 f = open(new_pathname, 'w')
                 s = self.ids.TextArea.text
@@ -329,21 +325,6 @@ class EditorWindow(Screen):
         else:
             self.ids.displayEditor.text = "Le fichier a ete deplace."
 
-        new_pathname = filedialog.asksaveasfilename(defaultextension='.*', initialdir="/", title='Enregistrer sous',
-                                                    filetype=[
-                                                        ("Text File", "*.txt"), ("xls file", "*.xls"),
-                                                        ("All File", "*.*")])
-        list_files = pickle_get(files_arg=True)[2]["name_id_dict"].keys()
-        if new_pathname not in list_files:
-            new_file(new_pathname, True, None, None, self.student_instance)
-        f = open(new_pathname, 'w')
-        s = self.ids.displayEditor.text
-        f.write(s)
-        move_file(self.pathname, new_pathname)
-        os.remove(self.pathname)
-        self.pathname = new_pathname
-        f.close()
-
     def delete(self):
         """
         PRE:
@@ -358,6 +339,19 @@ class EditorWindow(Screen):
         else:
             self.ids.TextArea.text = ""
             self.ids.displayEditor.text = "Le fichier '" + self.pathname.split('/')[-1] + "' a été supprimé"
+
+    def save(self):
+        try:
+            if self.pathname:
+                f = open(self.pathname, 'w')
+                s = self.ids.TextArea.text
+                f.write(s)
+                f.close()
+                self.ids.displayEditor.text = "Le fichier '" + self.pathname.split('/')[-1] + "' a été enregistré"
+            else:
+                raise NoPathnameException
+        except NoPathnameException:
+            self.ids.displayEditor.text = "Veuillez créer le fichier au moyen du bouton 'enregistrer-sous'."
 
 
 ########################################################################################################
