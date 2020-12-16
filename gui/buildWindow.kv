@@ -248,13 +248,13 @@ WindowManager:
                     root.save()
 
             Button:
-                id: doDelete
-                text: 'Supprimer'
+                id: doSaveAs
+                text: 'Enregistrer-sous'
                 pos_hint: {"x":0.30, "y":0.25}
                 size_hint: 0.15, 0.05
                 background_color: [1.6, 0.6, 1.7, 1.0]
                 on_press:
-                    root.delete()
+                    root.save_as()
 
             Button:
                 id: doMove
@@ -264,6 +264,15 @@ WindowManager:
                 background_color: [1.6, 0.6, 1.7, 1.0]
                 on_press:
                     root.move_file()
+
+            Button:
+                id: doDelete
+                text: 'Supprimer'
+                pos_hint: {"x":0.60, "y":0.25}
+                size_hint: 0.15, 0.05
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                on_press:
+                    root.delete()
 
             Button:
                 id: add_tag
@@ -314,7 +323,10 @@ WindowManager:
                 text: "Cliquez sur un bouton:"
                 pos_hint: {"x":0, "y":0.05}
                 size_hint: 1, 0.2
-                font_size: 30
+                font_size: 20
+                text_size: cm(20), cm(5)
+                halign: 'center'
+                valign: 'middle'
                 color: [1, 0, 0, 1]
                 canvas.before:
                     Color:

@@ -9,3 +9,7 @@ class UserNameNotFoundException(Exception):
 class SamePathnameException(Exception):
     """Exception generee lorsque l'ancien pathname et le nouveau sont les memes."""
     pass
+
+class NoPathnameException(Exception):
+    """Exception generee lorsqu'aucun patname n'est défini."""
+    pass
