@@ -1,0 +1,368 @@
+WindowManager:
+    LoginWindow:
+    ToolWindow:
+    EditorWindow:
+
+
+
+<LoginWindow>:
+    name: "loginWindow"
+    canvas.before:
+        Color:
+            rgba: [1.6, 0.6, 1.7, 1.0]
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    BoxLayout:
+        orientation: 'vertical'
+        spacing: 20
+
+        Label:
+            id: displayLogin
+            text: "Veuillez entrer votre nom d'utilisateur et votre mot de passe:"
+            font_size: 30
+            text_size: cm(20), cm(5)
+            halign: 'center'
+            valign: 'middle'
+            color: [1, 0, 0, 1]
+            canvas.before:
+                Color:
+                    rgba: [3.0, 0.7, 4.3, 2.0]
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+
+        FloatLayout:
+            Label:
+                pos_hint: {"x":0.01, "y":0.6}
+                size_hint: 0.2, 0.15
+                text: "Username:"
+                font_size: 30
+                color: [1, 0, 0, 1]
+
+            TextInput:
+                id: Usrname
+                hint_text: "Nom d'utilisateur"
+                write_tab: False
+                multiline: False
+                on_text_validate:
+                    root.login()
+                    app.root.current = "toolWindow" if root.login() == True else "loginWindow"
+                pos_hint: {"x":0.2, "y":0.6}
+                size_hint: 0.25, 0.15
+                font_size: 20
+
+            Label:
+                pos_hint: {"x":0.01, "y":0.3}
+                size_hint: 0.2, 0.15
+                text: "Password:"
+                font_size: 30
+                color: [1, 0, 0, 1]
+
+            TextInput:
+                id: Psw
+                hint_text: "Mot de passe"
+                write_tab: False
+                multiline: False
+                on_text_validate:
+                    root.login()
+                    app.root.current = "toolWindow" if root.login() == True else "loginWindow"
+                password: True
+                font_size: 20
+                pos_hint: {"x":0.2, "y":0.3}
+                size_hint: 0.25, 0.15
+
+            Button:
+                id: Submit
+                text: "Se connecter"
+                pos_hint: {"x":0.7, "y":0.35}
+                size_hint: 0.2, 0.4
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                on_press:
+                    root.login()
+                on_release:
+                    app.root.current = "toolWindow" if root.login() == True else "loginWindow"
+
+
+
+<ToolWindow>:
+    name: "toolWindow"
+    canvas.before:
+        Color:
+            rgba: [1.6, 0.6, 1.7, 1.0]
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    BoxLayout:
+        FloatLayout:
+            orientation: 'vertical'
+            spacing: 20
+
+            Label:
+                id: displayTool
+                text: "Cliquez sur un bouton:"
+                pos_hint: {"x":0.5, "y":0.1}
+                size_hint: 0.5, 0.9
+                font_size: 20
+                text_size: cm(10), cm(14)
+                halign: 'center'
+                valign: 'middle'
+                color: [1, 0, 0, 1]
+                canvas.before:
+                    Color:
+                        rgba: [3.0, 0.7, 4.3, 2.0]
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+
+            Button:
+                id: GoToEditor
+                text: 'Vers editeur'
+                pos_hint: {"x":0.85, "y":0}
+                size_hint: 0.15, 0.05
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                on_release:
+                    app.root.current = "editorWindow"
+
+            Button:
+                id: doList
+                text: 'Lister'
+                pos_hint: {"x":0.1, "y":0.8}
+                size_hint: 0.15, 0.05
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                on_press:
+                    root.list()
+
+            Label:
+                id: objectList
+                text: 'selon ?'
+                pos_hint: {"x":0.25, "y":0.8}
+                size_hint: 0.15, 0.05
+                font_size: 15
+                color: [1, 0, 0, 1]
+
+            Button:
+                id: listCourses
+                text: 'les cours'
+                pos_hint: {"x":0.025, "y":0.7}
+                size_hint: 0.15, 0.05
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                on_press:
+                    root.ids.objectList.text = 'les cours:'
+
+            Button:
+                id: listFiles
+                text: 'les fichiers'
+                pos_hint: {"x":0.175, "y":0.7}
+                size_hint: 0.15, 0.05
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                on_press:
+                    root.ids.objectList.text = 'les fichiers:'
+
+            Button:
+                id: listStudents
+                text: 'les etudiants'
+                pos_hint: {"x":0.325, "y":0.7}
+                size_hint: 0.15, 0.05
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                on_press:
+                    root.ids.objectList.text = 'les étudiants:'
+
+            Button:
+                id: doSort
+                text: 'Trier'
+                pos_hint: {"x":0.025, "y":0.4}
+                size_hint: 0.15, 0.05
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                on_press:
+                    root.sort_on_course() if root.ids.objectSort.text == root.ids.onCourses.text else root.sort_on_tag()
+
+            Label:
+                id: objectSort
+                text: 'selon ?'
+                pos_hint: {"x":0.175, "y":0.4}
+                size_hint: 0.15, 0.05
+                color: [1, 0, 0, 1]
+
+            TextInput:
+                id: Research
+                hint_text: "Etiquette/Cours"
+                pos_hint: {"x":0.325, "y":0.4}
+                size_hint: 0.15, 0.05
+                multiline: False
+                font_size: 15
+
+            Button:
+                id: onCourses
+                text: 'selon les cours'
+                pos_hint: {"x":0.1, "y":0.3}
+                size_hint: 0.15, 0.05
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                on_press:
+                    root.ids.objectSort.text = root.ids.onCourses.text
+
+            Button:
+                id: onTags
+                text: 'selon les tags'
+                pos_hint: {"x":0.25, "y":0.3}
+                size_hint: 0.15, 0.05
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                on_press:
+                    root.ids.objectSort.text = root.ids.onTags.text
+
+
+
+<EditorWindow>:
+    name: "editorWindow"
+
+    BoxLayout:
+        FloatLayout:
+            orientation: 'vertical'
+            spacing: 20
+            canvas.before:
+                Color:
+                    rgba: [1.6, 0.6, 1.7, 1.0]
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+            TextInput:
+                id:TextArea
+                text: ""
+                font_size: 30
+                pos_hint: {"x":0, "y":0.3}
+                size_hint: 1, 0.7
+
+            Button:
+                id: doOpen
+                text: 'Ouvrir'
+                pos_hint: {"x":0, "y":0.25}
+                size_hint: 0.15, 0.05
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                on_press:
+                    root.open()
+
+            Button:
+                id: doSave
+                text: 'Enregistrer'
+                pos_hint: {"x":0.15, "y":0.25}
+                size_hint: 0.15, 0.05
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                on_press:
+                    root.save()
+
+            Button:
+                id: doSaveAs
+                text: 'Enregistrer-sous'
+                pos_hint: {"x":0.30, "y":0.25}
+                size_hint: 0.15, 0.05
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                on_press:
+                    root.save_as()
+
+            Button:
+                id: doMove
+                text: 'Deplacer'
+                pos_hint: {"x":0.45, "y":0.25}
+                size_hint: 0.15, 0.05
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                on_press:
+                    root.move_file()
+
+            Button:
+                id: doDelete
+                text: 'Supprimer'
+                pos_hint: {"x":0.60, "y":0.25}
+                size_hint: 0.15, 0.05
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                on_press:
+                    root.delete()
+
+            Label:
+                id: currentPathname
+                text: "Pas de fichier ouvert"
+                pos_hint: {"x":0.75, "y":0.25}
+                size_hint: 0.25, 0.05
+                font_size: 20
+                color: [1, 0, 0, 1]
+                canvas.before:
+                    Color:
+                        rgba: [3.0, 0.7, 4.3, 2.0]
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+
+            Button:
+                id: add_tag
+                text: 'Ajouter une étiquette'
+                pos_hint: {"x":0, "y":0}
+                size_hint: 0.2, 0.05
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                on_press:
+                    root.file_add_tag_gui()
+
+            Button:
+                id: add_course
+                text: 'Spécifier un cours'
+                pos_hint: {"x":0.2, "y":0}
+                size_hint: 0.2, 0.05
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                on_press:
+                    root.file_add_course_gui()
+
+            TextInput:
+                id: Research
+                hint_text: "Recherche"
+                pos_hint: {"x":0.7, "y":0}
+                size_hint: 0.15, 0.05
+                multiline: False
+                font_size: 15
+
+            Button:
+                id: change_script
+                text: 'Script ?'
+                pos_hint: {"x":0.55, "y":0}
+                size_hint: 0.15, 0.05
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                on_press:
+                    root.file_change_script_attribute_gui()
+
+            Button:
+                id: deleteTag
+                text: 'Supprimer tag'
+                pos_hint: {"x":0.4, "y":0}
+                size_hint: 0.15, 0.05
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                on_press:
+                    root.file_remove_tag_gui()
+
+            Button:
+                size_hint: (0.5, 0.15)
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                text: 'Vers outils'
+                pos_hint: {"x":0.85, "y":0}
+                size_hint: 0.15, 0.05
+                on_release:
+                    app.root.current = "toolWindow"
+
+            Label:
+                id: displayEditor
+                text: "Cliquez sur un bouton:"
+                pos_hint: {"x":0, "y":0.05}
+                size_hint: 1, 0.2
+                font_size: 20
+                text_size: cm(20), cm(5)
+                halign: 'center'
+                valign: 'middle'
+                color: [1, 0, 0, 1]
+                canvas.before:
+                    Color:
+                        rgba: [3.0, 0.7, 4.3, 2.0]
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+
+
