@@ -185,7 +185,7 @@ class EditorWindow(Screen):
                                                    filetype=[("Text File", "*.txt"), ("Python File", "*.py")])
         list_files = pickle_get(files_arg=True)[2]["name_id_dict"].keys()
         if self.pathname not in list_files:
-            new_file(self.pathname, True, None, None, self.student_instance)
+            new_file(self.pathname, False, None, None, self.student_instance)
 
         resultat = ""
         with open(self.pathname, 'r') as filin:
@@ -206,7 +206,7 @@ class EditorWindow(Screen):
                                                      filetype=[("Text File", "*.txt"), ("Python File", "*.py")])
         list_files = pickle_get(files_arg=True)[2]["name_id_dict"].keys()
         if self.pathname not in list_files:
-            new_file(self.pathname, True, None, None, self.student_instance)
+            new_file(self.pathname, False, None, None, self.student_instance)
         f = open(self.pathname, 'w')
         s = self.ids.TextArea.text
         f.write(s)
