@@ -21,7 +21,6 @@ class Admin:
                 - user_id est de type int
         POST: initialise chaque instance de la classe
                 initialise self.__is_admin a True
-        RAISES:
         """
         self.username = username
         self.fullname = fullname
@@ -34,7 +33,6 @@ class Admin:
         """
         PRE:
         POST: accede a self.__username
-        RAISES:
         """
         return self.__username
 
@@ -43,7 +41,6 @@ class Admin:
         """
         PRE:
         POST: accede a self.__fullname
-        RAISES:
         """
         return self.__fullname
 
@@ -52,7 +49,6 @@ class Admin:
         """
         PRE:
         POST: accede a self.__user_id
-        RAISES:
         """
         return self.__user_id
 
@@ -61,7 +57,6 @@ class Admin:
         """
         PRE:
         POST: accede a self.__is_admin
-        RAISES:
         """
         return self.__is_admin
 
@@ -70,7 +65,6 @@ class Admin:
         """
         PRE: new_username est de type str
         POST: modifie la valeur de self.__username
-        RAISES:
         """
         if len(new_username) < 26:
             self.__username = new_username
@@ -83,7 +77,6 @@ class Admin:
         """
         PRE: new_fullname est de type str
         POST: modifie la valeur de self.__fullname
-        RAISES:
         """
         if len(new_fullname) < 33:
             self.__fullname = new_fullname
@@ -96,7 +89,6 @@ class Admin:
         PRE:    - old_pwd est de type str
                 - new_pwd est de type str
         POST: change la valeur de self.__pwd ssi old_pwd == self.__pwd
-        RAISES:
         """
         if self.verify_pwd(old_pwd):
             self.__pwd = new_pwd
@@ -137,7 +129,6 @@ class Student(Admin):
         POST: initialise chaque instance de la classe
                 - initialise self.__is_admin a True
                 - initialise a vide les listes self.__files et self.__courses
-        RAISES:
         """
         super().__init__(username, fullname, pwd, user_id)
         self.__courses = []
@@ -148,7 +139,6 @@ class Student(Admin):
         """
         PRE:
         POST: accede a self.__courses
-        RAISES:
         """
         return self.__courses
 
@@ -157,7 +147,6 @@ class Student(Admin):
         """
         PRE:
         POST: accede a self.__files
-        RAISES:
         """
         return self.__files
 
@@ -165,7 +154,6 @@ class Student(Admin):
         """
         PRE: course_id est de type int
         POST: retourne True ssi le cours est deja enregistre dans la liste self.__courses, retourne False sinon
-        RAISES:
         """
         return course_id in self.__courses
 
@@ -195,7 +183,6 @@ class Student(Admin):
         """
         PRE: file_id est de type int
         POST: retourne True ssi file_id est deja enregistre dans la liste self.__files, retourne False sinon
-        RAISES:
         """
         return file_id in self.__files
 

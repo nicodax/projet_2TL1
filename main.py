@@ -25,15 +25,13 @@ class LoginWindow(Screen):
         """
         PRE:
         POST: Lance tool.window si le nom utilisateur existe et que le mot de passe correspond.
-        RAISES:     -UserNameNotFoundException si le nom utilisateur n'existe pas.
-                    -UnknownPasswordException si le mot de passe ne correspond pas au nom utilisateur reconnu.
+                Un message d'erreur est affiché si l'utilisateur n'existe pas
         """
         try:
             list_users = pickle_get(students_arg=True)[0]["name_id_dict"].keys()
             if self.ids.Usrname.text in list_users:
                 student_instance = pickle_get_instance(self.ids.Usrname.text, student=True)
-                if not student_instance.verify_pwd(self.ids.Psw.text):
-                    raise UnknownPasswordException
+                student_instance.verify_pwd(self.ids.Psw.text)
                 ToolWindow.student_instance = student_instance
                 EditorWindow.student_instance = student_instance
             else:
@@ -256,7 +254,7 @@ class EditorWindow(Screen):
         """
         PRE:
         POST: retire l'etiquette specifiee si elle est deja referencee
-        RAISES: NotInListException si l'etiquette specifiee n'est pas deja referencee
+        RAISES:
         """
         try:
             tag = self.ids.Research.text

@@ -23,7 +23,6 @@ class Course:
                 - description est de type str
         POST: initialise chaque instance de la classe.
                 initialise a vide les listes self.__files et self.description
-        RAISES:
         """
         self.name = name
         self.__teachers = teachers
@@ -37,7 +36,6 @@ class Course:
         """
         PRE:
         POST: accede a self.__students
-        RAISES:
         """
         return self.__students
 
@@ -46,7 +44,6 @@ class Course:
         """
         PRE:
         POST: accede a self.__name
-        RAISES:
         """
         return self.__name
 
@@ -55,7 +52,6 @@ class Course:
         """
         PRE:
         POST: accede a self.__teachers
-        RAISES:
         """
         return self.__teachers
 
@@ -64,7 +60,6 @@ class Course:
         """
         PRE:
         POST: accede a self.__files
-        RAISES:
         """
         return self.__files
 
@@ -73,7 +68,6 @@ class Course:
         """
         PRE:
         POST: accede a self.__course_id
-        RAISES:
         """
         return self.__course_id
 
@@ -81,7 +75,6 @@ class Course:
         """
         PRE:
         POST: imprime la description du cours en console
-        RAISES:
         """
         return self.__description
 
@@ -90,7 +83,6 @@ class Course:
         """
         PRE:
         POST: accede a self.description
-        RAISES:
         """
         return self.__description
 
@@ -100,7 +92,6 @@ class Course:
         PRE:  new_name est de type str
         POST: attribue la valeur de new_name a self.__name ssi elle fait moins de 5 caracteres.
                     Sinon, attribue les 5 premiers caracteres de new_name
-        RAISES:
         """
         if len(new_name) < 6:
             self.__name = new_name
@@ -114,7 +105,6 @@ class Course:
         PRE:  string est de type str
         POST: attribue la valeur de string a self.description ssi elle fait moins de 50 caracteres.
                     Sinon, attribue les 50 premiers caracteres de string
-        RAISES:
         """
         if len(string) < 51:
             self.__description = string
@@ -127,7 +117,6 @@ class Course:
         """
         PRE: new_list est de type list
         POST: definit la valeur de self.__teachers
-        RAISES:
         """
         self.__teachers = new_list
 
@@ -135,7 +124,6 @@ class Course:
         """
         PRE: name est de type str
         POST: retourne True si le name est deja repertoriee dans la liste self.__teachers, retourne False sinon
-        RAISES:
         """
         return name in self.__teachers
 
@@ -165,7 +153,6 @@ class Course:
         """
         PRE: file_id est de type int
         POST: retourne True si file_id est deja repertorie dans la liste self.__files, retourne False sinon
-        RAISES:
         """
         return file_id in self.__files
 
@@ -195,7 +182,6 @@ class Course:
         """
         PRE: user_id est de type int
         POST: retourne True si user_id est deja repertoriee dans la liste self.__students, retourne False sinon
-        RAISES:
         """
         return user_id in self.__students
 

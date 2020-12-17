@@ -137,6 +137,7 @@ def delete_course(course_name):
 
 def list_all_admins():
     """
+    PRE :
     POST : cree un dictionnaire des informations relatives aux administrateurs
     """
     persistent_data = cli.cli_misc.pickle_get(admins_arg=True)
