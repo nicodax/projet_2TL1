@@ -115,8 +115,6 @@ WindowManager:
                 pos_hint: {"x":0.85, "y":0}
                 size_hint: 0.15, 0.05
                 background_color: [1.6, 0.6, 1.7, 1.0]
-                on_press:
-                    root.open_editor()
                 on_release:
                     app.root.current = "editorWindow"
 
@@ -274,6 +272,20 @@ WindowManager:
                 on_press:
                     root.delete()
 
+            Label:
+                id: currentPathname
+                text: "Pas de fichier ouvert"
+                pos_hint: {"x":0.75, "y":0.25}
+                size_hint: 0.25, 0.05
+                font_size: 20
+                color: [1, 0, 0, 1]
+                canvas.before:
+                    Color:
+                        rgba: [3.0, 0.7, 4.3, 2.0]
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+
             Button:
                 id: add_tag
                 text: 'Ajouter une étiquette'
@@ -295,7 +307,7 @@ WindowManager:
             TextInput:
                 id: Research
                 hint_text: "Recherche"
-                pos_hint: {"x":0.55, "y":0}
+                pos_hint: {"x":0.7, "y":0}
                 size_hint: 0.15, 0.05
                 multiline: False
                 font_size: 15
@@ -303,11 +315,20 @@ WindowManager:
             Button:
                 id: change_script
                 text: 'Script ?'
-                pos_hint: {"x":0.4, "y":0}
+                pos_hint: {"x":0.55, "y":0}
                 size_hint: 0.15, 0.05
                 background_color: [1.6, 0.6, 1.7, 1.0]
                 on_press:
                     root.file_change_script_attribute_gui()
+
+            Button:
+                id: deleteTag
+                text: 'Supprimer tag'
+                pos_hint: {"x":0.4, "y":0}
+                size_hint: 0.15, 0.05
+                background_color: [1.6, 0.6, 1.7, 1.0]
+                on_press:
+                    root.file_remove_tag_gui()
 
             Button:
                 size_hint: (0.5, 0.15)
@@ -334,4 +355,5 @@ WindowManager:
                     Rectangle:
                         pos: self.pos
                         size: self.size
+
 

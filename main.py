@@ -62,14 +62,6 @@ class ToolWindow(Screen):
     """
     student_instance = None
 
-    def open_editor(self):
-        """
-        PRE:
-        POST: Ouvre le fenetre EditorWindow.
-        RAISES:
-        """
-        self.ids.displayTool.text = "Lancemement d'un nouveau fichier."
-
     @staticmethod
     def list_to_string(liste):
         """
@@ -194,6 +186,7 @@ class EditorWindow(Screen):
                 resultat += ligne
         self.ids.TextArea.text = resultat
         self.ids.displayEditor.text = "Le fichier  '" + self.pathname.split('/')[-1] + "' a été ouvert"
+        self.ids.currentPathname.text = self.pathname.split('/')[-1]
 
     def save_as(self):
         """
@@ -211,7 +204,8 @@ class EditorWindow(Screen):
         s = self.ids.TextArea.text
         f.write(s)
         f.close()
-        self.ids.displayEditor.text = "Le fichier '" + self.pathname.split('/')[-1] + "' a été enregistré"
+        self.ids.displayEditor.text = "Le fichier '" + self.pathname.split('/')[-1]
+        self.ids.currentPathname.text = self.pathname.split('/')[-1]
 
     def file_add_tag_gui(self):
         """
@@ -224,8 +218,8 @@ class EditorWindow(Screen):
             file_add_tag(self.pathname, tag)
         except AlreadyInListException:
             self.ids.displayEditor.text = "Erreur : l'etiquette specifiee existe deja"
-        except Exception as e:
-            self.ids.displayEditor.text = f"Erreur : {e}"
+        # except Exception as e:
+        #   self.ids.displayEditor.text = f"Erreur : {e}"
         else:
             self.ids.displayEditor.text = f"L'etiquette a correctement ete assignee au fichier"
 
@@ -255,7 +249,11 @@ class EditorWindow(Screen):
         """
         try:
             tag = self.ids.Research.text
-            file_remove_tag(self.pathname, tag)
+            if tag == '*':
+                tag = []
+                file_remove_tag(self.pathname, tag)
+            else:
+                file_remove_tag(self.pathname, tag)
         except NotInListException:
             self.ids.displayEditor.text = "Erreur : l'etiquette specifiee n'existe pas"
         except Exception as e:
@@ -316,6 +314,7 @@ class EditorWindow(Screen):
                 os.remove(self.pathname)
                 self.pathname = new_pathname
                 f.close()
+                self.ids.currentPathname.text = self.pathname.split('/')[-1]
             else:
                 raise SamePathnameException
         except SamePathnameException:
@@ -334,11 +333,13 @@ class EditorWindow(Screen):
         try:
             file_instance = pickle_get_file_if_owned(self.student_instance, self.pathname)
             delete_file(file_instance, self.student_instance)
+            self.ids.currentPathname.text = "Aucun fichier ouvert."
         except Exception as e:
             self.ids.displayEditor.text = f"Erreur : {e}"
         else:
             self.ids.TextArea.text = ""
             self.ids.displayEditor.text = "Le fichier '" + self.pathname.split('/')[-1] + "' a été supprimé"
+            self.pathname = ""
 
     def save(self):
         try:
