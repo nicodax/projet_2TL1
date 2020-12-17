@@ -25,7 +25,7 @@ class LoginWindow(Screen):
         """
         PRE:
         POST: Lance tool.window si le nom utilisateur existe et que le mot de passe correspond.
-                Un message d'erreur est affiché si l'utilisateur n'existe pas
+                Un message d'erreur est affiché si l'utilisateur n'existe pas.
         """
         try:
             list_users = pickle_get(students_arg=True)[0]["name_id_dict"].keys()
@@ -65,7 +65,6 @@ class ToolWindow(Screen):
         """
         PRE:
         POST: Recoit une liste et la transforme en string.
-        RAISES:
         """
         resultat = ""
         for x in liste:
@@ -78,8 +77,6 @@ class ToolWindow(Screen):
         PRE: list_choice doit avoir la valeur "students", "courses" ou "files"
         POST: Affiche la liste des fichiers, des cours ou des utilisateurs recenses
                 dans Affichage(Label) en fonction de la valeur de Recherche(TextInput).
-        RAISES: UnknownObjectException se lance si la valeur de Recherche(TextInput) n'est pas
-                    un argument reconnu.
         """
         list_users = pickle_get(students_arg=True)[0]["name_id_dict"].keys()
         list_courses = pickle_get(courses_arg=True)[3]["name_id_dict"].keys()
@@ -99,6 +96,10 @@ class ToolWindow(Screen):
             self.ids.displayTool.text = "Veuillez cliquer sur un des trois boutons pour définir la liste a afficher."
 
     def sort_launcher(self):
+        """
+        PRE:
+        POST: Lance la methode appropriee en fonction du label objectSort.
+        """
         if self.ids.objectSort.text == self.ids.onCourses.text:
             self.sort_on_course()
         elif self.ids.objectSort.text == self.ids.onTags.text:
@@ -110,9 +111,8 @@ class ToolWindow(Screen):
         """
         PRE:
         POST: Affiche la liste des fichiers tries dans Affichage(Label) en fonction du
-                cours defini dans Recherche(TextInput).
-        RAISES: UnknownObjectException si la valeur de Recherche(TextInput) n'est pas
-                    un argument reconnu.
+                cours defini dans Recherche(TextInput). Un message d'erreur est affiche
+                si le cours n'est pas connu du programme.
         """
         try:
             valid_course_name = False
@@ -138,7 +138,6 @@ class ToolWindow(Screen):
         PRE:
         POST: Affiche la liste des fichiers tries dans Affichage(Label) en fonction de
                 l'etiquette definie dans Recherche(TextInput).
-        RAISES:
         """
         list_dict = list_sorted_files_on_tags([self.ids.Research.text], self.student_instance)
         all_pathname = []
@@ -169,7 +168,6 @@ class EditorWindow(Screen):
         PRE:
         POST: Ouvre un navigateur de fichier, puis après avoir choisis un fichier,
                   implemente son contenu dans TextArea(textInput).
-        RAISES:
         """
         try:
             self.pathname = filedialog.askopenfilename(initialdir="/", title="Choisir le fichier",
@@ -195,8 +193,8 @@ class EditorWindow(Screen):
         """
         PRE:
         POST: Ouvre le navigateur de fichier apres avoir cliquer sur l'onglet
-                  enregistrer et sauvegarde le fichier a l endroit choisi.
-        RAISES:
+                  enregistrer et sauvegarde le fichier a l endroit choisi. Si l'
+                  utilisateur quitte le navigateur de fichier, un message d'erreur est genere.
         """
         try:
             self.pathname = filedialog.asksaveasfilename(defaultextension='.*', initialdir="/",
@@ -219,24 +217,24 @@ class EditorWindow(Screen):
     def file_add_tag_gui(self):
         """
         PRE:
-        POST: ajoute l'etiquette specifiee si elle n'est pas deja referencee
-        RAISES: AlreadyInListException si l'etiquette specifiee est deja referencee
+        POST: ajoute l'etiquette specifiee si elle n'est pas deja referencee; Un
+            message d'erreur est generee si l etiquette est deja attribuee au fichier.
         """
         try:
             tag = [self.ids.Research.text]
             file_add_tag(self.pathname, tag)
         except AlreadyInListException:
             self.ids.displayEditor.text = "Erreur : l'etiquette specifiee existe deja"
-        # except Exception as e:
-        #   self.ids.displayEditor.text = f"Erreur : {e}"
+        except Exception as e:
+            self.ids.displayEditor.text = f"Erreur : {e}"
         else:
             self.ids.displayEditor.text = f"L'etiquette a correctement ete assignee au fichier"
 
     def file_add_course_gui(self):
         """
         PRE:
-        POST: associe le fichier au cours specifie
-        RAISES:
+        POST: associe le fichier au cours specifie. Un message d'erreur apparait si le cours a
+            attribue n existe pas ou est deja associe au cours.
         """
         try:
             course_name = self.ids.Research.text
@@ -253,8 +251,8 @@ class EditorWindow(Screen):
     def file_remove_tag_gui(self):
         """
         PRE:
-        POST: retire l'etiquette specifiee si elle est deja referencee
-        RAISES:
+        POST: retire l'etiquette specifiee si elle est deja referencee. Un message d'erreur
+            est genere si l etiquette specifiee n'exista pas.
         """
         try:
             tag = self.ids.Research.text
@@ -273,8 +271,7 @@ class EditorWindow(Screen):
     def file_remove_course_gui(self):
         """
         PRE:
-        POST: dissocie le fichier de tout cours
-        RAISES:
+        POST: dissocie le fichier de tout cours.
         """
         try:
             file_remove_course(self.pathname)
@@ -286,8 +283,8 @@ class EditorWindow(Screen):
     def file_change_script_attribute_gui(self):
         """
         PRE:
-        POST: indique si le fichier est un script ou non
-        RAISES:
+        POST: indique si le fichier est un script ou non. Un message d'erreur est genere si
+            l'argument attendu n'est pas reconnu (True, False).
         """
         try:
             script_string = self.ids.Research.text
@@ -309,8 +306,8 @@ class EditorWindow(Screen):
         """
         PRE:
         POST: Ouvre le navigateur de fichier apres avoir cliquer sur le bouton deplacer
-                et deplace le fichier a l endroit choisi.
-        RAISES: SamePathnameException est appele si l'ancien pathname correspond a l'endroit choisi.
+                et deplace le fichier a l endroit choisi. Un message d'erreur est genere si
+                le nouvel emplacement est le meme que le precedent et si l operation est annulee.
         """
         try:
             new_pathname = filedialog.asksaveasfilename(defaultextension='.*', initialdir="/", title='Enregistrer sous',
@@ -340,8 +337,8 @@ class EditorWindow(Screen):
     def delete(self):
         """
         PRE:
-        POST: Supprime le fichier ouvert actuellement.
-        RAISES:
+        POST: Supprime le fichier ouvert actuellement. Un message d erreur est genere si
+            aucun fichier n est ouvert.
         """
         try:
             file_instance = pickle_get_file_if_owned(self.student_instance, self.pathname)
@@ -355,6 +352,11 @@ class EditorWindow(Screen):
             self.pathname = ""
 
     def save(self):
+        """
+        PRE:
+        POST:Sauvegarde le contenu du fichier actuellement ouvert. Un message d'erreur
+            est genere si le fichier n'a pas ete prealablement cree.
+        """
         try:
             if self.pathname:
                 f = open(self.pathname, 'w')

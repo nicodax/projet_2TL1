@@ -67,24 +67,12 @@ class TestToolInterface(unittest.TestCase):
         self.assertEqual(resultat_test, ToolWindow.list_to_string(liste_test))
 
 
-class TestEditorInterface(unittest.TestCase):
-    """ Cette classe teste les methodes associees a la fenetre tool_window d'un
-             utilisateur dans l'interface graphique.
-             * delete()
-             * deplacer()
-         """
-
-    # def test_deplacer(self):
-    #    """Deplacer()"""
-    #    old_pathname = "files/test.txt"
-    #    new_pathname = "files1/test.txt"
-
-    def test_delete(self):
-        """Cette fonction test le fait que le fichier est bel et bien supprimé."""
+    """def test_delete(self):
+        #Cette fonction test le fait que le fichier est bel et bien supprimé.
         EditorWindow.pathname = "files/test.txt"
         EditorWindow.student_instance = pickle_get_instance("greg", student=True)
         new_file(EditorWindow.pathname, False, None, None, EditorWindow.student_instance)
         file_instance = pickle_get_instance(EditorWindow.pathname, file=True)
         self.assertEqual(True, os.path.isfile(EditorWindow.pathname))
         delete_file(file_instance, EditorWindow.student_instance)
-        self.assertEqual(False, os.path.isfile(EditorWindow.pathname))
+        self.assertEqual(False, os.path.isfile(EditorWindow.pathname))"""
