@@ -10,7 +10,6 @@ def users_terminal_display(content_to_display):
     """
     PRE: content_to_display est de type dict
     POST: affiche et met en forme les informations contenues dans content_to_display (relatif a des utilisateurs)
-    RAISES:
     """
     id_max_len = 3
     username_max_len = 25
@@ -34,7 +33,6 @@ def files_terminal_display(content_to_display):
     """
     PRE: content_to_display est de type dict
     POST: affiche et met en forme les informations contenues dans content_to_display (relatif a des fichiers)
-    RAISES:
     """
     id_max_len = 3
     course_name_max_len = 5
@@ -70,7 +68,6 @@ def courses_terminal_display(content_to_display):
     """
     PRE: content_to_display est de type dict
     POST: affiche et met en forme les informations contenues dans content_to_display (relatif a des cours)
-    RAISES:
     """
     id_max_len = 3
     name_max_len = 5
@@ -131,7 +128,6 @@ def pickle_get(students_arg=False, admins_arg=False, files_arg=False, courses_ar
                 - si id_dict_arg == True, id_dict se trouve a l'index 4
             Plusieurs arguments peuvent valoir True en même temps
             chaque dictionnaire correspond a l'entierete des instances persistantes du programme d'une classe specifique
-    RAISES:
     """
 
     all_students = {}
@@ -199,7 +195,6 @@ def pickle_save(all_students=None, all_admins=None, all_files=None, all_courses=
     """
     PRE: all_students, all_admins, all_files, all_courses et id_dict sont soit de type dict soit None
     POST: enregistre chaque dictionnaire passe en argument
-    RAISES:
     """
 
     if all_students is not None:
@@ -223,7 +218,6 @@ def login():
     """
     PRE:
     POST: permet de se connecter a un compte utilisateur
-    RAISES:
     """
 
     username = input("Veuillez entrer votre nom d'utilisateur :")

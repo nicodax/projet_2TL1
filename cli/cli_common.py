@@ -6,7 +6,6 @@ def list_all_students():
     """
     PRE:
     POST: cree un dictionnaire des informations relatives aux etudiants
-    RAISES:
     """
     persistent_data = cli.cli_misc.pickle_get(students_arg=True)
     all_students = persistent_data[0]
@@ -27,7 +26,6 @@ def list_all_courses():
     """
     PRE:
     POST: cree un dictionnaire des informations relatives aux cours
-    RAISES:
     """
     persistent_data = cli.cli_misc.pickle_get(courses_arg=True)
     all_courses = persistent_data[3]

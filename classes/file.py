@@ -25,7 +25,6 @@ class File:
                 - file_id est de type int
         POST: initialise chaque instance de la classe
                 cree le fichier sur la memoire si il n'y existait pas deja
-        RAISES:
         """
         if tags is None:
             tags = []
@@ -46,7 +45,6 @@ class File:
         """
         PRE:
         POST: accede a self.__file_id
-        RAISES:
         """
         return self.__file_id
 
@@ -55,7 +53,6 @@ class File:
         """
         PRE:
         POST: accede a self.__script
-        RAISES:
         """
         return self.__script
 
@@ -64,7 +61,6 @@ class File:
         """
         PRE:
         POST: accede a self.__tags
-        RAISES:
         """
         return self.__tags
 
@@ -73,7 +69,6 @@ class File:
         """
         PRE:
         POST: accede a self.__pathname
-        RAISES:
         """
         return self.__pathname
 
@@ -82,7 +77,6 @@ class File:
         """
         PRE:
         POST: accede a self.__user_id
-        RAISES:
         """
         return self.__user_id
 
@@ -91,7 +85,6 @@ class File:
         """
         PRE:
         POST: accede a self.__course_name
-        RAISES:
         """
         return self.__course_id
 
@@ -100,7 +93,6 @@ class File:
         """
         PRE: new_pathname est de type str
         POST: modifie la valeur de self.__fullname
-        RAISES:
         """
         self.__pathname = new_pathname
 
@@ -109,7 +101,6 @@ class File:
         """
         PRE: new_course_id est de type int
         POST: modifie la valeur de self.__course_id
-        RAISES:
         """
         self.__course_id = new_course_id
 
@@ -118,7 +109,6 @@ class File:
         """
         PRE: new_value est de type bool
         POST: modifie la valeur de self.__script
-        RAISES:
         """
         self.__script = new_value
 
@@ -127,7 +117,6 @@ class File:
         """
         PRE: new_tags est de type list
         POST: modifie la valeur de self.__tags
-        RAISES:
         """
         self.__tags = new_tags
 
@@ -135,7 +124,6 @@ class File:
         """
         PRE: tag est de type str
         POST: retourne True si tag est deja repertorie dans la liste self.__tags, retourne False sinon
-        RAISES:
         """
         return tag in self.__tags
 
