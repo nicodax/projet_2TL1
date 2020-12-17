@@ -39,10 +39,11 @@ def files_terminal_display(content_to_display):
     id_max_len = 3
     course_name_max_len = 5
     script_max_len = 5
-    pathname_max_len = 50
-    print("id    cours  script  pathname                                            etiquettes")
+    pathname_max_len = 100
+    print("id    cours  script  pathname                                                                              "
+          "                etiquettes")
     print("---------------------------------------------------------------------------------------------------------"
-          "------------------")
+          "--------------------------------------------------------------------")
     for i in content_to_display:
         add_to_id = ""
         spaces_to_add_to_id = id_max_len - len(str(i["file_id"]))

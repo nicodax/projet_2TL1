@@ -173,20 +173,25 @@ class EditorWindow(Screen):
                   implemente son contenu dans TextArea(textInput).
         RAISES:
         """
-        self.pathname = filedialog.askopenfilename(initialdir="/", title="Choisir le fichier",
-                                                   filetype=[("Text File", "*.txt"), ("Python File", "*.py")])
-        list_files = pickle_get(files_arg=True)[2]["name_id_dict"].keys()
-        if self.pathname not in list_files:
-            new_file(self.pathname, False, None, None, self.student_instance)
+        try:
+            self.pathname = filedialog.askopenfilename(initialdir="/", title="Choisir le fichier",
+                                                       filetype=[("Text File", "*.txt"), ("Python File", "*.py")])
+            list_files = pickle_get(files_arg=True)[2]["name_id_dict"].keys()
+            if self.pathname not in list_files:
+                new_file(self.pathname, False, None, None, self.student_instance)
 
-        resultat = ""
-        with open(self.pathname, 'r') as filin:
-            lignes = filin.readlines()
-            for ligne in lignes:
-                resultat += ligne
-        self.ids.TextArea.text = resultat
-        self.ids.displayEditor.text = "Le fichier  '" + self.pathname.split('/')[-1] + "' a été ouvert"
-        self.ids.currentPathname.text = self.pathname.split('/')[-1]
+            resultat = ""
+            with open(self.pathname, 'r') as filin:
+                lignes = filin.readlines()
+                for ligne in lignes:
+                    resultat += ligne
+            self.ids.TextArea.text = resultat
+            self.ids.displayEditor.text = "Le fichier  '" + self.pathname.split('/')[-1] + "' a été ouvert"
+            self.ids.currentPathname.text = self.pathname.split('/')[-1]
+        except FileNotFoundError:
+            self.ids.displayEditor.text = "L'opération a été annulée"
+        except Exception as e:
+            self.ids.displayEditor.text = f"Erreur : {e}"
 
     def save_as(self):
         """
@@ -195,17 +200,23 @@ class EditorWindow(Screen):
                   enregistrer et sauvegarde le fichier a l endroit choisi.
         RAISES:
         """
-        self.pathname = filedialog.asksaveasfilename(defaultextension='.*', initialdir="/", title='Enregistrer sous',
-                                                     filetype=[("Text File", "*.txt"), ("Python File", "*.py")])
-        list_files = pickle_get(files_arg=True)[2]["name_id_dict"].keys()
-        if self.pathname not in list_files:
-            new_file(self.pathname, False, None, None, self.student_instance)
-        f = open(self.pathname, 'w')
-        s = self.ids.TextArea.text
-        f.write(s)
-        f.close()
-        self.ids.displayEditor.text = "Le fichier '" + self.pathname.split('/')[-1]
-        self.ids.currentPathname.text = self.pathname.split('/')[-1]
+        try:
+            self.pathname = filedialog.asksaveasfilename(defaultextension='.*', initialdir="/",
+                                                         title='Enregistrer sous',
+                                                         filetype=[("Text File", "*.txt"), ("Python File", "*.py")])
+            list_files = pickle_get(files_arg=True)[2]["name_id_dict"].keys()
+            if self.pathname not in list_files:
+                new_file(self.pathname, False, None, None, self.student_instance)
+            f = open(self.pathname, 'w')
+            s = self.ids.TextArea.text
+            f.write(s)
+            f.close()
+            self.ids.displayEditor.text = "Le fichier '" + self.pathname.split('/')[-1]
+            self.ids.currentPathname.text = self.pathname.split('/')[-1]
+        except FileNotFoundError:
+            self.ids.displayEditor.text = "L'opération a été annulée"
+        except Exception as e:
+            self.ids.displayEditor.text = f"Erreur : {e}"
 
     def file_add_tag_gui(self):
         """
@@ -315,10 +326,14 @@ class EditorWindow(Screen):
                 self.pathname = new_pathname
                 f.close()
                 self.ids.currentPathname.text = self.pathname.split('/')[-1]
+            elif new_pathname == "":
+                raise FileNotFoundError
             else:
                 raise SamePathnameException
         except SamePathnameException:
             self.ids.displayEditor.text = "Le nouvel emplacement est le meme que le precedent."
+        except FileNotFoundError:
+            self.ids.displayEditor.text = "L'opération a été annulée"
         except Exception as e:
             self.ids.displayEditor.text = f"Erreur : {e}"
         else:

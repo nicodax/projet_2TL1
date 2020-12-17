@@ -45,6 +45,11 @@ WindowManager:
             TextInput:
                 id: Usrname
                 hint_text: "Nom d'utilisateur"
+                write_tab: False
+                multiline: False
+                on_text_validate:
+                    root.login()
+                    app.root.current = "toolWindow" if root.login() == True else "loginWindow"
                 pos_hint: {"x":0.2, "y":0.6}
                 size_hint: 0.25, 0.15
                 font_size: 20
@@ -60,6 +65,12 @@ WindowManager:
             TextInput:
                 id: Psw
                 hint_text: "Mot de passe"
+                write_tab: False
+                multiline: False
+                on_text_validate:
+                    root.login()
+                    app.root.current = "toolWindow" if root.login() == True else "loginWindow"
+                password: True
                 font_size: 20
                 pos_hint: {"x":0.2, "y":0.3}
                 size_hint: 0.25, 0.15
