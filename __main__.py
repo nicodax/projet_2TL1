@@ -610,10 +610,8 @@ class StudentCli(cmd.Cmd):
             Ecrit par Nicolas Daxhelet
 
         # RAISES
-            FileNotOwnedException
-                L'utilisateur tente d'acceder a un fichier possede par un autre utilisateur
-            FileNotFoundException
-                Le programme ne connait pas le fichier specifie par PATHNAME
+            ArgumentException
+                L'utilisateur ne respecte pas les conventions relatives a la syntaxe de la commande
         """
 
         try:
@@ -653,10 +651,8 @@ class StudentCli(cmd.Cmd):
             Ecrit par Nicolas Daxhelet
 
         # RAISES
-            FileNotOwnedException
-                L'utilisateur tente d'acceder a un fichier possede par un autre utilisateur
-            FileNotFoundException
-                Le programme ne connait pas le fichier specifie par PATHNAME
+            ArgumentException
+                L'utilisateur ne respecte pas les conventions relatives a la syntaxe de la commande
         """
 
         try:
@@ -692,6 +688,10 @@ class StudentCli(cmd.Cmd):
 
         # AUTHOR
             Ecrit par Nicolas Daxhelet
+
+        # RAISES
+            ArgumentException
+                L'utilisateur ne respecte pas les conventions relatives a la syntaxe de la commande
         """
 
         try:
@@ -724,6 +724,10 @@ class StudentCli(cmd.Cmd):
 
         # AUTHOR
             Ecrit par Nicolas Daxhelet
+
+        # RAISES
+            ArgumentException
+                L'utilisateur ne respecte pas les conventions relatives a la syntaxe de la commande
         """
 
         try:
@@ -766,6 +770,10 @@ class StudentCli(cmd.Cmd):
 
         # AUTHOR
             Ecrit par Nicolas Daxhelet
+
+        # RAISES
+            ArgumentException
+                L'utilisateur ne respecte pas les conventions relatives a la syntaxe de la commande
         """
 
         try:
@@ -814,9 +822,12 @@ class StudentCli(cmd.Cmd):
             Si le parametre on_courses est declare, les fichiers de l'utilisateur connecte sont tries sur base
                 des cours specifies.
 
-
         # AUTHOR
             Ecrit par Gregoire Delannoit
+
+        # RAISES
+            ArgumentException
+                L'utilisateur ne respecte pas les conventions relatives a la syntaxe de la commande
         """
 
         try:
@@ -859,6 +870,10 @@ class StudentCli(cmd.Cmd):
 
         # AUTHOR
             Ecrit par Nicolas Daxhelet
+
+        # RAISES
+            ArgumentException
+                L'utilisateur ne respecte pas les conventions relatives a la syntaxe de la commande
         """
 
         try:
