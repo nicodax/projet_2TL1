@@ -835,7 +835,7 @@ class StudentCli(cmd.Cmd):
                 number_of_tags = int(input("Veuillez entrer le nombre d'etiquettes recherchees :"))
                 tags_research = []
                 for i in range(number_of_tags):
-                    course_name = input("Veuillez entrer l'etiquette :")
+                    course_name = input(f"Veuillez entrer l'etiquette {i+1}:")
                     tags_research.append(course_name)
                 content_to_display = cli.cli_student.list_sorted_files_on_tags(tags_research, current_user_instance)
             elif ("on_course" in line) and not ("on_tags" in line) and (len(line.split()) == 1):
